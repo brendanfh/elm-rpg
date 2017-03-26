@@ -1,6 +1,7 @@
 module Types exposing (..)
 
 import WebGL exposing (Texture)
+import WebGL.Texture
 
 
 {-
@@ -9,7 +10,14 @@ import WebGL exposing (Texture)
 
 
 type alias TextureStore =
-    { blankTexture : Maybe Texture }
+    { playerTexture : Maybe Texture
+    }
+
+
+blankTextureStore : TextureStore
+blankTextureStore =
+    { playerTexture = Nothing
+    }
 
 
 type alias Model =
@@ -17,5 +25,12 @@ type alias Model =
     }
 
 
+type TextureEncoding
+    = PlayerTexture Texture
+    | TileMapTexture Texture
+
+
 type Msg
     = NoOp
+    | TextureLoadingError WebGL.Texture.Error
+    | TextureLoadedSuccessful TextureEncoding

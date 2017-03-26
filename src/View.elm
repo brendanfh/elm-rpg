@@ -4,10 +4,7 @@ import Html exposing (Html)
 import Html.Attributes as HA
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (vec3, Vec3)
-
-
--- import Math.Vector2 as Vec2 exposing (vec2, Vec2)
-
+import Math.Vector2 as Vec2 exposing (vec2, Vec2)
 import Types exposing (..)
 import WebGL exposing (Shader, Mesh, Entity, Texture)
 
@@ -19,18 +16,25 @@ view model =
 
 viewGL : Model -> Html Msg
 viewGL model =
-    WebGL.toHtmlWith
-        [ WebGL.clearColor 0 0 0 1
-        ]
-        [ HA.width 800
-        , HA.height 600
-        ]
-        [ renderQuad (vec3 1 1 1)
-            (Mat4.identity
-                |> Mat4.translate3 100 100 0
-                |> Mat4.scale3 50 50 1
-            )
-        ]
+    (case model.textureStore.playerTexture of
+        Nothing ->
+            []
+
+        Just texture ->
+            [ renderTexturedQuad texture
+                (vec3 1 1 1)
+                (Mat4.identity
+                    |> Mat4.translate3 100 100 0
+                    |> Mat4.scale3 64 64 1
+                )
+            ]
+    )
+        |> WebGL.toHtmlWith
+            [ WebGL.clearColor 0 0 0 1
+            ]
+            [ HA.width 800
+            , HA.height 600
+            ]
 
 
 renderQuad : Vec3 -> Mat4 -> Entity
@@ -71,13 +75,13 @@ type alias Vertex =
 quadMesh : Mesh Vertex
 quadMesh =
     WebGL.triangles
-        [ ( Vertex (vec3 -0.5 -0.5 0)
-          , Vertex (vec3 0.5 -0.5 0)
-          , Vertex (vec3 0.5 0.5 0)
+        [ ( Vertex (vec3 0 0 0)
+          , Vertex (vec3 1 0 0)
+          , Vertex (vec3 1 1 0)
           )
-        , ( Vertex (vec3 -0.5 -0.5 0)
-          , Vertex (vec3 0.5 0.5 0)
-          , Vertex (vec3 -0.5 0.5 0)
+        , ( Vertex (vec3 0 0 0)
+          , Vertex (vec3 1 1 0)
+          , Vertex (vec3 0 1 0)
           )
         ]
 
@@ -123,7 +127,7 @@ fragmentShader =
     |]
 
 
-textureVertexShader : Shader Vertex TexturedUniforms {}
+textureVertexShader : Shader Vertex TexturedUniforms { vcoord : Vec2 }
 textureVertexShader =
     [glsl|
         precision mediump float;
@@ -133,22 +137,26 @@ textureVertexShader =
         uniform mat4 perspective;
         uniform mat4 object;
 
+        varying vec2 vcoord;
+
         void main() {
             gl_Position = perspective * object * vec4(position, 1.0);
+            vcoord = position.xy * vec2(1, -1);
         }
     |]
 
 
-textureFragmentShader : Shader {} TexturedUniforms {}
+textureFragmentShader : Shader {} TexturedUniforms { vcoord : Vec2 }
 textureFragmentShader =
     [glsl|
         precision mediump float;
 
         uniform vec3 color;
-        uniform sampler2d texture;
+        uniform sampler2D texture;
+
+        varying vec2 vcoord;
 
         void main() {
-            //use the texture
-            gl_FragColor = vec4(color, 1.0);
+            gl_FragColor = texture2D(texture, vcoord);
         }
     |]
