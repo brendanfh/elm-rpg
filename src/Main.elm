@@ -1,29 +1,17 @@
 module Main exposing (..)
 
 import Html exposing (Html)
-
-
-type alias Model =
-    ()
+import Types exposing (..)
+import Update exposing (update)
+import View exposing (view)
 
 
 init : {} -> ( Model, Cmd Msg )
 init _ =
-    ( (), Cmd.none )
-
-
-type Msg
-    = NoOp
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    ( model, Cmd.none )
-
-
-view : Model -> Html Msg
-view model =
-    Html.text "Hello World!"
+    ( { textureStore = { blankTexture = Nothing }
+      }
+    , Cmd.none
+    )
 
 
 subscriptions : Model -> Sub Msg
