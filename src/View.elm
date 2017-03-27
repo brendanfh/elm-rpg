@@ -26,7 +26,8 @@ viewGL model =
             []
 
         Just texture ->
-            [ renderTexturedQuad texture
+            [ renderTexturedQuad
+                texture
                 (vec3 1 1 1)
                 (Mat4.identity
                     |> Mat4.translate3 100 100 0
