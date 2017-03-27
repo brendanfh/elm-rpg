@@ -9,12 +9,17 @@ import Types exposing (..)
 import WebGL exposing (Shader, Mesh, Entity, Texture)
 
 
-view : Model -> Html Msg
-view model =
-    Html.div [] [ viewGL model ]
+view : State -> Html Msg
+view state =
+    case state of
+        Playing model ->
+            Html.div [] [ viewGL model ]
+
+        _ ->
+            Html.div [] []
 
 
-viewGL : Model -> Html Msg
+viewGL : PlayingModel -> Html Msg
 viewGL model =
     (case model.textureStore.playerTexture of
         Nothing ->
@@ -64,7 +69,7 @@ renderTexturedQuad texture color objMat =
 
 perspective : Mat4
 perspective =
-    Mat4.makeOrtho 0 800 600 0 -1 1
+    Mat4.makeOrtho -1 800 600 0 -1 1
 
 
 type alias Vertex =

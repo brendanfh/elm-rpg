@@ -15425,17 +15425,22 @@ var _elm_lang$html$Html_Attributes$classList = function (list) {
 var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
 
 var _user$project$Types$blankTextureStore = {playerTexture: _elm_lang$core$Maybe$Nothing};
+var _user$project$Types$PlayingModel = function (a) {
+	return {textureStore: a};
+};
+var _user$project$Types$MainMenuModel = {};
+var _user$project$Types$OptionsModel = {};
 var _user$project$Types$TextureStore = function (a) {
 	return {playerTexture: a};
 };
-var _user$project$Types$Model = function (a) {
-	return {textureStore: a};
+var _user$project$Types$OptionsMenu = function (a) {
+	return {ctor: 'OptionsMenu', _0: a};
 };
-var _user$project$Types$TileMapTexture = function (a) {
-	return {ctor: 'TileMapTexture', _0: a};
+var _user$project$Types$MainMenu = function (a) {
+	return {ctor: 'MainMenu', _0: a};
 };
-var _user$project$Types$PlayerTexture = function (a) {
-	return {ctor: 'PlayerTexture', _0: a};
+var _user$project$Types$Playing = function (a) {
+	return {ctor: 'Playing', _0: a};
 };
 var _user$project$Types$TextureLoadedSuccessful = function (a) {
 	return {ctor: 'TextureLoadedSuccessful', _0: a};
@@ -15444,6 +15449,12 @@ var _user$project$Types$TextureLoadingError = function (a) {
 	return {ctor: 'TextureLoadingError', _0: a};
 };
 var _user$project$Types$NoOp = {ctor: 'NoOp'};
+var _user$project$Types$TileMapTexture = function (a) {
+	return {ctor: 'TileMapTexture', _0: a};
+};
+var _user$project$Types$PlayerTexture = function (a) {
+	return {ctor: 'PlayerTexture', _0: a};
+};
 
 var _user$project$Update$processTexture = F2(
 	function (encoding, model) {
@@ -15464,20 +15475,38 @@ var _user$project$Update$processTexture = F2(
 			model,
 			{textureStore: tstore_});
 	});
-var _user$project$Update$update = F2(
+var _user$project$Update$updatePlaying = F2(
 	function (msg, model) {
 		var _p1 = msg;
 		switch (_p1.ctor) {
 			case 'TextureLoadingError':
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				return {
+					ctor: '_Tuple2',
+					_0: _user$project$Types$Playing(model),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
 			case 'TextureLoadedSuccessful':
 				return {
 					ctor: '_Tuple2',
-					_0: A2(_user$project$Update$processTexture, _p1._0, model),
+					_0: _user$project$Types$Playing(
+						A2(_user$project$Update$processTexture, _p1._0, model)),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				return {
+					ctor: '_Tuple2',
+					_0: _user$project$Types$Playing(model),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+		}
+	});
+var _user$project$Update$update = F2(
+	function (msg, state) {
+		var _p2 = state;
+		if (_p2.ctor === 'Playing') {
+			return A2(_user$project$Update$updatePlaying, msg, _p2._0);
+		} else {
+			return {ctor: '_Tuple2', _0: state, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
 
@@ -15485,7 +15514,7 @@ var _user$project$View$textureFragmentShader = {'src': '\n        precision medi
 var _user$project$View$textureVertexShader = {'src': '\n        precision mediump float;\n\n        attribute vec3 position;\n\n        uniform mat4 perspective;\n        uniform mat4 object;\n\n        varying vec2 vcoord;\n\n        void main() {\n            gl_Position = perspective * object * vec4(position, 1.0);\n            vcoord = position.xy * vec2(1, -1);\n        }\n    '};
 var _user$project$View$fragmentShader = {'src': '\n        precision mediump float;\n\n        uniform vec3 color;\n\n        void main() {\n            gl_FragColor = vec4(color, 1.0);\n        }\n    '};
 var _user$project$View$vertexShader = {'src': '\n        precision mediump float;\n\n        attribute vec3 position;\n\n        uniform mat4 perspective;\n        uniform mat4 object;\n\n        void main() {\n            gl_Position = perspective * object * vec4(position, 1.0);\n        }\n    '};
-var _user$project$View$perspective = A6(_elm_community$linear_algebra$Math_Matrix4$makeOrtho, 0, 800, 600, 0, -1, 1);
+var _user$project$View$perspective = A6(_elm_community$linear_algebra$Math_Matrix4$makeOrtho, -1, 800, 600, 0, -1, 1);
 var _user$project$View$Vertex = function (a) {
 	return {position: a};
 };
@@ -15572,15 +15601,23 @@ var _user$project$View$viewGL = function (model) {
 			}
 		}());
 };
-var _user$project$View$view = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: _user$project$View$viewGL(model),
-			_1: {ctor: '[]'}
-		});
+var _user$project$View$view = function (state) {
+	var _p1 = state;
+	if (_p1.ctor === 'Playing') {
+		return A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _user$project$View$viewGL(_p1._0),
+				_1: {ctor: '[]'}
+			});
+	} else {
+		return A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{ctor: '[]'});
+	}
 };
 
 var _user$project$Main$subscriptions = function (model) {
@@ -15627,7 +15664,8 @@ var _user$project$Main$loadTextures = function () {
 var _user$project$Main$init = function (_p3) {
 	return {
 		ctor: '_Tuple2',
-		_0: {textureStore: _user$project$Types$blankTextureStore},
+		_0: _user$project$Types$Playing(
+			{textureStore: _user$project$Types$blankTextureStore}),
 		_1: _elm_lang$core$Platform_Cmd$batch(
 			{
 				ctor: '::',

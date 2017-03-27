@@ -9,6 +9,36 @@ import WebGL.Texture
 -}
 
 
+type State
+    = Playing PlayingModel
+    | MainMenu MainMenuModel
+    | OptionsMenu OptionsModel
+
+
+type alias PlayingModel =
+    { textureStore : TextureStore
+    }
+
+
+type alias MainMenuModel =
+    {}
+
+
+type alias OptionsModel =
+    {}
+
+
+type Msg
+    = NoOp
+    | TextureLoadingError WebGL.Texture.Error
+    | TextureLoadedSuccessful TextureEncoding
+
+
+type TextureEncoding
+    = PlayerTexture Texture
+    | TileMapTexture Texture
+
+
 type alias TextureStore =
     { playerTexture : Maybe Texture
     }
@@ -18,19 +48,3 @@ blankTextureStore : TextureStore
 blankTextureStore =
     { playerTexture = Nothing
     }
-
-
-type alias Model =
-    { textureStore : TextureStore
-    }
-
-
-type TextureEncoding
-    = PlayerTexture Texture
-    | TileMapTexture Texture
-
-
-type Msg
-    = NoOp
-    | TextureLoadingError WebGL.Texture.Error
-    | TextureLoadedSuccessful TextureEncoding

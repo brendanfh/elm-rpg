@@ -3,20 +3,33 @@ module Update exposing (update)
 import Types exposing (..)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Msg -> State -> ( State, Cmd Msg )
+update msg state =
+    case state of
+        Playing model ->
+            updatePlaying msg model
+
+        _ ->
+            ( state, Cmd.none )
+
+
+updatePlaying : Msg -> PlayingModel -> ( State, Cmd Msg )
+updatePlaying msg model =
     case msg of
         TextureLoadingError _ ->
-            ( model, Cmd.none )
+            ( Playing model, Cmd.none )
 
         TextureLoadedSuccessful encoding ->
-            ( processTexture encoding model, Cmd.none )
+            ( Playing <| processTexture encoding model, Cmd.none )
 
         NoOp ->
-            ( model, Cmd.none )
+            ( Playing model, Cmd.none )
 
 
-processTexture : TextureEncoding -> Model -> Model
+processTexture :
+    TextureEncoding
+    -> { a | textureStore : TextureStore }
+    -> { a | textureStore : TextureStore }
 processTexture encoding model =
     let
         tstore =

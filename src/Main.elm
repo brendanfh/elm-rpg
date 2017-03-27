@@ -8,10 +8,11 @@ import Task
 import WebGL.Texture as Texture
 
 
-init : {} -> ( Model, Cmd Msg )
+init : {} -> ( State, Cmd Msg )
 init _ =
-    ( { textureStore = blankTextureStore
-      }
+    ( Playing
+        { textureStore = blankTextureStore
+        }
     , Cmd.batch [ loadTextures ]
     )
 
@@ -49,12 +50,12 @@ loadTextures =
             |> Cmd.batch
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : State -> Sub Msg
 subscriptions model =
     Sub.none
 
 
-main : Program {} Model Msg
+main : Program {} State Msg
 main =
     Html.programWithFlags
         { init = init
