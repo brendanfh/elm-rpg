@@ -5,8 +5,8 @@ import Tuple exposing (first, second)
 
 
 type alias Animator =
-    { fullWidth : Int
-    , fullHeight : Int
+    { maxWidth : Int
+    , maxHeight : Int
     , frames : Int
     , startLoc : ( Int, Int )
     , frame : Int
@@ -21,8 +21,8 @@ type alias Animator =
 
 defaultAnimator : Animator
 defaultAnimator =
-    { fullWidth = 0
-    , fullHeight = 0
+    { maxWidth = 0
+    , maxHeight = 0
     , frames = 0
     , startLoc = ( 0, 0 )
     , frame = 0
@@ -65,5 +65,20 @@ update time animator =
         }
 
 
-
---TODO: write the function that will be used to make the animator give the view the coordinates to draw
+toRectangle :
+    Animator
+    -> { x : Int
+       , y : Int
+       , width : Int
+       , height : Int
+       , maxWidth : Int
+       , maxHeight : Int
+       }
+toRectangle animator =
+    { x = (first animator.currentLoc) * animator.frameWidth
+    , y = (second animator.currentLoc) * animator.frameHeight
+    , width = animator.frameWidth
+    , height = animator.frameHeight
+    , maxWidth = animator.maxWidth
+    , maxHeight = animator.maxHeight
+    }

@@ -1,5 +1,7 @@
 module Main exposing (..)
 
+import AnimationFrame
+import Animator exposing (defaultAnimator)
 import Html exposing (Html)
 import Types exposing (..)
 import Update exposing (update)
@@ -12,6 +14,16 @@ init : {} -> ( State, Cmd Msg )
 init _ =
     ( Playing
         { textureStore = blankTextureStore
+        , animation =
+            { defaultAnimator
+                | maxWidth = 32
+                , maxHeight = 32
+                , frameWidth = 16
+                , frameHeight = 16
+                , frames = 2
+                , startLoc = ( 0, 1 )
+                , frameDelay = 1000
+            }
         }
     , Cmd.batch [ loadTextures ]
     )
@@ -51,8 +63,13 @@ loadTextures =
 
 
 subscriptions : State -> Sub Msg
-subscriptions model =
-    Sub.none
+subscriptions state =
+    case state of
+        Playing model ->
+            AnimationFrame.diffs Tick
+
+        _ ->
+            Sub.none
 
 
 main : Program {} State Msg

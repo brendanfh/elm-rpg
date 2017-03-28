@@ -1,5 +1,7 @@
 module Types exposing (..)
 
+import Animator exposing (Animator)
+import Time exposing (Time)
 import WebGL exposing (Texture)
 import WebGL.Texture
 
@@ -17,6 +19,7 @@ type State
 
 type alias PlayingModel =
     { textureStore : TextureStore
+    , animation : Animator
     }
 
 
@@ -32,6 +35,7 @@ type Msg
     = NoOp
     | TextureLoadingError WebGL.Texture.Error
     | TextureLoadedSuccessful TextureEncoding
+    | Tick Time
 
 
 type TextureEncoding

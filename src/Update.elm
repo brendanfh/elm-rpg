@@ -1,5 +1,6 @@
 module Update exposing (update)
 
+import Animator
 import Types exposing (..)
 
 
@@ -22,7 +23,14 @@ updatePlaying msg model =
         TextureLoadedSuccessful encoding ->
             ( Playing <| processTexture encoding model, Cmd.none )
 
-        NoOp ->
+        Tick time ->
+            let
+                nmodel =
+                    { model | animation = Animator.update time model.animation }
+            in
+                ( Playing nmodel, Cmd.none )
+
+        _ ->
             ( Playing model, Cmd.none )
 
 

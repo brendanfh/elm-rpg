@@ -1,5 +1,6 @@
 module View exposing (..)
 
+import Animator
 import Html exposing (Html)
 import Html.Attributes as HA
 import Math.Matrix4 as Mat4 exposing (Mat4)
@@ -28,6 +29,7 @@ viewGL model =
         Just texture ->
             [ renderTexturedQuad
                 texture
+                (toTextureMatrix (Animator.toRectangle model.animation))
                 (vec3 1 1 1)
                 (Mat4.identity
                     |> Mat4.translate3 100 100 0
@@ -55,8 +57,8 @@ renderQuad color objMat =
         }
 
 
-renderTexturedQuad : Texture -> Vec3 -> Mat4 -> Entity
-renderTexturedQuad texture color objMat =
+renderTexturedQuad : Texture -> Mat4 -> Vec3 -> Mat4 -> Entity
+renderTexturedQuad texture textureMat color objMat =
     WebGL.entity
         textureVertexShader
         textureFragmentShader
@@ -65,7 +67,37 @@ renderTexturedQuad texture color objMat =
         , object = objMat
         , color = color
         , texture = texture
+        , textureMat = textureMat
         }
+
+
+toTextureMatrix :
+    { a
+        | x : Int
+        , y : Int
+        , width : Int
+        , height : Int
+        , maxWidth : Int
+        , maxHeight : Int
+    }
+    -> Mat4
+toTextureMatrix rect =
+    Mat4.identity
+        |> Mat4.scale3
+            --Scale down
+            (1.0 / (toFloat rect.maxWidth))
+            (1.0 / (toFloat rect.maxHeight))
+            1
+        |> Mat4.translate3
+            --Translate
+            (toFloat rect.x)
+            (toFloat rect.y)
+            0
+        |> Mat4.scale3
+            --Scale up to width and height
+            (toFloat rect.width)
+            (toFloat rect.height)
+            1
 
 
 perspective : Mat4
@@ -101,7 +133,7 @@ type alias Uniforms a =
 
 
 type alias TexturedUniforms =
-    Uniforms { texture : Texture }
+    Uniforms { texture : Texture, textureMat : Mat4 }
 
 
 vertexShader : Shader Vertex (Uniforms {}) {}
@@ -159,10 +191,12 @@ textureFragmentShader =
 
         uniform vec3 color;
         uniform sampler2D texture;
+        uniform mat4 textureMat;
 
         varying vec2 vcoord;
 
         void main() {
-            gl_FragColor = texture2D(texture, vcoord);
+            vec2 coord = (textureMat * vec4(vcoord, 0.0, 1.0)).xy;
+            gl_FragColor = texture2D(texture, coord) * vec4(color, 1.0);
         }
     |]

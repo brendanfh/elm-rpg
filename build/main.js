@@ -15074,6 +15074,390 @@ var _elm_community$webgl$WebGL_Texture$clampToEdge = _elm_community$webgl$WebGL_
 var _elm_community$webgl$WebGL_Texture$nonPowerOfTwoOptions = {magnify: _elm_community$webgl$WebGL_Texture$linear, minify: _elm_community$webgl$WebGL_Texture$nearest, horizontalWrap: _elm_community$webgl$WebGL_Texture$clampToEdge, verticalWrap: _elm_community$webgl$WebGL_Texture$clampToEdge, flipY: true};
 var _elm_community$webgl$WebGL_Texture$mirroredRepeat = _elm_community$webgl$WebGL_Texture$Wrap(33648);
 
+var _elm_lang$animation_frame$Native_AnimationFrame = function()
+{
+
+function create()
+{
+	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
+	{
+		var id = requestAnimationFrame(function() {
+			callback(_elm_lang$core$Native_Scheduler.succeed(Date.now()));
+		});
+
+		return function() {
+			cancelAnimationFrame(id);
+		};
+	});
+}
+
+return {
+	create: create
+};
+
+}();
+
+//import Native.Scheduler //
+
+var _elm_lang$core$Native_Time = function() {
+
+var now = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
+{
+	callback(_elm_lang$core$Native_Scheduler.succeed(Date.now()));
+});
+
+function setInterval_(interval, task)
+{
+	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
+	{
+		var id = setInterval(function() {
+			_elm_lang$core$Native_Scheduler.rawSpawn(task);
+		}, interval);
+
+		return function() { clearInterval(id); };
+	});
+}
+
+return {
+	now: now,
+	setInterval_: F2(setInterval_)
+};
+
+}();
+var _elm_lang$core$Time$setInterval = _elm_lang$core$Native_Time.setInterval_;
+var _elm_lang$core$Time$spawnHelp = F3(
+	function (router, intervals, processes) {
+		var _p0 = intervals;
+		if (_p0.ctor === '[]') {
+			return _elm_lang$core$Task$succeed(processes);
+		} else {
+			var _p1 = _p0._0;
+			var spawnRest = function (id) {
+				return A3(
+					_elm_lang$core$Time$spawnHelp,
+					router,
+					_p0._1,
+					A3(_elm_lang$core$Dict$insert, _p1, id, processes));
+			};
+			var spawnTimer = _elm_lang$core$Native_Scheduler.spawn(
+				A2(
+					_elm_lang$core$Time$setInterval,
+					_p1,
+					A2(_elm_lang$core$Platform$sendToSelf, router, _p1)));
+			return A2(_elm_lang$core$Task$andThen, spawnRest, spawnTimer);
+		}
+	});
+var _elm_lang$core$Time$addMySub = F2(
+	function (_p2, state) {
+		var _p3 = _p2;
+		var _p6 = _p3._1;
+		var _p5 = _p3._0;
+		var _p4 = A2(_elm_lang$core$Dict$get, _p5, state);
+		if (_p4.ctor === 'Nothing') {
+			return A3(
+				_elm_lang$core$Dict$insert,
+				_p5,
+				{
+					ctor: '::',
+					_0: _p6,
+					_1: {ctor: '[]'}
+				},
+				state);
+		} else {
+			return A3(
+				_elm_lang$core$Dict$insert,
+				_p5,
+				{ctor: '::', _0: _p6, _1: _p4._0},
+				state);
+		}
+	});
+var _elm_lang$core$Time$inMilliseconds = function (t) {
+	return t;
+};
+var _elm_lang$core$Time$millisecond = 1;
+var _elm_lang$core$Time$second = 1000 * _elm_lang$core$Time$millisecond;
+var _elm_lang$core$Time$minute = 60 * _elm_lang$core$Time$second;
+var _elm_lang$core$Time$hour = 60 * _elm_lang$core$Time$minute;
+var _elm_lang$core$Time$inHours = function (t) {
+	return t / _elm_lang$core$Time$hour;
+};
+var _elm_lang$core$Time$inMinutes = function (t) {
+	return t / _elm_lang$core$Time$minute;
+};
+var _elm_lang$core$Time$inSeconds = function (t) {
+	return t / _elm_lang$core$Time$second;
+};
+var _elm_lang$core$Time$now = _elm_lang$core$Native_Time.now;
+var _elm_lang$core$Time$onSelfMsg = F3(
+	function (router, interval, state) {
+		var _p7 = A2(_elm_lang$core$Dict$get, interval, state.taggers);
+		if (_p7.ctor === 'Nothing') {
+			return _elm_lang$core$Task$succeed(state);
+		} else {
+			var tellTaggers = function (time) {
+				return _elm_lang$core$Task$sequence(
+					A2(
+						_elm_lang$core$List$map,
+						function (tagger) {
+							return A2(
+								_elm_lang$core$Platform$sendToApp,
+								router,
+								tagger(time));
+						},
+						_p7._0));
+			};
+			return A2(
+				_elm_lang$core$Task$andThen,
+				function (_p8) {
+					return _elm_lang$core$Task$succeed(state);
+				},
+				A2(_elm_lang$core$Task$andThen, tellTaggers, _elm_lang$core$Time$now));
+		}
+	});
+var _elm_lang$core$Time$subscription = _elm_lang$core$Native_Platform.leaf('Time');
+var _elm_lang$core$Time$State = F2(
+	function (a, b) {
+		return {taggers: a, processes: b};
+	});
+var _elm_lang$core$Time$init = _elm_lang$core$Task$succeed(
+	A2(_elm_lang$core$Time$State, _elm_lang$core$Dict$empty, _elm_lang$core$Dict$empty));
+var _elm_lang$core$Time$onEffects = F3(
+	function (router, subs, _p9) {
+		var _p10 = _p9;
+		var rightStep = F3(
+			function (_p12, id, _p11) {
+				var _p13 = _p11;
+				return {
+					ctor: '_Tuple3',
+					_0: _p13._0,
+					_1: _p13._1,
+					_2: A2(
+						_elm_lang$core$Task$andThen,
+						function (_p14) {
+							return _p13._2;
+						},
+						_elm_lang$core$Native_Scheduler.kill(id))
+				};
+			});
+		var bothStep = F4(
+			function (interval, taggers, id, _p15) {
+				var _p16 = _p15;
+				return {
+					ctor: '_Tuple3',
+					_0: _p16._0,
+					_1: A3(_elm_lang$core$Dict$insert, interval, id, _p16._1),
+					_2: _p16._2
+				};
+			});
+		var leftStep = F3(
+			function (interval, taggers, _p17) {
+				var _p18 = _p17;
+				return {
+					ctor: '_Tuple3',
+					_0: {ctor: '::', _0: interval, _1: _p18._0},
+					_1: _p18._1,
+					_2: _p18._2
+				};
+			});
+		var newTaggers = A3(_elm_lang$core$List$foldl, _elm_lang$core$Time$addMySub, _elm_lang$core$Dict$empty, subs);
+		var _p19 = A6(
+			_elm_lang$core$Dict$merge,
+			leftStep,
+			bothStep,
+			rightStep,
+			newTaggers,
+			_p10.processes,
+			{
+				ctor: '_Tuple3',
+				_0: {ctor: '[]'},
+				_1: _elm_lang$core$Dict$empty,
+				_2: _elm_lang$core$Task$succeed(
+					{ctor: '_Tuple0'})
+			});
+		var spawnList = _p19._0;
+		var existingDict = _p19._1;
+		var killTask = _p19._2;
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (newProcesses) {
+				return _elm_lang$core$Task$succeed(
+					A2(_elm_lang$core$Time$State, newTaggers, newProcesses));
+			},
+			A2(
+				_elm_lang$core$Task$andThen,
+				function (_p20) {
+					return A3(_elm_lang$core$Time$spawnHelp, router, spawnList, existingDict);
+				},
+				killTask));
+	});
+var _elm_lang$core$Time$Every = F2(
+	function (a, b) {
+		return {ctor: 'Every', _0: a, _1: b};
+	});
+var _elm_lang$core$Time$every = F2(
+	function (interval, tagger) {
+		return _elm_lang$core$Time$subscription(
+			A2(_elm_lang$core$Time$Every, interval, tagger));
+	});
+var _elm_lang$core$Time$subMap = F2(
+	function (f, _p21) {
+		var _p22 = _p21;
+		return A2(
+			_elm_lang$core$Time$Every,
+			_p22._0,
+			function (_p23) {
+				return f(
+					_p22._1(_p23));
+			});
+	});
+_elm_lang$core$Native_Platform.effectManagers['Time'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Time$init, onEffects: _elm_lang$core$Time$onEffects, onSelfMsg: _elm_lang$core$Time$onSelfMsg, tag: 'sub', subMap: _elm_lang$core$Time$subMap};
+
+var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
+var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
+var _elm_lang$core$Process$spawn = _elm_lang$core$Native_Scheduler.spawn;
+
+var _elm_lang$animation_frame$AnimationFrame$rAF = _elm_lang$animation_frame$Native_AnimationFrame.create(
+	{ctor: '_Tuple0'});
+var _elm_lang$animation_frame$AnimationFrame$subscription = _elm_lang$core$Native_Platform.leaf('AnimationFrame');
+var _elm_lang$animation_frame$AnimationFrame$State = F3(
+	function (a, b, c) {
+		return {subs: a, request: b, oldTime: c};
+	});
+var _elm_lang$animation_frame$AnimationFrame$init = _elm_lang$core$Task$succeed(
+	A3(
+		_elm_lang$animation_frame$AnimationFrame$State,
+		{ctor: '[]'},
+		_elm_lang$core$Maybe$Nothing,
+		0));
+var _elm_lang$animation_frame$AnimationFrame$onEffects = F3(
+	function (router, subs, _p0) {
+		var _p1 = _p0;
+		var _p5 = _p1.request;
+		var _p4 = _p1.oldTime;
+		var _p2 = {ctor: '_Tuple2', _0: _p5, _1: subs};
+		if (_p2._0.ctor === 'Nothing') {
+			if (_p2._1.ctor === '[]') {
+				return _elm_lang$core$Task$succeed(
+					A3(
+						_elm_lang$animation_frame$AnimationFrame$State,
+						{ctor: '[]'},
+						_elm_lang$core$Maybe$Nothing,
+						_p4));
+			} else {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					function (pid) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							function (time) {
+								return _elm_lang$core$Task$succeed(
+									A3(
+										_elm_lang$animation_frame$AnimationFrame$State,
+										subs,
+										_elm_lang$core$Maybe$Just(pid),
+										time));
+							},
+							_elm_lang$core$Time$now);
+					},
+					_elm_lang$core$Process$spawn(
+						A2(
+							_elm_lang$core$Task$andThen,
+							_elm_lang$core$Platform$sendToSelf(router),
+							_elm_lang$animation_frame$AnimationFrame$rAF)));
+			}
+		} else {
+			if (_p2._1.ctor === '[]') {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					function (_p3) {
+						return _elm_lang$core$Task$succeed(
+							A3(
+								_elm_lang$animation_frame$AnimationFrame$State,
+								{ctor: '[]'},
+								_elm_lang$core$Maybe$Nothing,
+								_p4));
+					},
+					_elm_lang$core$Process$kill(_p2._0._0));
+			} else {
+				return _elm_lang$core$Task$succeed(
+					A3(_elm_lang$animation_frame$AnimationFrame$State, subs, _p5, _p4));
+			}
+		}
+	});
+var _elm_lang$animation_frame$AnimationFrame$onSelfMsg = F3(
+	function (router, newTime, _p6) {
+		var _p7 = _p6;
+		var _p10 = _p7.subs;
+		var diff = newTime - _p7.oldTime;
+		var send = function (sub) {
+			var _p8 = sub;
+			if (_p8.ctor === 'Time') {
+				return A2(
+					_elm_lang$core$Platform$sendToApp,
+					router,
+					_p8._0(newTime));
+			} else {
+				return A2(
+					_elm_lang$core$Platform$sendToApp,
+					router,
+					_p8._0(diff));
+			}
+		};
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (pid) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					function (_p9) {
+						return _elm_lang$core$Task$succeed(
+							A3(
+								_elm_lang$animation_frame$AnimationFrame$State,
+								_p10,
+								_elm_lang$core$Maybe$Just(pid),
+								newTime));
+					},
+					_elm_lang$core$Task$sequence(
+						A2(_elm_lang$core$List$map, send, _p10)));
+			},
+			_elm_lang$core$Process$spawn(
+				A2(
+					_elm_lang$core$Task$andThen,
+					_elm_lang$core$Platform$sendToSelf(router),
+					_elm_lang$animation_frame$AnimationFrame$rAF)));
+	});
+var _elm_lang$animation_frame$AnimationFrame$Diff = function (a) {
+	return {ctor: 'Diff', _0: a};
+};
+var _elm_lang$animation_frame$AnimationFrame$diffs = function (tagger) {
+	return _elm_lang$animation_frame$AnimationFrame$subscription(
+		_elm_lang$animation_frame$AnimationFrame$Diff(tagger));
+};
+var _elm_lang$animation_frame$AnimationFrame$Time = function (a) {
+	return {ctor: 'Time', _0: a};
+};
+var _elm_lang$animation_frame$AnimationFrame$times = function (tagger) {
+	return _elm_lang$animation_frame$AnimationFrame$subscription(
+		_elm_lang$animation_frame$AnimationFrame$Time(tagger));
+};
+var _elm_lang$animation_frame$AnimationFrame$subMap = F2(
+	function (func, sub) {
+		var _p11 = sub;
+		if (_p11.ctor === 'Time') {
+			return _elm_lang$animation_frame$AnimationFrame$Time(
+				function (_p12) {
+					return func(
+						_p11._0(_p12));
+				});
+		} else {
+			return _elm_lang$animation_frame$AnimationFrame$Diff(
+				function (_p13) {
+					return func(
+						_p11._0(_p13));
+				});
+		}
+	});
+_elm_lang$core$Native_Platform.effectManagers['AnimationFrame'] = {pkg: 'elm-lang/animation-frame', init: _elm_lang$animation_frame$AnimationFrame$init, onEffects: _elm_lang$animation_frame$AnimationFrame$onEffects, onSelfMsg: _elm_lang$animation_frame$AnimationFrame$onSelfMsg, tag: 'sub', subMap: _elm_lang$animation_frame$AnimationFrame$subMap};
+
 var _elm_lang$html$Html_Attributes$map = _elm_lang$virtual_dom$VirtualDom$mapProperty;
 var _elm_lang$html$Html_Attributes$attribute = _elm_lang$virtual_dom$VirtualDom$attribute;
 var _elm_lang$html$Html_Attributes$contextmenu = function (value) {
@@ -15424,10 +15808,77 @@ var _elm_lang$html$Html_Attributes$classList = function (list) {
 };
 var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
 
-var _user$project$Types$blankTextureStore = {playerTexture: _elm_lang$core$Maybe$Nothing};
-var _user$project$Types$PlayingModel = function (a) {
-	return {textureStore: a};
+var _user$project$Animator$toRectangle = function (animator) {
+	return {
+		x: _elm_lang$core$Tuple$first(animator.currentLoc) * animator.frameWidth,
+		y: _elm_lang$core$Tuple$second(animator.currentLoc) * animator.frameHeight,
+		width: animator.frameWidth,
+		height: animator.frameHeight,
+		maxWidth: animator.maxWidth,
+		maxHeight: animator.maxHeight
+	};
 };
+var _user$project$Animator$update = F2(
+	function (time, animator) {
+		var currentDelay1 = animator.currentDelay - time;
+		var _p0 = (_elm_lang$core$Native_Utils.cmp(currentDelay1, 0) < 1) ? {
+			ctor: '_Tuple2',
+			_0: A2(_elm_lang$core$Basics_ops['%'], animator.frame + 1, animator.frames),
+			_1: animator.frameDelay + currentDelay1
+		} : {ctor: '_Tuple2', _0: animator.frame, _1: currentDelay1};
+		var nextFrame = _p0._0;
+		var currentDelay2 = _p0._1;
+		var newLoc = {
+			ctor: '_Tuple2',
+			_0: (nextFrame * _elm_lang$core$Tuple$first(animator.stepDirection)) + _elm_lang$core$Tuple$first(animator.startLoc),
+			_1: (nextFrame * _elm_lang$core$Tuple$second(animator.stepDirection)) + _elm_lang$core$Tuple$second(animator.startLoc)
+		};
+		return _elm_lang$core$Native_Utils.update(
+			animator,
+			{currentDelay: currentDelay2, frame: nextFrame, currentLoc: newLoc});
+	});
+var _user$project$Animator$defaultAnimator = {
+	maxWidth: 0,
+	maxHeight: 0,
+	frames: 0,
+	startLoc: {ctor: '_Tuple2', _0: 0, _1: 0},
+	frame: 0,
+	frameWidth: 0,
+	frameHeight: 0,
+	currentLoc: {ctor: '_Tuple2', _0: 0, _1: 0},
+	stepDirection: {ctor: '_Tuple2', _0: 1, _1: 0},
+	frameDelay: 0,
+	currentDelay: 0
+};
+var _user$project$Animator$Animator = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return function (k) {
+											return {maxWidth: a, maxHeight: b, frames: c, startLoc: d, frame: e, frameWidth: f, frameHeight: g, currentLoc: h, stepDirection: i, frameDelay: j, currentDelay: k};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+
+var _user$project$Types$blankTextureStore = {playerTexture: _elm_lang$core$Maybe$Nothing};
+var _user$project$Types$PlayingModel = F2(
+	function (a, b) {
+		return {textureStore: a, animation: b};
+	});
 var _user$project$Types$MainMenuModel = {};
 var _user$project$Types$OptionsModel = {};
 var _user$project$Types$TextureStore = function (a) {
@@ -15441,6 +15892,9 @@ var _user$project$Types$MainMenu = function (a) {
 };
 var _user$project$Types$Playing = function (a) {
 	return {ctor: 'Playing', _0: a};
+};
+var _user$project$Types$Tick = function (a) {
+	return {ctor: 'Tick', _0: a};
 };
 var _user$project$Types$TextureLoadedSuccessful = function (a) {
 	return {ctor: 'TextureLoadedSuccessful', _0: a};
@@ -15492,6 +15946,17 @@ var _user$project$Update$updatePlaying = F2(
 						A2(_user$project$Update$processTexture, _p1._0, model)),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
+			case 'Tick':
+				var nmodel = _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						animation: A2(_user$project$Animator$update, _p1._0, model.animation)
+					});
+				return {
+					ctor: '_Tuple2',
+					_0: _user$project$Types$Playing(nmodel),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
 			default:
 				return {
 					ctor: '_Tuple2',
@@ -15510,11 +15975,29 @@ var _user$project$Update$update = F2(
 		}
 	});
 
-var _user$project$View$textureFragmentShader = {'src': '\n        precision mediump float;\n\n        uniform vec3 color;\n        uniform sampler2D texture;\n\n        varying vec2 vcoord;\n\n        void main() {\n            gl_FragColor = texture2D(texture, vcoord);\n        }\n    '};
+var _user$project$View$textureFragmentShader = {'src': '\n        precision mediump float;\n\n        uniform vec3 color;\n        uniform sampler2D texture;\n        uniform mat4 textureMat;\n\n        varying vec2 vcoord;\n\n        void main() {\n            vec2 coord = (textureMat * vec4(vcoord, 0.0, 1.0)).xy;\n            gl_FragColor = texture2D(texture, coord) * vec4(color, 1.0);\n        }\n    '};
 var _user$project$View$textureVertexShader = {'src': '\n        precision mediump float;\n\n        attribute vec3 position;\n\n        uniform mat4 perspective;\n        uniform mat4 object;\n\n        varying vec2 vcoord;\n\n        void main() {\n            gl_Position = perspective * object * vec4(position, 1.0);\n            vcoord = position.xy * vec2(1, -1);\n        }\n    '};
 var _user$project$View$fragmentShader = {'src': '\n        precision mediump float;\n\n        uniform vec3 color;\n\n        void main() {\n            gl_FragColor = vec4(color, 1.0);\n        }\n    '};
 var _user$project$View$vertexShader = {'src': '\n        precision mediump float;\n\n        attribute vec3 position;\n\n        uniform mat4 perspective;\n        uniform mat4 object;\n\n        void main() {\n            gl_Position = perspective * object * vec4(position, 1.0);\n        }\n    '};
 var _user$project$View$perspective = A6(_elm_community$linear_algebra$Math_Matrix4$makeOrtho, -1, 800, 600, 0, -1, 1);
+var _user$project$View$toTextureMatrix = function (rect) {
+	return A4(
+		_elm_community$linear_algebra$Math_Matrix4$scale3,
+		_elm_lang$core$Basics$toFloat(rect.width),
+		_elm_lang$core$Basics$toFloat(rect.height),
+		1,
+		A4(
+			_elm_community$linear_algebra$Math_Matrix4$translate3,
+			_elm_lang$core$Basics$toFloat(rect.x),
+			_elm_lang$core$Basics$toFloat(rect.y),
+			0,
+			A4(
+				_elm_community$linear_algebra$Math_Matrix4$scale3,
+				1.0 / _elm_lang$core$Basics$toFloat(rect.maxWidth),
+				1.0 / _elm_lang$core$Basics$toFloat(rect.maxHeight),
+				1,
+				_elm_community$linear_algebra$Math_Matrix4$identity)));
+};
 var _user$project$View$Vertex = function (a) {
 	return {position: a};
 };
@@ -15553,14 +16036,14 @@ var _user$project$View$renderQuad = F2(
 			_user$project$View$quadMesh,
 			{perspective: _user$project$View$perspective, object: objMat, color: color});
 	});
-var _user$project$View$renderTexturedQuad = F3(
-	function (texture, color, objMat) {
+var _user$project$View$renderTexturedQuad = F4(
+	function (texture, textureMat, color, objMat) {
 		return A4(
 			_elm_community$webgl$WebGL$entity,
 			_user$project$View$textureVertexShader,
 			_user$project$View$textureFragmentShader,
 			_user$project$View$quadMesh,
-			{perspective: _user$project$View$perspective, object: objMat, color: color, texture: texture});
+			{perspective: _user$project$View$perspective, object: objMat, color: color, texture: texture, textureMat: textureMat});
 	});
 var _user$project$View$viewGL = function (model) {
 	return A3(
@@ -15586,9 +16069,11 @@ var _user$project$View$viewGL = function (model) {
 			} else {
 				return {
 					ctor: '::',
-					_0: A3(
+					_0: A4(
 						_user$project$View$renderTexturedQuad,
 						_p0._0,
+						_user$project$View$toTextureMatrix(
+							_user$project$Animator$toRectangle(model.animation)),
 						A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 1, 1),
 						A4(
 							_elm_community$linear_algebra$Math_Matrix4$scale3,
@@ -15620,8 +16105,13 @@ var _user$project$View$view = function (state) {
 	}
 };
 
-var _user$project$Main$subscriptions = function (model) {
-	return _elm_lang$core$Platform_Sub$none;
+var _user$project$Main$subscriptions = function (state) {
+	var _p0 = state;
+	if (_p0.ctor === 'Playing') {
+		return _elm_lang$animation_frame$AnimationFrame$diffs(_user$project$Types$Tick);
+	} else {
+		return _elm_lang$core$Platform_Sub$none;
+	}
 };
 var _user$project$Main$loadTextures = function () {
 	var options = _elm_community$webgl$WebGL_Texture$defaultOptions;
@@ -15630,26 +16120,26 @@ var _user$project$Main$loadTextures = function () {
 			_elm_lang$core$List$map,
 			_elm_lang$core$Task$attempt(
 				function (result) {
-					var _p0 = result;
-					if (_p0.ctor === 'Err') {
-						return _user$project$Types$TextureLoadingError(_p0._0);
+					var _p1 = result;
+					if (_p1.ctor === 'Err') {
+						return _user$project$Types$TextureLoadingError(_p1._0);
 					} else {
-						return _user$project$Types$TextureLoadedSuccessful(_p0._0);
+						return _user$project$Types$TextureLoadedSuccessful(_p1._0);
 					}
 				}),
 			A2(
 				_elm_lang$core$List$map,
-				function (_p1) {
-					var _p2 = _p1;
+				function (_p2) {
+					var _p3 = _p2;
 					return A2(
 						_elm_lang$core$Task$map,
-						_p2._1,
+						_p3._1,
 						A2(
 							_elm_community$webgl$WebGL_Texture$loadWith,
 							_elm_lang$core$Native_Utils.update(
 								options,
 								{magnify: _elm_community$webgl$WebGL_Texture$nearest, minify: _elm_community$webgl$WebGL_Texture$nearest}),
-							_p2._0));
+							_p3._0));
 				},
 				{
 					ctor: '::',
@@ -15661,11 +16151,24 @@ var _user$project$Main$loadTextures = function () {
 					}
 				})));
 }();
-var _user$project$Main$init = function (_p3) {
+var _user$project$Main$init = function (_p4) {
 	return {
 		ctor: '_Tuple2',
 		_0: _user$project$Types$Playing(
-			{textureStore: _user$project$Types$blankTextureStore}),
+			{
+				textureStore: _user$project$Types$blankTextureStore,
+				animation: _elm_lang$core$Native_Utils.update(
+					_user$project$Animator$defaultAnimator,
+					{
+						maxWidth: 32,
+						maxHeight: 32,
+						frameWidth: 16,
+						frameHeight: 16,
+						frames: 2,
+						startLoc: {ctor: '_Tuple2', _0: 0, _1: 1},
+						frameDelay: 1000
+					})
+			}),
 		_1: _elm_lang$core$Platform_Cmd$batch(
 			{
 				ctor: '::',
@@ -15682,7 +16185,7 @@ var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"message":"Types.Msg","aliases":{},"unions":{"Types.Msg":{"tags":{"TextureLoadedSuccessful":["Types.TextureEncoding"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"]},"args":[]},"WebGL.Texture":{"tags":{"Texture":[]},"args":[]},"WebGL.Texture.Error":{"tags":{"SizeError":["Int","Int"],"LoadError":[]},"args":[]},"Types.TextureEncoding":{"tags":{"PlayerTexture":["WebGL.Texture"],"TileMapTexture":["WebGL.Texture"]},"args":[]}}},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"WebGL.Texture.Error":{"args":[],"tags":{"LoadError":[],"SizeError":["Int","Int"]}},"Types.TextureEncoding":{"args":[],"tags":{"PlayerTexture":["WebGL.Texture"],"TileMapTexture":["WebGL.Texture"]}},"Types.Msg":{"args":[],"tags":{"Tick":["Time.Time"],"TextureLoadedSuccessful":["Types.TextureEncoding"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"]}},"WebGL.Texture":{"args":[],"tags":{"Texture":[]}}},"aliases":{"Time.Time":{"args":[],"type":"Float"}},"message":"Types.Msg"},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])
