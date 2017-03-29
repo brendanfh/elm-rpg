@@ -1,7 +1,9 @@
 module Update exposing (update)
 
 import Animator
+import Keyboard.Extra as KE
 import Types exposing (..)
+import WebGL
 
 
 update : Msg -> State -> ( State, Cmd Msg )
@@ -23,6 +25,11 @@ updatePlaying msg model =
         TextureLoadedSuccessful encoding ->
             ( Playing <| processTexture encoding model, Cmd.none )
 
+        KeyboardMsg keyMsg ->
+            ( Playing <| { model | keyboard = KE.update keyMsg model.keyboard }
+            , Cmd.none
+            )
+
         Tick time ->
             let
                 nmodel =
@@ -34,10 +41,7 @@ updatePlaying msg model =
             ( Playing model, Cmd.none )
 
 
-processTexture :
-    TextureEncoding
-    -> { a | textureStore : TextureStore }
-    -> { a | textureStore : TextureStore }
+processTexture : TextureEncoding WebGL.Texture -> BaseModel a -> BaseModel a
 processTexture encoding model =
     let
         tstore =

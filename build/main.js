@@ -4190,270 +4190,6 @@ var _elm_lang$core$Platform$Task = {ctor: 'Task'};
 var _elm_lang$core$Platform$ProcessId = {ctor: 'ProcessId'};
 var _elm_lang$core$Platform$Router = {ctor: 'Router'};
 
-var _eeue56$elm_flat_matrix$Matrix$filter = F2(
-	function (f, matrix) {
-		return A2(_elm_lang$core$Array$filter, f, matrix.data);
-	});
-var _eeue56$elm_flat_matrix$Matrix$map2 = F3(
-	function (f, a, b) {
-		return _elm_lang$core$Native_Utils.eq(a.size, b.size) ? _elm_lang$core$Maybe$Just(
-			_elm_lang$core$Native_Utils.update(
-				a,
-				{
-					data: _elm_lang$core$Array$fromList(
-						A3(
-							_elm_lang$core$List$map2,
-							f,
-							_elm_lang$core$Array$toList(a.data),
-							_elm_lang$core$Array$toList(b.data)))
-				})) : _elm_lang$core$Maybe$Nothing;
-	});
-var _eeue56$elm_flat_matrix$Matrix$map = F2(
-	function (f, matrix) {
-		return _elm_lang$core$Native_Utils.update(
-			matrix,
-			{
-				data: A2(_elm_lang$core$Array$map, f, matrix.data)
-			});
-	});
-var _eeue56$elm_flat_matrix$Matrix$concatVertical = F2(
-	function (a, b) {
-		return (!_elm_lang$core$Native_Utils.eq(
-			_elm_lang$core$Tuple$first(a.size),
-			_elm_lang$core$Tuple$first(b.size))) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
-			_elm_lang$core$Native_Utils.update(
-				a,
-				{
-					size: {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Tuple$first(a.size),
-						_1: _elm_lang$core$Tuple$second(a.size) + _elm_lang$core$Tuple$second(b.size)
-					},
-					data: A2(_elm_lang$core$Array$append, a.data, b.data)
-				}));
-	});
-var _eeue56$elm_flat_matrix$Matrix$getColumn = F2(
-	function (i, matrix) {
-		var height = _elm_lang$core$Tuple$second(matrix.size);
-		var width = _elm_lang$core$Tuple$first(matrix.size);
-		var indices = A2(
-			_elm_lang$core$List$map,
-			function (x) {
-				return (x * width) + i;
-			},
-			A2(_elm_lang$core$List$range, 0, height - 1));
-		return (_elm_lang$core$Native_Utils.cmp(i, width) > -1) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
-			_elm_lang$core$Array$fromList(
-				A3(
-					_elm_lang$core$List$foldl,
-					F2(
-						function (index, ls) {
-							var _p0 = A2(_elm_lang$core$Array$get, index, matrix.data);
-							if (_p0.ctor === 'Just') {
-								return A2(
-									_elm_lang$core$Basics_ops['++'],
-									ls,
-									{
-										ctor: '::',
-										_0: _p0._0,
-										_1: {ctor: '[]'}
-									});
-							} else {
-								return ls;
-							}
-						}),
-					{ctor: '[]'},
-					indices)));
-	});
-var _eeue56$elm_flat_matrix$Matrix$fromList = function (list) {
-	var width = _elm_lang$core$List$length(
-		function () {
-			var _p1 = _elm_lang$core$List$head(list);
-			if (_p1.ctor === 'Just') {
-				return _p1._0;
-			} else {
-				return {ctor: '[]'};
-			}
-		}());
-	var allSame = _elm_lang$core$List$isEmpty(
-		A2(
-			_elm_lang$core$List$filter,
-			function (x) {
-				return !_elm_lang$core$Native_Utils.eq(
-					_elm_lang$core$List$length(x),
-					width);
-			},
-			list));
-	var height = _elm_lang$core$List$length(list);
-	return (!allSame) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
-		{
-			size: {ctor: '_Tuple2', _0: width, _1: height},
-			data: _elm_lang$core$Array$fromList(
-				_elm_lang$core$List$concat(list))
-		});
-};
-var _eeue56$elm_flat_matrix$Matrix$repeat = F3(
-	function (x, y, v) {
-		return {
-			size: {ctor: '_Tuple2', _0: x, _1: y},
-			data: A2(_elm_lang$core$Array$repeat, x * y, v)
-		};
-	});
-var _eeue56$elm_flat_matrix$Matrix$height = function (matrix) {
-	return _elm_lang$core$Tuple$second(matrix.size);
-};
-var _eeue56$elm_flat_matrix$Matrix$width = function (matrix) {
-	return _elm_lang$core$Tuple$first(matrix.size);
-};
-var _eeue56$elm_flat_matrix$Matrix$get = F3(
-	function (i, j, matrix) {
-		var pos = (j * _eeue56$elm_flat_matrix$Matrix$width(matrix)) + i;
-		return (((_elm_lang$core$Native_Utils.cmp(
-			i,
-			_eeue56$elm_flat_matrix$Matrix$width(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(i, -1) > 0)) && ((_elm_lang$core$Native_Utils.cmp(
-			j,
-			_eeue56$elm_flat_matrix$Matrix$height(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(j, -1) > 0))) ? A2(_elm_lang$core$Array$get, pos, matrix.data) : _elm_lang$core$Maybe$Nothing;
-	});
-var _eeue56$elm_flat_matrix$Matrix$getRow = F2(
-	function (j, matrix) {
-		var start = j * _eeue56$elm_flat_matrix$Matrix$width(matrix);
-		var end = start + _eeue56$elm_flat_matrix$Matrix$width(matrix);
-		return (_elm_lang$core$Native_Utils.cmp(
-			end,
-			_eeue56$elm_flat_matrix$Matrix$width(matrix) * _eeue56$elm_flat_matrix$Matrix$height(matrix)) > 0) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
-			A3(_elm_lang$core$Array$slice, start, end, matrix.data));
-	});
-var _eeue56$elm_flat_matrix$Matrix$concatHorizontal = F2(
-	function (a, b) {
-		var insert = F3(
-			function (i, xs, array) {
-				return A2(
-					_elm_lang$core$Array$append,
-					A2(
-						_elm_lang$core$Array$append,
-						A3(_elm_lang$core$Array$slice, 0, i, array),
-						xs),
-					A3(
-						_elm_lang$core$Array$slice,
-						i,
-						_elm_lang$core$Array$length(array),
-						array));
-			});
-		var finalWidth = _elm_lang$core$Tuple$first(a.size) + _elm_lang$core$Tuple$first(b.size);
-		return (!_elm_lang$core$Native_Utils.eq(
-			_elm_lang$core$Tuple$second(a.size),
-			_elm_lang$core$Tuple$second(b.size))) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
-			_elm_lang$core$Native_Utils.update(
-				a,
-				{
-					size: {
-						ctor: '_Tuple2',
-						_0: finalWidth,
-						_1: _elm_lang$core$Tuple$second(a.size)
-					},
-					data: A3(
-						_elm_lang$core$List$foldl,
-						F2(
-							function (_p2, acc) {
-								var _p3 = _p2;
-								return A3(insert, _p3._0 * finalWidth, _p3._1, acc);
-							}),
-						b.data,
-						A3(
-							_elm_lang$core$List$foldl,
-							F2(
-								function (i, ls) {
-									var _p4 = A2(_eeue56$elm_flat_matrix$Matrix$getRow, i, a);
-									if (_p4.ctor === 'Just') {
-										return A2(
-											_elm_lang$core$Basics_ops['++'],
-											ls,
-											{
-												ctor: '::',
-												_0: {ctor: '_Tuple2', _0: i, _1: _p4._0},
-												_1: {ctor: '[]'}
-											});
-									} else {
-										return ls;
-									}
-								}),
-							{ctor: '[]'},
-							A2(
-								_elm_lang$core$List$range,
-								0,
-								_elm_lang$core$Tuple$second(a.size) - 1)))
-				}));
-	});
-var _eeue56$elm_flat_matrix$Matrix$set = F4(
-	function (i, j, v, matrix) {
-		var pos = (j * _elm_lang$core$Tuple$first(matrix.size)) + i;
-		return (((_elm_lang$core$Native_Utils.cmp(
-			i,
-			_eeue56$elm_flat_matrix$Matrix$width(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(i, -1) > 0)) && ((_elm_lang$core$Native_Utils.cmp(
-			j,
-			_eeue56$elm_flat_matrix$Matrix$height(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(j, -1) > 0))) ? _elm_lang$core$Native_Utils.update(
-			matrix,
-			{
-				data: A3(_elm_lang$core$Array$set, pos, v, matrix.data)
-			}) : matrix;
-	});
-var _eeue56$elm_flat_matrix$Matrix$update = F4(
-	function (x, y, f, matrix) {
-		var _p5 = A3(_eeue56$elm_flat_matrix$Matrix$get, x, y, matrix);
-		if (_p5.ctor === 'Nothing') {
-			return matrix;
-		} else {
-			return A4(
-				_eeue56$elm_flat_matrix$Matrix$set,
-				x,
-				y,
-				f(_p5._0),
-				matrix);
-		}
-	});
-var _eeue56$elm_flat_matrix$Matrix$indexedMap = F2(
-	function (f, matrix) {
-		var f_ = F2(
-			function (i, v) {
-				var y = (i / _eeue56$elm_flat_matrix$Matrix$width(matrix)) | 0;
-				var x = A2(
-					_elm_lang$core$Basics_ops['%'],
-					i,
-					_eeue56$elm_flat_matrix$Matrix$width(matrix));
-				return A3(f, x, y, v);
-			});
-		return _elm_lang$core$Native_Utils.update(
-			matrix,
-			{
-				data: _elm_lang$core$Array$fromList(
-					A2(
-						_elm_lang$core$List$indexedMap,
-						f_,
-						_elm_lang$core$Array$toList(matrix.data)))
-			});
-	});
-var _eeue56$elm_flat_matrix$Matrix$toIndexedArray = function (matrix) {
-	return A2(
-		_eeue56$elm_flat_matrix$Matrix$indexedMap,
-		F3(
-			function (x, y, v) {
-				return {
-					ctor: '_Tuple2',
-					_0: {ctor: '_Tuple2', _0: x, _1: y},
-					_1: v
-				};
-			}),
-		matrix).data;
-};
-var _eeue56$elm_flat_matrix$Matrix$empty = {
-	size: {ctor: '_Tuple2', _0: 0, _1: 0},
-	data: _elm_lang$core$Array$empty
-};
-var _eeue56$elm_flat_matrix$Matrix$Matrix = F2(
-	function (a, b) {
-		return {size: a, data: b};
-	});
-
 var _elm_lang$core$Dict$foldr = F3(
 	function (f, acc, t) {
 		foldr:
@@ -16072,6 +15808,1372 @@ var _elm_lang$animation_frame$AnimationFrame$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['AnimationFrame'] = {pkg: 'elm-lang/animation-frame', init: _elm_lang$animation_frame$AnimationFrame$init, onEffects: _elm_lang$animation_frame$AnimationFrame$onEffects, onSelfMsg: _elm_lang$animation_frame$AnimationFrame$onSelfMsg, tag: 'sub', subMap: _elm_lang$animation_frame$AnimationFrame$subMap};
 
+var _elm_lang$dom$Native_Dom = function() {
+
+var fakeNode = {
+	addEventListener: function() {},
+	removeEventListener: function() {}
+};
+
+var onDocument = on(typeof document !== 'undefined' ? document : fakeNode);
+var onWindow = on(typeof window !== 'undefined' ? window : fakeNode);
+
+function on(node)
+{
+	return function(eventName, decoder, toTask)
+	{
+		return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback) {
+
+			function performTask(event)
+			{
+				var result = A2(_elm_lang$core$Json_Decode$decodeValue, decoder, event);
+				if (result.ctor === 'Ok')
+				{
+					_elm_lang$core$Native_Scheduler.rawSpawn(toTask(result._0));
+				}
+			}
+
+			node.addEventListener(eventName, performTask);
+
+			return function()
+			{
+				node.removeEventListener(eventName, performTask);
+			};
+		});
+	};
+}
+
+var rAF = typeof requestAnimationFrame !== 'undefined'
+	? requestAnimationFrame
+	: function(callback) { callback(); };
+
+function withNode(id, doStuff)
+{
+	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
+	{
+		rAF(function()
+		{
+			var node = document.getElementById(id);
+			if (node === null)
+			{
+				callback(_elm_lang$core$Native_Scheduler.fail({ ctor: 'NotFound', _0: id }));
+				return;
+			}
+			callback(_elm_lang$core$Native_Scheduler.succeed(doStuff(node)));
+		});
+	});
+}
+
+
+// FOCUS
+
+function focus(id)
+{
+	return withNode(id, function(node) {
+		node.focus();
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+function blur(id)
+{
+	return withNode(id, function(node) {
+		node.blur();
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+
+// SCROLLING
+
+function getScrollTop(id)
+{
+	return withNode(id, function(node) {
+		return node.scrollTop;
+	});
+}
+
+function setScrollTop(id, desiredScrollTop)
+{
+	return withNode(id, function(node) {
+		node.scrollTop = desiredScrollTop;
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+function toBottom(id)
+{
+	return withNode(id, function(node) {
+		node.scrollTop = node.scrollHeight;
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+function getScrollLeft(id)
+{
+	return withNode(id, function(node) {
+		return node.scrollLeft;
+	});
+}
+
+function setScrollLeft(id, desiredScrollLeft)
+{
+	return withNode(id, function(node) {
+		node.scrollLeft = desiredScrollLeft;
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+function toRight(id)
+{
+	return withNode(id, function(node) {
+		node.scrollLeft = node.scrollWidth;
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+
+// SIZE
+
+function width(options, id)
+{
+	return withNode(id, function(node) {
+		switch (options.ctor)
+		{
+			case 'Content':
+				return node.scrollWidth;
+			case 'VisibleContent':
+				return node.clientWidth;
+			case 'VisibleContentWithBorders':
+				return node.offsetWidth;
+			case 'VisibleContentWithBordersAndMargins':
+				var rect = node.getBoundingClientRect();
+				return rect.right - rect.left;
+		}
+	});
+}
+
+function height(options, id)
+{
+	return withNode(id, function(node) {
+		switch (options.ctor)
+		{
+			case 'Content':
+				return node.scrollHeight;
+			case 'VisibleContent':
+				return node.clientHeight;
+			case 'VisibleContentWithBorders':
+				return node.offsetHeight;
+			case 'VisibleContentWithBordersAndMargins':
+				var rect = node.getBoundingClientRect();
+				return rect.bottom - rect.top;
+		}
+	});
+}
+
+return {
+	onDocument: F3(onDocument),
+	onWindow: F3(onWindow),
+
+	focus: focus,
+	blur: blur,
+
+	getScrollTop: getScrollTop,
+	setScrollTop: F2(setScrollTop),
+	getScrollLeft: getScrollLeft,
+	setScrollLeft: F2(setScrollLeft),
+	toBottom: toBottom,
+	toRight: toRight,
+
+	height: F2(height),
+	width: F2(width)
+};
+
+}();
+
+var _elm_lang$dom$Dom_LowLevel$onWindow = _elm_lang$dom$Native_Dom.onWindow;
+var _elm_lang$dom$Dom_LowLevel$onDocument = _elm_lang$dom$Native_Dom.onDocument;
+
+var _elm_lang$keyboard$Keyboard$onSelfMsg = F3(
+	function (router, _p0, state) {
+		var _p1 = _p0;
+		var _p2 = A2(_elm_lang$core$Dict$get, _p1.category, state);
+		if (_p2.ctor === 'Nothing') {
+			return _elm_lang$core$Task$succeed(state);
+		} else {
+			var send = function (tagger) {
+				return A2(
+					_elm_lang$core$Platform$sendToApp,
+					router,
+					tagger(_p1.keyCode));
+			};
+			return A2(
+				_elm_lang$core$Task$andThen,
+				function (_p3) {
+					return _elm_lang$core$Task$succeed(state);
+				},
+				_elm_lang$core$Task$sequence(
+					A2(_elm_lang$core$List$map, send, _p2._0.taggers)));
+		}
+	});
+var _elm_lang$keyboard$Keyboard_ops = _elm_lang$keyboard$Keyboard_ops || {};
+_elm_lang$keyboard$Keyboard_ops['&>'] = F2(
+	function (task1, task2) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (_p4) {
+				return task2;
+			},
+			task1);
+	});
+var _elm_lang$keyboard$Keyboard$init = _elm_lang$core$Task$succeed(_elm_lang$core$Dict$empty);
+var _elm_lang$keyboard$Keyboard$categorizeHelpHelp = F2(
+	function (value, maybeValues) {
+		var _p5 = maybeValues;
+		if (_p5.ctor === 'Nothing') {
+			return _elm_lang$core$Maybe$Just(
+				{
+					ctor: '::',
+					_0: value,
+					_1: {ctor: '[]'}
+				});
+		} else {
+			return _elm_lang$core$Maybe$Just(
+				{ctor: '::', _0: value, _1: _p5._0});
+		}
+	});
+var _elm_lang$keyboard$Keyboard$categorizeHelp = F2(
+	function (subs, subDict) {
+		categorizeHelp:
+		while (true) {
+			var _p6 = subs;
+			if (_p6.ctor === '[]') {
+				return subDict;
+			} else {
+				var _v4 = _p6._1,
+					_v5 = A3(
+					_elm_lang$core$Dict$update,
+					_p6._0._0,
+					_elm_lang$keyboard$Keyboard$categorizeHelpHelp(_p6._0._1),
+					subDict);
+				subs = _v4;
+				subDict = _v5;
+				continue categorizeHelp;
+			}
+		}
+	});
+var _elm_lang$keyboard$Keyboard$categorize = function (subs) {
+	return A2(_elm_lang$keyboard$Keyboard$categorizeHelp, subs, _elm_lang$core$Dict$empty);
+};
+var _elm_lang$keyboard$Keyboard$keyCode = A2(_elm_lang$core$Json_Decode$field, 'keyCode', _elm_lang$core$Json_Decode$int);
+var _elm_lang$keyboard$Keyboard$subscription = _elm_lang$core$Native_Platform.leaf('Keyboard');
+var _elm_lang$keyboard$Keyboard$Watcher = F2(
+	function (a, b) {
+		return {taggers: a, pid: b};
+	});
+var _elm_lang$keyboard$Keyboard$Msg = F2(
+	function (a, b) {
+		return {category: a, keyCode: b};
+	});
+var _elm_lang$keyboard$Keyboard$onEffects = F3(
+	function (router, newSubs, oldState) {
+		var rightStep = F3(
+			function (category, taggers, task) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					function (state) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							function (pid) {
+								return _elm_lang$core$Task$succeed(
+									A3(
+										_elm_lang$core$Dict$insert,
+										category,
+										A2(_elm_lang$keyboard$Keyboard$Watcher, taggers, pid),
+										state));
+							},
+							_elm_lang$core$Process$spawn(
+								A3(
+									_elm_lang$dom$Dom_LowLevel$onDocument,
+									category,
+									_elm_lang$keyboard$Keyboard$keyCode,
+									function (_p7) {
+										return A2(
+											_elm_lang$core$Platform$sendToSelf,
+											router,
+											A2(_elm_lang$keyboard$Keyboard$Msg, category, _p7));
+									})));
+					},
+					task);
+			});
+		var bothStep = F4(
+			function (category, _p8, taggers, task) {
+				var _p9 = _p8;
+				return A2(
+					_elm_lang$core$Task$map,
+					A2(
+						_elm_lang$core$Dict$insert,
+						category,
+						A2(_elm_lang$keyboard$Keyboard$Watcher, taggers, _p9.pid)),
+					task);
+			});
+		var leftStep = F3(
+			function (category, _p10, task) {
+				var _p11 = _p10;
+				return A2(
+					_elm_lang$keyboard$Keyboard_ops['&>'],
+					_elm_lang$core$Process$kill(_p11.pid),
+					task);
+			});
+		return A6(
+			_elm_lang$core$Dict$merge,
+			leftStep,
+			bothStep,
+			rightStep,
+			oldState,
+			_elm_lang$keyboard$Keyboard$categorize(newSubs),
+			_elm_lang$core$Task$succeed(_elm_lang$core$Dict$empty));
+	});
+var _elm_lang$keyboard$Keyboard$MySub = F2(
+	function (a, b) {
+		return {ctor: 'MySub', _0: a, _1: b};
+	});
+var _elm_lang$keyboard$Keyboard$presses = function (tagger) {
+	return _elm_lang$keyboard$Keyboard$subscription(
+		A2(_elm_lang$keyboard$Keyboard$MySub, 'keypress', tagger));
+};
+var _elm_lang$keyboard$Keyboard$downs = function (tagger) {
+	return _elm_lang$keyboard$Keyboard$subscription(
+		A2(_elm_lang$keyboard$Keyboard$MySub, 'keydown', tagger));
+};
+var _elm_lang$keyboard$Keyboard$ups = function (tagger) {
+	return _elm_lang$keyboard$Keyboard$subscription(
+		A2(_elm_lang$keyboard$Keyboard$MySub, 'keyup', tagger));
+};
+var _elm_lang$keyboard$Keyboard$subMap = F2(
+	function (func, _p12) {
+		var _p13 = _p12;
+		return A2(
+			_elm_lang$keyboard$Keyboard$MySub,
+			_p13._0,
+			function (_p14) {
+				return func(
+					_p13._1(_p14));
+			});
+	});
+_elm_lang$core$Native_Platform.effectManagers['Keyboard'] = {pkg: 'elm-lang/keyboard', init: _elm_lang$keyboard$Keyboard$init, onEffects: _elm_lang$keyboard$Keyboard$onEffects, onSelfMsg: _elm_lang$keyboard$Keyboard$onSelfMsg, tag: 'sub', subMap: _elm_lang$keyboard$Keyboard$subMap};
+
+var _ohanhi$keyboard_extra$Keyboard_Arrows$boolToInt = function (bool) {
+	return bool ? 1 : 0;
+};
+var _ohanhi$keyboard_extra$Keyboard_Arrows$determineArrows = function (keys) {
+	var toInt = function (key) {
+		return _ohanhi$keyboard_extra$Keyboard_Arrows$boolToInt(
+			A2(_elm_lang$core$List$member, key, keys));
+	};
+	var x = toInt(39) - toInt(37);
+	var y = toInt(38) - toInt(40);
+	return {x: x, y: y};
+};
+var _ohanhi$keyboard_extra$Keyboard_Arrows$determineWasd = function (keys) {
+	var toInt = function (key) {
+		return _ohanhi$keyboard_extra$Keyboard_Arrows$boolToInt(
+			A2(_elm_lang$core$List$member, key, keys));
+	};
+	var x = toInt(68) - toInt(65);
+	var y = toInt(87) - toInt(83);
+	return {x: x, y: y};
+};
+var _ohanhi$keyboard_extra$Keyboard_Arrows$init = {x: 0, y: 0};
+var _ohanhi$keyboard_extra$Keyboard_Arrows$Arrows = F2(
+	function (a, b) {
+		return {x: a, y: b};
+	});
+
+var _ohanhi$keyboard_extra$Keyboard_Extra$wasd = function (_p0) {
+	var _p1 = _p0;
+	return _ohanhi$keyboard_extra$Keyboard_Arrows$determineWasd(_p1._0);
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$arrows = function (_p2) {
+	var _p3 = _p2;
+	return _ohanhi$keyboard_extra$Keyboard_Arrows$determineArrows(_p3._0);
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$remove = F2(
+	function (code, list) {
+		return A2(
+			_elm_lang$core$List$filter,
+			F2(
+				function (x, y) {
+					return !_elm_lang$core$Native_Utils.eq(x, y);
+				})(code),
+			list);
+	});
+var _ohanhi$keyboard_extra$Keyboard_Extra$insert = F2(
+	function (code, list) {
+		return A2(
+			F2(
+				function (x, y) {
+					return {ctor: '::', _0: x, _1: y};
+				}),
+			code,
+			A2(_ohanhi$keyboard_extra$Keyboard_Extra$remove, code, list));
+	});
+var _ohanhi$keyboard_extra$Keyboard_Extra$Up = function (a) {
+	return {ctor: 'Up', _0: a};
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Down = function (a) {
+	return {ctor: 'Down', _0: a};
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$subscriptions = _elm_lang$core$Platform_Sub$batch(
+	{
+		ctor: '::',
+		_0: _elm_lang$keyboard$Keyboard$downs(_ohanhi$keyboard_extra$Keyboard_Extra$Down),
+		_1: {
+			ctor: '::',
+			_0: _elm_lang$keyboard$Keyboard$ups(_ohanhi$keyboard_extra$Keyboard_Extra$Up),
+			_1: {ctor: '[]'}
+		}
+	});
+var _ohanhi$keyboard_extra$Keyboard_Extra$State = function (a) {
+	return {ctor: 'State', _0: a};
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$initialState = _ohanhi$keyboard_extra$Keyboard_Extra$State(
+	{ctor: '[]'});
+var _ohanhi$keyboard_extra$Keyboard_Extra$update = F2(
+	function (msg, _p4) {
+		var _p5 = _p4;
+		var _p7 = _p5._0;
+		var _p6 = msg;
+		if (_p6.ctor === 'Down') {
+			return _ohanhi$keyboard_extra$Keyboard_Extra$State(
+				A2(_ohanhi$keyboard_extra$Keyboard_Extra$insert, _p6._0, _p7));
+		} else {
+			return _ohanhi$keyboard_extra$Keyboard_Extra$State(
+				A2(_ohanhi$keyboard_extra$Keyboard_Extra$remove, _p6._0, _p7));
+		}
+	});
+var _ohanhi$keyboard_extra$Keyboard_Extra$KeyUp = function (a) {
+	return {ctor: 'KeyUp', _0: a};
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$KeyDown = function (a) {
+	return {ctor: 'KeyDown', _0: a};
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$NoDirection = {ctor: 'NoDirection'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$NorthWest = {ctor: 'NorthWest'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$West = {ctor: 'West'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$SouthWest = {ctor: 'SouthWest'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$South = {ctor: 'South'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$SouthEast = {ctor: 'SouthEast'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$East = {ctor: 'East'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$NorthEast = {ctor: 'NorthEast'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$North = {ctor: 'North'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$arrowsToDir = function (_p8) {
+	var _p9 = _p8;
+	var _p10 = {ctor: '_Tuple2', _0: _p9.x, _1: _p9.y};
+	_v5_8:
+	do {
+		if (_p10.ctor === '_Tuple2') {
+			switch (_p10._0) {
+				case 1:
+					switch (_p10._1) {
+						case 1:
+							return _ohanhi$keyboard_extra$Keyboard_Extra$NorthEast;
+						case 0:
+							return _ohanhi$keyboard_extra$Keyboard_Extra$East;
+						case -1:
+							return _ohanhi$keyboard_extra$Keyboard_Extra$SouthEast;
+						default:
+							break _v5_8;
+					}
+				case 0:
+					switch (_p10._1) {
+						case 1:
+							return _ohanhi$keyboard_extra$Keyboard_Extra$North;
+						case -1:
+							return _ohanhi$keyboard_extra$Keyboard_Extra$South;
+						default:
+							break _v5_8;
+					}
+				case -1:
+					switch (_p10._1) {
+						case -1:
+							return _ohanhi$keyboard_extra$Keyboard_Extra$SouthWest;
+						case 0:
+							return _ohanhi$keyboard_extra$Keyboard_Extra$West;
+						case 1:
+							return _ohanhi$keyboard_extra$Keyboard_Extra$NorthWest;
+						default:
+							break _v5_8;
+					}
+				default:
+					break _v5_8;
+			}
+		} else {
+			break _v5_8;
+		}
+	} while(false);
+	return _ohanhi$keyboard_extra$Keyboard_Extra$NoDirection;
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$arrowsDirection = function (_p11) {
+	return _ohanhi$keyboard_extra$Keyboard_Extra$arrowsToDir(
+		_ohanhi$keyboard_extra$Keyboard_Extra$arrows(_p11));
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$wasdDirection = function (_p12) {
+	return _ohanhi$keyboard_extra$Keyboard_Extra$arrowsToDir(
+		_ohanhi$keyboard_extra$Keyboard_Extra$wasd(_p12));
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Other = {ctor: 'Other'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Altgr = {ctor: 'Altgr'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Meta = {ctor: 'Meta'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Quote = {ctor: 'Quote'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CloseBracket = {ctor: 'CloseBracket'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$BackSlash = {ctor: 'BackSlash'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$OpenBracket = {ctor: 'OpenBracket'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$BackQuote = {ctor: 'BackQuote'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Slash = {ctor: 'Slash'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Period = {ctor: 'Period'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Minus = {ctor: 'Minus'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Comma = {ctor: 'Comma'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$VolumeUp = {ctor: 'VolumeUp'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$VolumeDown = {ctor: 'VolumeDown'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$VolumeMute = {ctor: 'VolumeMute'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Tilde = {ctor: 'Tilde'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CloseCurlyBracket = {ctor: 'CloseCurlyBracket'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$OpenCurlyBracket = {ctor: 'OpenCurlyBracket'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$HyphenMinus = {ctor: 'HyphenMinus'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Pipe = {ctor: 'Pipe'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Plus = {ctor: 'Plus'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Asterisk = {ctor: 'Asterisk'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CloseParen = {ctor: 'CloseParen'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$OpenParen = {ctor: 'OpenParen'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Underscore = {ctor: 'Underscore'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Ampersand = {ctor: 'Ampersand'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Percent = {ctor: 'Percent'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Dollar = {ctor: 'Dollar'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Hash = {ctor: 'Hash'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$DoubleQuote = {ctor: 'DoubleQuote'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Exclamation = {ctor: 'Exclamation'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Circumflex = {ctor: 'Circumflex'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$ScrollLock = {ctor: 'ScrollLock'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$NumLock = {ctor: 'NumLock'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F24 = {ctor: 'F24'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F23 = {ctor: 'F23'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F22 = {ctor: 'F22'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F21 = {ctor: 'F21'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F20 = {ctor: 'F20'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F19 = {ctor: 'F19'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F18 = {ctor: 'F18'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F17 = {ctor: 'F17'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F16 = {ctor: 'F16'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F15 = {ctor: 'F15'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F14 = {ctor: 'F14'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F13 = {ctor: 'F13'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F12 = {ctor: 'F12'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F11 = {ctor: 'F11'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F10 = {ctor: 'F10'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F9 = {ctor: 'F9'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F8 = {ctor: 'F8'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F7 = {ctor: 'F7'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F6 = {ctor: 'F6'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F5 = {ctor: 'F5'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F4 = {ctor: 'F4'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F3 = {ctor: 'F3'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F2 = {ctor: 'F2'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$F1 = {ctor: 'F1'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Divide = {ctor: 'Divide'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Decimal = {ctor: 'Decimal'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Subtract = {ctor: 'Subtract'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Separator = {ctor: 'Separator'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Add = {ctor: 'Add'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Multiply = {ctor: 'Multiply'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Numpad9 = {ctor: 'Numpad9'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Numpad8 = {ctor: 'Numpad8'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Numpad7 = {ctor: 'Numpad7'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Numpad6 = {ctor: 'Numpad6'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Numpad5 = {ctor: 'Numpad5'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Numpad4 = {ctor: 'Numpad4'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Numpad3 = {ctor: 'Numpad3'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Numpad2 = {ctor: 'Numpad2'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Numpad1 = {ctor: 'Numpad1'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Numpad0 = {ctor: 'Numpad0'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Sleep = {ctor: 'Sleep'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$ContextMenu = {ctor: 'ContextMenu'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Super = {ctor: 'Super'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharZ = {ctor: 'CharZ'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharY = {ctor: 'CharY'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharX = {ctor: 'CharX'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharW = {ctor: 'CharW'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharV = {ctor: 'CharV'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharU = {ctor: 'CharU'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharT = {ctor: 'CharT'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharS = {ctor: 'CharS'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharR = {ctor: 'CharR'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharQ = {ctor: 'CharQ'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharP = {ctor: 'CharP'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharO = {ctor: 'CharO'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharN = {ctor: 'CharN'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharM = {ctor: 'CharM'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharL = {ctor: 'CharL'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharK = {ctor: 'CharK'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharJ = {ctor: 'CharJ'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharI = {ctor: 'CharI'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharH = {ctor: 'CharH'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharG = {ctor: 'CharG'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharF = {ctor: 'CharF'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharE = {ctor: 'CharE'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharD = {ctor: 'CharD'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharC = {ctor: 'CharC'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharB = {ctor: 'CharB'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CharA = {ctor: 'CharA'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$At = {ctor: 'At'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$QuestionMark = {ctor: 'QuestionMark'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$GreaterThan = {ctor: 'GreaterThan'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Equals = {ctor: 'Equals'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$LessThan = {ctor: 'LessThan'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Semicolon = {ctor: 'Semicolon'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Colon = {ctor: 'Colon'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Number9 = {ctor: 'Number9'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Number8 = {ctor: 'Number8'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Number7 = {ctor: 'Number7'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Number6 = {ctor: 'Number6'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Number5 = {ctor: 'Number5'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Number4 = {ctor: 'Number4'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Number3 = {ctor: 'Number3'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Number2 = {ctor: 'Number2'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Number1 = {ctor: 'Number1'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Number0 = {ctor: 'Number0'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Delete = {ctor: 'Delete'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Insert = {ctor: 'Insert'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$PrintScreen = {ctor: 'PrintScreen'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Execute = {ctor: 'Execute'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Print = {ctor: 'Print'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Select = {ctor: 'Select'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$ArrowDown = {ctor: 'ArrowDown'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$ArrowRight = {ctor: 'ArrowRight'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$ArrowUp = {ctor: 'ArrowUp'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$ArrowLeft = {ctor: 'ArrowLeft'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Home = {ctor: 'Home'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$End = {ctor: 'End'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$PageDown = {ctor: 'PageDown'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$PageUp = {ctor: 'PageUp'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Space = {ctor: 'Space'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$ModeChange = {ctor: 'ModeChange'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Accept = {ctor: 'Accept'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$NonConvert = {ctor: 'NonConvert'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Convert = {ctor: 'Convert'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Escape = {ctor: 'Escape'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$CapsLock = {ctor: 'CapsLock'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Pause = {ctor: 'Pause'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Alt = {ctor: 'Alt'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Control = {ctor: 'Control'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Shift = {ctor: 'Shift'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Enter = {ctor: 'Enter'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Clear = {ctor: 'Clear'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Tab = {ctor: 'Tab'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$BackSpace = {ctor: 'BackSpace'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Help = {ctor: 'Help'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$Cancel = {ctor: 'Cancel'};
+var _ohanhi$keyboard_extra$Keyboard_Extra$codeBook = {
+	ctor: '::',
+	_0: {ctor: '_Tuple2', _0: 3, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Cancel},
+	_1: {
+		ctor: '::',
+		_0: {ctor: '_Tuple2', _0: 6, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Help},
+		_1: {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 8, _1: _ohanhi$keyboard_extra$Keyboard_Extra$BackSpace},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: 9, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Tab},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 12, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Clear},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 13, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Enter},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 16, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Shift},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 17, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Control},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: 18, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Alt},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 19, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Pause},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 20, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CapsLock},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 27, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Escape},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple2', _0: 28, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Convert},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple2', _0: 29, _1: _ohanhi$keyboard_extra$Keyboard_Extra$NonConvert},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple2', _0: 30, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Accept},
+															_1: {
+																ctor: '::',
+																_0: {ctor: '_Tuple2', _0: 31, _1: _ohanhi$keyboard_extra$Keyboard_Extra$ModeChange},
+																_1: {
+																	ctor: '::',
+																	_0: {ctor: '_Tuple2', _0: 32, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Space},
+																	_1: {
+																		ctor: '::',
+																		_0: {ctor: '_Tuple2', _0: 33, _1: _ohanhi$keyboard_extra$Keyboard_Extra$PageUp},
+																		_1: {
+																			ctor: '::',
+																			_0: {ctor: '_Tuple2', _0: 34, _1: _ohanhi$keyboard_extra$Keyboard_Extra$PageDown},
+																			_1: {
+																				ctor: '::',
+																				_0: {ctor: '_Tuple2', _0: 35, _1: _ohanhi$keyboard_extra$Keyboard_Extra$End},
+																				_1: {
+																					ctor: '::',
+																					_0: {ctor: '_Tuple2', _0: 36, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Home},
+																					_1: {
+																						ctor: '::',
+																						_0: {ctor: '_Tuple2', _0: 37, _1: _ohanhi$keyboard_extra$Keyboard_Extra$ArrowLeft},
+																						_1: {
+																							ctor: '::',
+																							_0: {ctor: '_Tuple2', _0: 38, _1: _ohanhi$keyboard_extra$Keyboard_Extra$ArrowUp},
+																							_1: {
+																								ctor: '::',
+																								_0: {ctor: '_Tuple2', _0: 39, _1: _ohanhi$keyboard_extra$Keyboard_Extra$ArrowRight},
+																								_1: {
+																									ctor: '::',
+																									_0: {ctor: '_Tuple2', _0: 40, _1: _ohanhi$keyboard_extra$Keyboard_Extra$ArrowDown},
+																									_1: {
+																										ctor: '::',
+																										_0: {ctor: '_Tuple2', _0: 41, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Select},
+																										_1: {
+																											ctor: '::',
+																											_0: {ctor: '_Tuple2', _0: 42, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Print},
+																											_1: {
+																												ctor: '::',
+																												_0: {ctor: '_Tuple2', _0: 43, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Execute},
+																												_1: {
+																													ctor: '::',
+																													_0: {ctor: '_Tuple2', _0: 44, _1: _ohanhi$keyboard_extra$Keyboard_Extra$PrintScreen},
+																													_1: {
+																														ctor: '::',
+																														_0: {ctor: '_Tuple2', _0: 45, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Insert},
+																														_1: {
+																															ctor: '::',
+																															_0: {ctor: '_Tuple2', _0: 46, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Delete},
+																															_1: {
+																																ctor: '::',
+																																_0: {ctor: '_Tuple2', _0: 48, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Number0},
+																																_1: {
+																																	ctor: '::',
+																																	_0: {ctor: '_Tuple2', _0: 49, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Number1},
+																																	_1: {
+																																		ctor: '::',
+																																		_0: {ctor: '_Tuple2', _0: 50, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Number2},
+																																		_1: {
+																																			ctor: '::',
+																																			_0: {ctor: '_Tuple2', _0: 51, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Number3},
+																																			_1: {
+																																				ctor: '::',
+																																				_0: {ctor: '_Tuple2', _0: 52, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Number4},
+																																				_1: {
+																																					ctor: '::',
+																																					_0: {ctor: '_Tuple2', _0: 53, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Number5},
+																																					_1: {
+																																						ctor: '::',
+																																						_0: {ctor: '_Tuple2', _0: 54, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Number6},
+																																						_1: {
+																																							ctor: '::',
+																																							_0: {ctor: '_Tuple2', _0: 55, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Number7},
+																																							_1: {
+																																								ctor: '::',
+																																								_0: {ctor: '_Tuple2', _0: 56, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Number8},
+																																								_1: {
+																																									ctor: '::',
+																																									_0: {ctor: '_Tuple2', _0: 57, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Number9},
+																																									_1: {
+																																										ctor: '::',
+																																										_0: {ctor: '_Tuple2', _0: 58, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Colon},
+																																										_1: {
+																																											ctor: '::',
+																																											_0: {ctor: '_Tuple2', _0: 59, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Semicolon},
+																																											_1: {
+																																												ctor: '::',
+																																												_0: {ctor: '_Tuple2', _0: 60, _1: _ohanhi$keyboard_extra$Keyboard_Extra$LessThan},
+																																												_1: {
+																																													ctor: '::',
+																																													_0: {ctor: '_Tuple2', _0: 61, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Equals},
+																																													_1: {
+																																														ctor: '::',
+																																														_0: {ctor: '_Tuple2', _0: 62, _1: _ohanhi$keyboard_extra$Keyboard_Extra$GreaterThan},
+																																														_1: {
+																																															ctor: '::',
+																																															_0: {ctor: '_Tuple2', _0: 63, _1: _ohanhi$keyboard_extra$Keyboard_Extra$QuestionMark},
+																																															_1: {
+																																																ctor: '::',
+																																																_0: {ctor: '_Tuple2', _0: 64, _1: _ohanhi$keyboard_extra$Keyboard_Extra$At},
+																																																_1: {
+																																																	ctor: '::',
+																																																	_0: {ctor: '_Tuple2', _0: 65, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharA},
+																																																	_1: {
+																																																		ctor: '::',
+																																																		_0: {ctor: '_Tuple2', _0: 66, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharB},
+																																																		_1: {
+																																																			ctor: '::',
+																																																			_0: {ctor: '_Tuple2', _0: 67, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharC},
+																																																			_1: {
+																																																				ctor: '::',
+																																																				_0: {ctor: '_Tuple2', _0: 68, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharD},
+																																																				_1: {
+																																																					ctor: '::',
+																																																					_0: {ctor: '_Tuple2', _0: 69, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharE},
+																																																					_1: {
+																																																						ctor: '::',
+																																																						_0: {ctor: '_Tuple2', _0: 70, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharF},
+																																																						_1: {
+																																																							ctor: '::',
+																																																							_0: {ctor: '_Tuple2', _0: 71, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharG},
+																																																							_1: {
+																																																								ctor: '::',
+																																																								_0: {ctor: '_Tuple2', _0: 72, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharH},
+																																																								_1: {
+																																																									ctor: '::',
+																																																									_0: {ctor: '_Tuple2', _0: 73, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharI},
+																																																									_1: {
+																																																										ctor: '::',
+																																																										_0: {ctor: '_Tuple2', _0: 74, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharJ},
+																																																										_1: {
+																																																											ctor: '::',
+																																																											_0: {ctor: '_Tuple2', _0: 75, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharK},
+																																																											_1: {
+																																																												ctor: '::',
+																																																												_0: {ctor: '_Tuple2', _0: 76, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharL},
+																																																												_1: {
+																																																													ctor: '::',
+																																																													_0: {ctor: '_Tuple2', _0: 77, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharM},
+																																																													_1: {
+																																																														ctor: '::',
+																																																														_0: {ctor: '_Tuple2', _0: 78, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharN},
+																																																														_1: {
+																																																															ctor: '::',
+																																																															_0: {ctor: '_Tuple2', _0: 79, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharO},
+																																																															_1: {
+																																																																ctor: '::',
+																																																																_0: {ctor: '_Tuple2', _0: 80, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharP},
+																																																																_1: {
+																																																																	ctor: '::',
+																																																																	_0: {ctor: '_Tuple2', _0: 81, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharQ},
+																																																																	_1: {
+																																																																		ctor: '::',
+																																																																		_0: {ctor: '_Tuple2', _0: 82, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharR},
+																																																																		_1: {
+																																																																			ctor: '::',
+																																																																			_0: {ctor: '_Tuple2', _0: 83, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharS},
+																																																																			_1: {
+																																																																				ctor: '::',
+																																																																				_0: {ctor: '_Tuple2', _0: 84, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharT},
+																																																																				_1: {
+																																																																					ctor: '::',
+																																																																					_0: {ctor: '_Tuple2', _0: 85, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharU},
+																																																																					_1: {
+																																																																						ctor: '::',
+																																																																						_0: {ctor: '_Tuple2', _0: 86, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharV},
+																																																																						_1: {
+																																																																							ctor: '::',
+																																																																							_0: {ctor: '_Tuple2', _0: 87, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharW},
+																																																																							_1: {
+																																																																								ctor: '::',
+																																																																								_0: {ctor: '_Tuple2', _0: 88, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharX},
+																																																																								_1: {
+																																																																									ctor: '::',
+																																																																									_0: {ctor: '_Tuple2', _0: 89, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharY},
+																																																																									_1: {
+																																																																										ctor: '::',
+																																																																										_0: {ctor: '_Tuple2', _0: 90, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CharZ},
+																																																																										_1: {
+																																																																											ctor: '::',
+																																																																											_0: {ctor: '_Tuple2', _0: 91, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Super},
+																																																																											_1: {
+																																																																												ctor: '::',
+																																																																												_0: {ctor: '_Tuple2', _0: 93, _1: _ohanhi$keyboard_extra$Keyboard_Extra$ContextMenu},
+																																																																												_1: {
+																																																																													ctor: '::',
+																																																																													_0: {ctor: '_Tuple2', _0: 95, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Sleep},
+																																																																													_1: {
+																																																																														ctor: '::',
+																																																																														_0: {ctor: '_Tuple2', _0: 96, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Numpad0},
+																																																																														_1: {
+																																																																															ctor: '::',
+																																																																															_0: {ctor: '_Tuple2', _0: 97, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Numpad1},
+																																																																															_1: {
+																																																																																ctor: '::',
+																																																																																_0: {ctor: '_Tuple2', _0: 98, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Numpad2},
+																																																																																_1: {
+																																																																																	ctor: '::',
+																																																																																	_0: {ctor: '_Tuple2', _0: 99, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Numpad3},
+																																																																																	_1: {
+																																																																																		ctor: '::',
+																																																																																		_0: {ctor: '_Tuple2', _0: 100, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Numpad4},
+																																																																																		_1: {
+																																																																																			ctor: '::',
+																																																																																			_0: {ctor: '_Tuple2', _0: 101, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Numpad5},
+																																																																																			_1: {
+																																																																																				ctor: '::',
+																																																																																				_0: {ctor: '_Tuple2', _0: 102, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Numpad6},
+																																																																																				_1: {
+																																																																																					ctor: '::',
+																																																																																					_0: {ctor: '_Tuple2', _0: 103, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Numpad7},
+																																																																																					_1: {
+																																																																																						ctor: '::',
+																																																																																						_0: {ctor: '_Tuple2', _0: 104, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Numpad8},
+																																																																																						_1: {
+																																																																																							ctor: '::',
+																																																																																							_0: {ctor: '_Tuple2', _0: 105, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Numpad9},
+																																																																																							_1: {
+																																																																																								ctor: '::',
+																																																																																								_0: {ctor: '_Tuple2', _0: 106, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Multiply},
+																																																																																								_1: {
+																																																																																									ctor: '::',
+																																																																																									_0: {ctor: '_Tuple2', _0: 107, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Add},
+																																																																																									_1: {
+																																																																																										ctor: '::',
+																																																																																										_0: {ctor: '_Tuple2', _0: 108, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Separator},
+																																																																																										_1: {
+																																																																																											ctor: '::',
+																																																																																											_0: {ctor: '_Tuple2', _0: 109, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Subtract},
+																																																																																											_1: {
+																																																																																												ctor: '::',
+																																																																																												_0: {ctor: '_Tuple2', _0: 110, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Decimal},
+																																																																																												_1: {
+																																																																																													ctor: '::',
+																																																																																													_0: {ctor: '_Tuple2', _0: 111, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Divide},
+																																																																																													_1: {
+																																																																																														ctor: '::',
+																																																																																														_0: {ctor: '_Tuple2', _0: 112, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F1},
+																																																																																														_1: {
+																																																																																															ctor: '::',
+																																																																																															_0: {ctor: '_Tuple2', _0: 113, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F2},
+																																																																																															_1: {
+																																																																																																ctor: '::',
+																																																																																																_0: {ctor: '_Tuple2', _0: 114, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F3},
+																																																																																																_1: {
+																																																																																																	ctor: '::',
+																																																																																																	_0: {ctor: '_Tuple2', _0: 115, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F4},
+																																																																																																	_1: {
+																																																																																																		ctor: '::',
+																																																																																																		_0: {ctor: '_Tuple2', _0: 116, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F5},
+																																																																																																		_1: {
+																																																																																																			ctor: '::',
+																																																																																																			_0: {ctor: '_Tuple2', _0: 117, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F6},
+																																																																																																			_1: {
+																																																																																																				ctor: '::',
+																																																																																																				_0: {ctor: '_Tuple2', _0: 118, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F7},
+																																																																																																				_1: {
+																																																																																																					ctor: '::',
+																																																																																																					_0: {ctor: '_Tuple2', _0: 119, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F8},
+																																																																																																					_1: {
+																																																																																																						ctor: '::',
+																																																																																																						_0: {ctor: '_Tuple2', _0: 120, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F9},
+																																																																																																						_1: {
+																																																																																																							ctor: '::',
+																																																																																																							_0: {ctor: '_Tuple2', _0: 121, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F10},
+																																																																																																							_1: {
+																																																																																																								ctor: '::',
+																																																																																																								_0: {ctor: '_Tuple2', _0: 122, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F11},
+																																																																																																								_1: {
+																																																																																																									ctor: '::',
+																																																																																																									_0: {ctor: '_Tuple2', _0: 123, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F12},
+																																																																																																									_1: {
+																																																																																																										ctor: '::',
+																																																																																																										_0: {ctor: '_Tuple2', _0: 124, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F13},
+																																																																																																										_1: {
+																																																																																																											ctor: '::',
+																																																																																																											_0: {ctor: '_Tuple2', _0: 125, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F14},
+																																																																																																											_1: {
+																																																																																																												ctor: '::',
+																																																																																																												_0: {ctor: '_Tuple2', _0: 126, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F15},
+																																																																																																												_1: {
+																																																																																																													ctor: '::',
+																																																																																																													_0: {ctor: '_Tuple2', _0: 127, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F16},
+																																																																																																													_1: {
+																																																																																																														ctor: '::',
+																																																																																																														_0: {ctor: '_Tuple2', _0: 128, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F17},
+																																																																																																														_1: {
+																																																																																																															ctor: '::',
+																																																																																																															_0: {ctor: '_Tuple2', _0: 129, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F18},
+																																																																																																															_1: {
+																																																																																																																ctor: '::',
+																																																																																																																_0: {ctor: '_Tuple2', _0: 130, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F19},
+																																																																																																																_1: {
+																																																																																																																	ctor: '::',
+																																																																																																																	_0: {ctor: '_Tuple2', _0: 131, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F20},
+																																																																																																																	_1: {
+																																																																																																																		ctor: '::',
+																																																																																																																		_0: {ctor: '_Tuple2', _0: 132, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F21},
+																																																																																																																		_1: {
+																																																																																																																			ctor: '::',
+																																																																																																																			_0: {ctor: '_Tuple2', _0: 133, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F22},
+																																																																																																																			_1: {
+																																																																																																																				ctor: '::',
+																																																																																																																				_0: {ctor: '_Tuple2', _0: 134, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F23},
+																																																																																																																				_1: {
+																																																																																																																					ctor: '::',
+																																																																																																																					_0: {ctor: '_Tuple2', _0: 135, _1: _ohanhi$keyboard_extra$Keyboard_Extra$F24},
+																																																																																																																					_1: {
+																																																																																																																						ctor: '::',
+																																																																																																																						_0: {ctor: '_Tuple2', _0: 144, _1: _ohanhi$keyboard_extra$Keyboard_Extra$NumLock},
+																																																																																																																						_1: {
+																																																																																																																							ctor: '::',
+																																																																																																																							_0: {ctor: '_Tuple2', _0: 145, _1: _ohanhi$keyboard_extra$Keyboard_Extra$ScrollLock},
+																																																																																																																							_1: {
+																																																																																																																								ctor: '::',
+																																																																																																																								_0: {ctor: '_Tuple2', _0: 160, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Circumflex},
+																																																																																																																								_1: {
+																																																																																																																									ctor: '::',
+																																																																																																																									_0: {ctor: '_Tuple2', _0: 161, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Exclamation},
+																																																																																																																									_1: {
+																																																																																																																										ctor: '::',
+																																																																																																																										_0: {ctor: '_Tuple2', _0: 162, _1: _ohanhi$keyboard_extra$Keyboard_Extra$DoubleQuote},
+																																																																																																																										_1: {
+																																																																																																																											ctor: '::',
+																																																																																																																											_0: {ctor: '_Tuple2', _0: 163, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Hash},
+																																																																																																																											_1: {
+																																																																																																																												ctor: '::',
+																																																																																																																												_0: {ctor: '_Tuple2', _0: 164, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Dollar},
+																																																																																																																												_1: {
+																																																																																																																													ctor: '::',
+																																																																																																																													_0: {ctor: '_Tuple2', _0: 165, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Percent},
+																																																																																																																													_1: {
+																																																																																																																														ctor: '::',
+																																																																																																																														_0: {ctor: '_Tuple2', _0: 166, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Ampersand},
+																																																																																																																														_1: {
+																																																																																																																															ctor: '::',
+																																																																																																																															_0: {ctor: '_Tuple2', _0: 167, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Underscore},
+																																																																																																																															_1: {
+																																																																																																																																ctor: '::',
+																																																																																																																																_0: {ctor: '_Tuple2', _0: 168, _1: _ohanhi$keyboard_extra$Keyboard_Extra$OpenParen},
+																																																																																																																																_1: {
+																																																																																																																																	ctor: '::',
+																																																																																																																																	_0: {ctor: '_Tuple2', _0: 169, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CloseParen},
+																																																																																																																																	_1: {
+																																																																																																																																		ctor: '::',
+																																																																																																																																		_0: {ctor: '_Tuple2', _0: 170, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Asterisk},
+																																																																																																																																		_1: {
+																																																																																																																																			ctor: '::',
+																																																																																																																																			_0: {ctor: '_Tuple2', _0: 171, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Plus},
+																																																																																																																																			_1: {
+																																																																																																																																				ctor: '::',
+																																																																																																																																				_0: {ctor: '_Tuple2', _0: 172, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Pipe},
+																																																																																																																																				_1: {
+																																																																																																																																					ctor: '::',
+																																																																																																																																					_0: {ctor: '_Tuple2', _0: 173, _1: _ohanhi$keyboard_extra$Keyboard_Extra$HyphenMinus},
+																																																																																																																																					_1: {
+																																																																																																																																						ctor: '::',
+																																																																																																																																						_0: {ctor: '_Tuple2', _0: 174, _1: _ohanhi$keyboard_extra$Keyboard_Extra$OpenCurlyBracket},
+																																																																																																																																						_1: {
+																																																																																																																																							ctor: '::',
+																																																																																																																																							_0: {ctor: '_Tuple2', _0: 175, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CloseCurlyBracket},
+																																																																																																																																							_1: {
+																																																																																																																																								ctor: '::',
+																																																																																																																																								_0: {ctor: '_Tuple2', _0: 176, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Tilde},
+																																																																																																																																								_1: {
+																																																																																																																																									ctor: '::',
+																																																																																																																																									_0: {ctor: '_Tuple2', _0: 181, _1: _ohanhi$keyboard_extra$Keyboard_Extra$VolumeMute},
+																																																																																																																																									_1: {
+																																																																																																																																										ctor: '::',
+																																																																																																																																										_0: {ctor: '_Tuple2', _0: 182, _1: _ohanhi$keyboard_extra$Keyboard_Extra$VolumeDown},
+																																																																																																																																										_1: {
+																																																																																																																																											ctor: '::',
+																																																																																																																																											_0: {ctor: '_Tuple2', _0: 183, _1: _ohanhi$keyboard_extra$Keyboard_Extra$VolumeUp},
+																																																																																																																																											_1: {
+																																																																																																																																												ctor: '::',
+																																																																																																																																												_0: {ctor: '_Tuple2', _0: 186, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Semicolon},
+																																																																																																																																												_1: {
+																																																																																																																																													ctor: '::',
+																																																																																																																																													_0: {ctor: '_Tuple2', _0: 187, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Equals},
+																																																																																																																																													_1: {
+																																																																																																																																														ctor: '::',
+																																																																																																																																														_0: {ctor: '_Tuple2', _0: 188, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Comma},
+																																																																																																																																														_1: {
+																																																																																																																																															ctor: '::',
+																																																																																																																																															_0: {ctor: '_Tuple2', _0: 189, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Minus},
+																																																																																																																																															_1: {
+																																																																																																																																																ctor: '::',
+																																																																																																																																																_0: {ctor: '_Tuple2', _0: 190, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Period},
+																																																																																																																																																_1: {
+																																																																																																																																																	ctor: '::',
+																																																																																																																																																	_0: {ctor: '_Tuple2', _0: 191, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Slash},
+																																																																																																																																																	_1: {
+																																																																																																																																																		ctor: '::',
+																																																																																																																																																		_0: {ctor: '_Tuple2', _0: 192, _1: _ohanhi$keyboard_extra$Keyboard_Extra$BackQuote},
+																																																																																																																																																		_1: {
+																																																																																																																																																			ctor: '::',
+																																																																																																																																																			_0: {ctor: '_Tuple2', _0: 219, _1: _ohanhi$keyboard_extra$Keyboard_Extra$OpenBracket},
+																																																																																																																																																			_1: {
+																																																																																																																																																				ctor: '::',
+																																																																																																																																																				_0: {ctor: '_Tuple2', _0: 220, _1: _ohanhi$keyboard_extra$Keyboard_Extra$BackSlash},
+																																																																																																																																																				_1: {
+																																																																																																																																																					ctor: '::',
+																																																																																																																																																					_0: {ctor: '_Tuple2', _0: 221, _1: _ohanhi$keyboard_extra$Keyboard_Extra$CloseBracket},
+																																																																																																																																																					_1: {
+																																																																																																																																																						ctor: '::',
+																																																																																																																																																						_0: {ctor: '_Tuple2', _0: 222, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Quote},
+																																																																																																																																																						_1: {
+																																																																																																																																																							ctor: '::',
+																																																																																																																																																							_0: {ctor: '_Tuple2', _0: 224, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Meta},
+																																																																																																																																																							_1: {
+																																																																																																																																																								ctor: '::',
+																																																																																																																																																								_0: {ctor: '_Tuple2', _0: 225, _1: _ohanhi$keyboard_extra$Keyboard_Extra$Altgr},
+																																																																																																																																																								_1: {ctor: '[]'}
+																																																																																																																																																							}
+																																																																																																																																																						}
+																																																																																																																																																					}
+																																																																																																																																																				}
+																																																																																																																																																			}
+																																																																																																																																																		}
+																																																																																																																																																	}
+																																																																																																																																																}
+																																																																																																																																															}
+																																																																																																																																														}
+																																																																																																																																													}
+																																																																																																																																												}
+																																																																																																																																											}
+																																																																																																																																										}
+																																																																																																																																									}
+																																																																																																																																								}
+																																																																																																																																							}
+																																																																																																																																						}
+																																																																																																																																					}
+																																																																																																																																				}
+																																																																																																																																			}
+																																																																																																																																		}
+																																																																																																																																	}
+																																																																																																																																}
+																																																																																																																															}
+																																																																																																																														}
+																																																																																																																													}
+																																																																																																																												}
+																																																																																																																											}
+																																																																																																																										}
+																																																																																																																									}
+																																																																																																																								}
+																																																																																																																							}
+																																																																																																																						}
+																																																																																																																					}
+																																																																																																																				}
+																																																																																																																			}
+																																																																																																																		}
+																																																																																																																	}
+																																																																																																																}
+																																																																																																															}
+																																																																																																														}
+																																																																																																													}
+																																																																																																												}
+																																																																																																											}
+																																																																																																										}
+																																																																																																									}
+																																																																																																								}
+																																																																																																							}
+																																																																																																						}
+																																																																																																					}
+																																																																																																				}
+																																																																																																			}
+																																																																																																		}
+																																																																																																	}
+																																																																																																}
+																																																																																															}
+																																																																																														}
+																																																																																													}
+																																																																																												}
+																																																																																											}
+																																																																																										}
+																																																																																									}
+																																																																																								}
+																																																																																							}
+																																																																																						}
+																																																																																					}
+																																																																																				}
+																																																																																			}
+																																																																																		}
+																																																																																	}
+																																																																																}
+																																																																															}
+																																																																														}
+																																																																													}
+																																																																												}
+																																																																											}
+																																																																										}
+																																																																									}
+																																																																								}
+																																																																							}
+																																																																						}
+																																																																					}
+																																																																				}
+																																																																			}
+																																																																		}
+																																																																	}
+																																																																}
+																																																															}
+																																																														}
+																																																													}
+																																																												}
+																																																											}
+																																																										}
+																																																									}
+																																																								}
+																																																							}
+																																																						}
+																																																					}
+																																																				}
+																																																			}
+																																																		}
+																																																	}
+																																																}
+																																															}
+																																														}
+																																													}
+																																												}
+																																											}
+																																										}
+																																									}
+																																								}
+																																							}
+																																						}
+																																					}
+																																				}
+																																			}
+																																		}
+																																	}
+																																}
+																															}
+																														}
+																													}
+																												}
+																											}
+																										}
+																									}
+																								}
+																							}
+																						}
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$toCode = function (key) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		0,
+		_elm_lang$core$List$head(
+			A2(
+				_elm_lang$core$List$map,
+				_elm_lang$core$Tuple$first,
+				A2(
+					_elm_lang$core$List$filter,
+					function (_p13) {
+						return A2(
+							F2(
+								function (x, y) {
+									return _elm_lang$core$Native_Utils.eq(x, y);
+								}),
+							key,
+							_elm_lang$core$Tuple$second(_p13));
+					},
+					_ohanhi$keyboard_extra$Keyboard_Extra$codeBook))));
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$isPressed = F2(
+	function (key, _p14) {
+		var _p15 = _p14;
+		return A2(
+			_elm_lang$core$List$member,
+			_ohanhi$keyboard_extra$Keyboard_Extra$toCode(key),
+			_p15._0);
+	});
+var _ohanhi$keyboard_extra$Keyboard_Extra$codeDict = _elm_lang$core$Dict$fromList(_ohanhi$keyboard_extra$Keyboard_Extra$codeBook);
+var _ohanhi$keyboard_extra$Keyboard_Extra$fromCode = function (code) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		_ohanhi$keyboard_extra$Keyboard_Extra$Other,
+		A2(_elm_lang$core$Dict$get, code, _ohanhi$keyboard_extra$Keyboard_Extra$codeDict));
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$downs = function (toMsg) {
+	return _elm_lang$keyboard$Keyboard$downs(
+		function (_p16) {
+			return toMsg(
+				_ohanhi$keyboard_extra$Keyboard_Extra$fromCode(_p16));
+		});
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$ups = function (toMsg) {
+	return _elm_lang$keyboard$Keyboard$ups(
+		function (_p17) {
+			return toMsg(
+				_ohanhi$keyboard_extra$Keyboard_Extra$fromCode(_p17));
+		});
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$updateWithKeyChange = F2(
+	function (msg, _p18) {
+		var _p19 = _p18;
+		var _p23 = _p19._0;
+		var _p20 = msg;
+		if (_p20.ctor === 'Down') {
+			var _p21 = _p20._0;
+			var nextState = A2(_ohanhi$keyboard_extra$Keyboard_Extra$insert, _p21, _p23);
+			var change = (!_elm_lang$core$Native_Utils.eq(
+				_elm_lang$core$List$length(nextState),
+				_elm_lang$core$List$length(_p23))) ? _elm_lang$core$Maybe$Just(
+				_ohanhi$keyboard_extra$Keyboard_Extra$KeyDown(
+					_ohanhi$keyboard_extra$Keyboard_Extra$fromCode(_p21))) : _elm_lang$core$Maybe$Nothing;
+			return {
+				ctor: '_Tuple2',
+				_0: _ohanhi$keyboard_extra$Keyboard_Extra$State(nextState),
+				_1: change
+			};
+		} else {
+			var _p22 = _p20._0;
+			var nextState = A2(_ohanhi$keyboard_extra$Keyboard_Extra$remove, _p22, _p23);
+			var change = (!_elm_lang$core$Native_Utils.eq(
+				_elm_lang$core$List$length(nextState),
+				_elm_lang$core$List$length(_p23))) ? _elm_lang$core$Maybe$Just(
+				_ohanhi$keyboard_extra$Keyboard_Extra$KeyUp(
+					_ohanhi$keyboard_extra$Keyboard_Extra$fromCode(_p22))) : _elm_lang$core$Maybe$Nothing;
+			return {
+				ctor: '_Tuple2',
+				_0: _ohanhi$keyboard_extra$Keyboard_Extra$State(nextState),
+				_1: change
+			};
+		}
+	});
+var _ohanhi$keyboard_extra$Keyboard_Extra$pressedDown = function (_p24) {
+	var _p25 = _p24;
+	return A2(_elm_lang$core$List$map, _ohanhi$keyboard_extra$Keyboard_Extra$fromCode, _p25._0);
+};
+var _ohanhi$keyboard_extra$Keyboard_Extra$targetKey = A2(
+	_elm_lang$core$Json_Decode$map,
+	_ohanhi$keyboard_extra$Keyboard_Extra$fromCode,
+	A2(_elm_lang$core$Json_Decode$field, 'keyCode', _elm_lang$core$Json_Decode$int));
+
 var _user$project$Animator$toRectangle = function (animator) {
 	return {
 		x: _elm_lang$core$Tuple$first(animator.currentLoc) * animator.frameWidth,
@@ -16139,12 +17241,6 @@ var _user$project$Animator$Animator = function (a) {
 };
 
 var _user$project$Types$blankTextureStore = {playerTexture: _elm_lang$core$Maybe$Nothing};
-var _user$project$Types$PlayingModel = F2(
-	function (a, b) {
-		return {textureStore: a, animation: b};
-	});
-var _user$project$Types$MainMenuModel = {};
-var _user$project$Types$OptionsModel = {};
 var _user$project$Types$TextureStore = function (a) {
 	return {playerTexture: a};
 };
@@ -16165,6 +17261,9 @@ var _user$project$Types$TextureLoadedSuccessful = function (a) {
 };
 var _user$project$Types$TextureLoadingError = function (a) {
 	return {ctor: 'TextureLoadingError', _0: a};
+};
+var _user$project$Types$KeyboardMsg = function (a) {
+	return {ctor: 'KeyboardMsg', _0: a};
 };
 var _user$project$Types$NoOp = {ctor: 'NoOp'};
 var _user$project$Types$TileMapTexture = function (a) {
@@ -16208,6 +17307,17 @@ var _user$project$Update$updatePlaying = F2(
 					ctor: '_Tuple2',
 					_0: _user$project$Types$Playing(
 						A2(_user$project$Update$processTexture, _p1._0, model)),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'KeyboardMsg':
+				return {
+					ctor: '_Tuple2',
+					_0: _user$project$Types$Playing(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								keyboard: A2(_ohanhi$keyboard_extra$Keyboard_Extra$update, _p1._0, model.keyboard)
+							})),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Tick':
@@ -16262,6 +17372,77 @@ var _user$project$View$toTextureMatrix = function (rect) {
 				1,
 				_elm_community$linear_algebra$Math_Matrix4$identity)));
 };
+var _user$project$View$rectToMatrix = function (rect) {
+	return A4(
+		_elm_community$linear_algebra$Math_Matrix4$scale3,
+		_elm_lang$core$Basics$toFloat(rect.width),
+		_elm_lang$core$Basics$toFloat(rect.height),
+		1,
+		A4(
+			_elm_community$linear_algebra$Math_Matrix4$translate3,
+			_elm_lang$core$Basics$toFloat(rect.x),
+			_elm_lang$core$Basics$toFloat(rect.y),
+			0,
+			_elm_community$linear_algebra$Math_Matrix4$identity));
+};
+var _user$project$View$getTexture = F2(
+	function (_p0, texture) {
+		var _p1 = _p0;
+		var _p2 = texture;
+		if (_p2.ctor === 'PlayerTexture') {
+			return _p1.textureStore.playerTexture;
+		} else {
+			return _elm_lang$core$Maybe$Nothing;
+		}
+	});
+var _user$project$View$render = F2(
+	function (model, renderer) {
+		return renderer(model);
+	});
+var _user$project$View$viewGL = function (model) {
+	return A3(
+		_elm_community$webgl$WebGL$toHtmlWith,
+		{
+			ctor: '::',
+			_0: A4(_elm_community$webgl$WebGL$clearColor, 0, 0, 0, 1),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$width(800),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$height(600),
+				_1: {ctor: '[]'}
+			}
+		},
+		function () {
+			var _p3 = model.textureStore.playerTexture;
+			if (_p3.ctor === 'Nothing') {
+				return {ctor: '[]'};
+			} else {
+				return {ctor: '[]'};
+			}
+		}());
+};
+var _user$project$View$view = function (state) {
+	var _p4 = state;
+	if (_p4.ctor === 'Playing') {
+		return A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _user$project$View$viewGL(_p4._0),
+				_1: {ctor: '[]'}
+			});
+	} else {
+		return A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{ctor: '[]'});
+	}
+};
 var _user$project$View$Vertex = function (a) {
 	return {position: a};
 };
@@ -16291,96 +17472,80 @@ var _user$project$View$quadMesh = _elm_community$webgl$WebGL$triangles(
 			_1: {ctor: '[]'}
 		}
 	});
-var _user$project$View$renderQuad = F2(
-	function (color, objMat) {
-		return A4(
-			_elm_community$webgl$WebGL$entity,
-			_user$project$View$vertexShader,
-			_user$project$View$fragmentShader,
-			_user$project$View$quadMesh,
-			{perspective: _user$project$View$perspective, object: objMat, color: color});
+var _user$project$View$quad = F3(
+	function (color, objMat, model) {
+		return _elm_lang$core$Maybe$Just(
+			A4(
+				_elm_community$webgl$WebGL$entity,
+				_user$project$View$vertexShader,
+				_user$project$View$fragmentShader,
+				_user$project$View$quadMesh,
+				{perspective: _user$project$View$perspective, object: objMat, color: color}));
 	});
-var _user$project$View$renderTexturedQuad = F4(
-	function (texture, textureMat, color, objMat) {
-		return A4(
-			_elm_community$webgl$WebGL$entity,
-			_user$project$View$textureVertexShader,
-			_user$project$View$textureFragmentShader,
-			_user$project$View$quadMesh,
-			{perspective: _user$project$View$perspective, object: objMat, color: color, texture: texture, textureMat: textureMat});
+var _user$project$View$texturedQuad = F5(
+	function (color, texture, subtexture, objMat, model) {
+		return A2(
+			_elm_lang$core$Maybe$map,
+			function (t) {
+				return A4(
+					_elm_community$webgl$WebGL$entity,
+					_user$project$View$textureVertexShader,
+					_user$project$View$textureFragmentShader,
+					_user$project$View$quadMesh,
+					{
+						perspective: _user$project$View$perspective,
+						object: objMat,
+						color: color,
+						texture: t,
+						textureMat: _user$project$View$toTextureMatrix(subtexture)
+					});
+			},
+			A2(
+				_user$project$View$getTexture,
+				model,
+				texture(
+					{ctor: '_Tuple0'})));
 	});
-var _user$project$View$viewGL = function (model) {
+var _user$project$View$whiteTexturedQuad = _user$project$View$texturedQuad(
+	A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 1, 1));
+
+var _user$project$Player$view = function (player) {
 	return A3(
-		_elm_community$webgl$WebGL$toHtmlWith,
-		{
-			ctor: '::',
-			_0: A4(_elm_community$webgl$WebGL$clearColor, 0, 0, 0, 1),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$width(800),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$height(600),
-				_1: {ctor: '[]'}
-			}
-		},
-		function () {
-			var _p0 = model.textureStore.playerTexture;
-			if (_p0.ctor === 'Nothing') {
-				return {ctor: '[]'};
-			} else {
-				return {
-					ctor: '::',
-					_0: A4(
-						_user$project$View$renderTexturedQuad,
-						_p0._0,
-						_user$project$View$toTextureMatrix(
-							_user$project$Animator$toRectangle(model.animation)),
-						A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 1, 1),
-						A4(
-							_elm_community$linear_algebra$Math_Matrix4$scale3,
-							64,
-							64,
-							1,
-							A4(_elm_community$linear_algebra$Math_Matrix4$translate3, 100, 100, 0, _elm_community$linear_algebra$Math_Matrix4$identity))),
-					_1: {ctor: '[]'}
-				};
-			}
-		}());
+		_user$project$View$whiteTexturedQuad,
+		_user$project$Types$PlayerTexture,
+		{x: 0, y: 0, width: 16, height: 16, maxWidth: 16, maxHeight: 16},
+		_user$project$View$rectToMatrix(
+			{x: player.x, y: player.y, width: player.size, height: player.size}));
 };
-var _user$project$View$view = function (state) {
-	var _p1 = state;
-	if (_p1.ctor === 'Playing') {
-		return A2(
-			_elm_lang$html$Html$div,
-			{ctor: '[]'},
-			{
-				ctor: '::',
-				_0: _user$project$View$viewGL(_p1._0),
-				_1: {ctor: '[]'}
-			});
-	} else {
-		return A2(
-			_elm_lang$html$Html$div,
-			{ctor: '[]'},
-			{ctor: '[]'});
-	}
-};
-
-
-var _user$project$World$World = function (a) {
-	return {tilemap: a};
-};
+var _user$project$Player$update = F2(
+	function (time, player) {
+		return player;
+	});
+var _user$project$Player$Player = F3(
+	function (a, b, c) {
+		return {x: a, y: b, size: c};
+	});
 
 var _user$project$Main$subscriptions = function (state) {
-	var _p0 = state;
-	if (_p0.ctor === 'Playing') {
-		return _elm_lang$animation_frame$AnimationFrame$diffs(_user$project$Types$Tick);
-	} else {
-		return _elm_lang$core$Platform_Sub$none;
-	}
+	var constantInputs = A2(_elm_lang$core$Platform_Sub$map, _user$project$Types$KeyboardMsg, _ohanhi$keyboard_extra$Keyboard_Extra$subscriptions);
+	var stateBasedInputs = function () {
+		var _p0 = state;
+		if (_p0.ctor === 'Playing') {
+			return _elm_lang$animation_frame$AnimationFrame$diffs(_user$project$Types$Tick);
+		} else {
+			return _elm_lang$core$Platform_Sub$none;
+		}
+	}();
+	return _elm_lang$core$Platform_Sub$batch(
+		{
+			ctor: '::',
+			_0: stateBasedInputs,
+			_1: {
+				ctor: '::',
+				_0: constantInputs,
+				_1: {ctor: '[]'}
+			}
+		});
 };
 var _user$project$Main$loadTextures = function () {
 	var options = _elm_community$webgl$WebGL_Texture$defaultOptions;
@@ -16426,6 +17591,7 @@ var _user$project$Main$init = function (_p4) {
 		_0: _user$project$Types$Playing(
 			{
 				textureStore: _user$project$Types$blankTextureStore,
+				keyboard: _ohanhi$keyboard_extra$Keyboard_Extra$initialState,
 				animation: _elm_lang$core$Native_Utils.update(
 					_user$project$Animator$defaultAnimator,
 					{
@@ -16454,7 +17620,7 @@ var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"message":"Types.Msg","aliases":{"Time.Time":{"type":"Float","args":[]}},"unions":{"Types.Msg":{"tags":{"TextureLoadedSuccessful":["Types.TextureEncoding"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"],"Tick":["Time.Time"]},"args":[]},"WebGL.Texture":{"tags":{"Texture":[]},"args":[]},"WebGL.Texture.Error":{"tags":{"SizeError":["Int","Int"],"LoadError":[]},"args":[]},"Types.TextureEncoding":{"tags":{"PlayerTexture":["WebGL.Texture"],"TileMapTexture":["WebGL.Texture"]},"args":[]}}},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"WebGL.Texture.Error":{"args":[],"tags":{"LoadError":[],"SizeError":["Int","Int"]}},"Keyboard.Extra.Msg":{"args":[],"tags":{"Down":["Keyboard.KeyCode"],"Up":["Keyboard.KeyCode"]}},"Types.TextureEncoding":{"args":["a"],"tags":{"PlayerTexture":["a"],"TileMapTexture":["a"]}},"Types.Msg":{"args":[],"tags":{"KeyboardMsg":["Keyboard.Extra.Msg"],"Tick":["Time.Time"],"TextureLoadedSuccessful":["Types.TextureEncoding WebGL.Texture"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"]}},"WebGL.Texture":{"args":[],"tags":{"Texture":[]}}},"aliases":{"Keyboard.KeyCode":{"args":[],"type":"Int"},"Time.Time":{"args":[],"type":"Float"}},"message":"Types.Msg"},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])

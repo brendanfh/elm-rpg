@@ -1,6 +1,7 @@
 module Types exposing (..)
 
 import Animator exposing (Animator)
+import Keyboard.Extra as KE
 import Time exposing (Time)
 import WebGL exposing (Texture)
 import WebGL.Texture
@@ -17,30 +18,38 @@ type State
     | OptionsMenu OptionsModel
 
 
-type alias PlayingModel =
-    { textureStore : TextureStore
-    , animation : Animator
+type alias BaseModel a =
+    { a
+        | textureStore : TextureStore
+        , keyboard : KE.State
     }
 
 
+type alias PlayingModel =
+    BaseModel
+        { animation : Animator
+        }
+
+
 type alias MainMenuModel =
-    {}
+    BaseModel {}
 
 
 type alias OptionsModel =
-    {}
+    BaseModel {}
 
 
 type Msg
     = NoOp
+    | KeyboardMsg KE.Msg
     | TextureLoadingError WebGL.Texture.Error
-    | TextureLoadedSuccessful TextureEncoding
+    | TextureLoadedSuccessful (TextureEncoding Texture)
     | Tick Time
 
 
-type TextureEncoding
-    = PlayerTexture Texture
-    | TileMapTexture Texture
+type TextureEncoding a
+    = PlayerTexture a
+    | TileMapTexture a
 
 
 type alias TextureStore =

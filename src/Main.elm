@@ -3,18 +3,20 @@ module Main exposing (..)
 import AnimationFrame
 import Animator exposing (defaultAnimator)
 import Html exposing (Html)
+import Keyboard.Extra as KE
 import Types exposing (..)
 import Update exposing (update)
 import View exposing (view)
 import Task
 import WebGL.Texture as Texture
-import World
+import Player
 
 
 init : {} -> ( State, Cmd Msg )
 init _ =
     ( Playing
         { textureStore = blankTextureStore
+        , keyboard = KE.initialState
         , animation =
             { defaultAnimator
                 | maxWidth = 32
@@ -65,12 +67,19 @@ loadTextures =
 
 subscriptions : State -> Sub Msg
 subscriptions state =
-    case state of
-        Playing model ->
-            AnimationFrame.diffs Tick
+    let
+        stateBasedInputs =
+            case state of
+                Playing model ->
+                    AnimationFrame.diffs Tick
 
-        _ ->
-            Sub.none
+                _ ->
+                    Sub.none
+
+        constantInputs =
+            Sub.map KeyboardMsg KE.subscriptions
+    in
+        Sub.batch [ stateBasedInputs, constantInputs ]
 
 
 main : Program {} State Msg
