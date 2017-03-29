@@ -135,1885 +135,973 @@ function A9(fun, a, b, c, d, e, f, g, h, i)
     : fun(a)(b)(c)(d)(e)(f)(g)(h)(i);
 }
 
-
-/*
- * Copyright (c) 2010 Mozilla Corporation
- * Copyright (c) 2010 Vladimir Vukicevic
- * Copyright (c) 2013 John Mayer
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
- */
-
-/*
- * File: mjs
- *
- * Vector and Matrix math utilities for JavaScript, optimized for WebGL.
- * Edited to work with the Elm Programming Language
- */
-
-var _elm_community$linear_algebra$Native_MJS = function() {
-
-
-    /*
-     * Constant: MJS_VERSION
-     *
-     * mjs version number aa.bb.cc, encoded as an integer of the form:
-     * 0xaabbcc.
-     */
-    var MJS_VERSION = 0x000000;
-
-    /*
-     * Constant: MJS_DO_ASSERT
-     *
-     * Enables or disables runtime assertions.
-     *
-     * For potentially more performance, the assert methods can be
-     * commented out in each place where they are called.
-     */
-    // var MJS_DO_ASSERT = false;
-
-    /*
-     * Constant: MJS_FLOAT_ARRAY_TYPE
-     *
-     * The base float array type.  By default, WebGLFloatArray.
-     *
-     * mjs can work with any array-like elements, but if an array
-     * creation is requested, it will create an array of the type
-     * MJS_FLOAT_ARRAY_TYPE.  Also, the builtin constants such as (M4x4.I)
-     * will be of this type.
-     */
-    //MJS_FLOAT_ARRAY_TYPE = WebGLFloatArray;
-    //MJS_FLOAT_ARRAY_TYPE = Float32Array;
-    var MJS_FLOAT_ARRAY_TYPE = Float64Array;
-    //MJS_FLOAT_ARRAY_TYPE = Array;
-
-    /*
-    if (MJS_DO_ASSERT) {
-        function MathUtils_assert(cond, msg) {
-            if (!cond) {
-                throw "Assertion failed: " + msg;
-            }
-        }
-    } else {
-    */
-        function MathUtils_assert() { }
-    //}
-
-    /*
-     * Class: V3
-     *
-     * Methods for working with 3-element vectors.  A vector is represented by a 3-element array.
-     * Any valid JavaScript array type may be used, but if new
-     * vectors are created they are created using the configured MJS_FLOAT_ARRAY_TYPE.
-     */
-
-    var V3 = { };
-
-    V3._temp1 = new MJS_FLOAT_ARRAY_TYPE(3);
-    V3._temp2 = new MJS_FLOAT_ARRAY_TYPE(3);
-    V3._temp3 = new MJS_FLOAT_ARRAY_TYPE(3);
-
-    if (MJS_FLOAT_ARRAY_TYPE == Array) {
-        V3.x = [1.0, 0.0, 0.0];
-        V3.y = [0.0, 1.0, 0.0];
-        V3.z = [0.0, 0.0, 1.0];
-
-        V3.$ = function V3_$(x, y, z) {
-            return [x, y, z];
-        };
-    } else {
-        V3.x = new MJS_FLOAT_ARRAY_TYPE([1.0, 0.0, 0.0]);
-        V3.y = new MJS_FLOAT_ARRAY_TYPE([0.0, 1.0, 0.0]);
-        V3.z = new MJS_FLOAT_ARRAY_TYPE([0.0, 0.0, 1.0]);
-
-        /*
-         * Function: V3.$
-         *
-         * Creates a new 3-element vector with the given values.
-         *
-         * Parameters:
-         *
-         *   x,y,z - the 3 elements of the new vector.
-         *
-         * Returns:
-         *
-         * A new vector containing with the given argument values.
-         */
-
-        V3.$ = function V3_$(x, y, z) {
-            return new MJS_FLOAT_ARRAY_TYPE([x, y, z]);
-        };
-    }
-
-    V3.u = V3.x;
-    V3.v = V3.y;
-
-    V3.getX = function V3_getX(a) {
-        return a[0];
-    }
-    V3.getY = function V3_getY(a) {
-        return a[1];
-    }
-    V3.getZ = function V3_getZ(a) {
-        return a[2];
-    }
-    V3.setX = function V3_setX(x, a) {
-        return new MJS_FLOAT_ARRAY_TYPE([x, a[1], a[2]]);
-    }
-    V3.setY = function V3_setY(y, a) {
-        return new MJS_FLOAT_ARRAY_TYPE([a[0], y, a[2]]);
-    }
-    V3.setZ = function V3_setZ(z, a) {
-        return new MJS_FLOAT_ARRAY_TYPE([a[0], a[1], z]);
-    }
-
-    V3.toTuple3 = function V3_toTuple3(a) {
-      return {
-        ctor:"_Tuple3",
-        _0:a[0],
-        _1:a[1],
-        _2:a[2]
-      };
-    };
-    V3.fromTuple3 = function V3_fromTuple3(t) {
-      return new MJS_FLOAT_ARRAY_TYPE([t._0, t._1, t._2]);
-    };
-
-    V3.toRecord3 = function V3_toRecord3(a) {
-      return {
-        _:{},
-        x:a[0],
-        y:a[1],
-        z:a[2]
-      };
-    };
-    V3.fromRecord3 = function V3_fromRecord3(r) {
-      return new MJS_FLOAT_ARRAY_TYPE([r.x, r.y, r.z]);
-    };
-
-    /*
-     * Function: V3.add
-     *
-     * Perform r = a + b.
-     *
-     * Parameters:
-     *
-     *   a - the first vector operand
-     *   b - the second vector operand
-     *   r - optional vector to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 3-element vector with the result.
-     */
-    V3.add = function V3_add(a, b, r) {
-        //MathUtils_assert(a.length == 3, "a.length == 3");
-        //MathUtils_assert(b.length == 3, "b.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(3);
-        r[0] = a[0] + b[0];
-        r[1] = a[1] + b[1];
-        r[2] = a[2] + b[2];
-        return r;
-    };
-
-    /*
-     * Function: V3.sub
-     *
-     * Perform
-     * r = a - b.
-     *
-     * Parameters:
-     *
-     *   a - the first vector operand
-     *   b - the second vector operand
-     *   r - optional vector to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 3-element vector with the result.
-     */
-    V3.sub = function V3_sub(a, b, r) {
-        //MathUtils_assert(a.length == 3, "a.length == 3");
-        //MathUtils_assert(b.length == 3, "b.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(3);
-        r[0] = a[0] - b[0];
-        r[1] = a[1] - b[1];
-        r[2] = a[2] - b[2];
-        return r;
-    };
-
-    /*
-     * Function: V3.neg
-     *
-     * Perform
-     * r = - a.
-     *
-     * Parameters:
-     *
-     *   a - the vector operand
-     *   r - optional vector to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 3-element vector with the result.
-     */
-    V3.neg = function V3_neg(a, r) {
-        //MathUtils_assert(a.length == 3, "a.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(3);
-        r[0] = - a[0];
-        r[1] = - a[1];
-        r[2] = - a[2];
-        return r;
-    };
-
-    /*
-     * Function: V3.direction
-     *
-     * Perform
-     * r = (a - b) / |a - b|.  The result is the normalized
-     * direction from a to b.
-     *
-     * Parameters:
-     *
-     *   a - the first vector operand
-     *   b - the second vector operand
-     *   r - optional vector to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 3-element vector with the result.
-     */
-    V3.direction = function V3_direction(a, b, r) {
-        //MathUtils_assert(a.length == 3, "a.length == 3");
-        //MathUtils_assert(b.length == 3, "b.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(3);
-        return V3.normalize(V3.sub(a, b, r), r);
-    };
-
-    /*
-     * Function: V3.length
-     *
-     * Perform r = |a|.
-     *
-     * Parameters:
-     *
-     *   a - the vector operand
-     *
-     * Returns:
-     *
-     *   The length of the given vector.
-     */
-    V3.length = function V3_length(a) {
-        //MathUtils_assert(a.length == 3, "a.length == 3");
-
-        return Math.sqrt(a[0]*a[0] + a[1]*a[1] + a[2]*a[2]);
-    };
-
-    /*
-     * Function: V3.lengthSquard
-     *
-     * Perform r = |a|*|a|.
-     *
-     * Parameters:
-     *
-     *   a - the vector operand
-     *
-     * Returns:
-     *
-     *   The square of the length of the given vector.
-     */
-    V3.lengthSquared = function V3_lengthSquared(a) {
-        //MathUtils_assert(a.length == 3, "a.length == 3");
-
-        return a[0]*a[0] + a[1]*a[1] + a[2]*a[2];
-    };
-
-    V3.distance = function V3_distance(a, b) {
-        var dx = a[0] - b[0];
-        var dy = a[1] - b[1];
-        var dz = a[2] - b[2];
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
-    };
-
-    V3.distanceSquared = function V3_distanceSquared(a, b) {
-        var dx = a[0] - b[0];
-        var dy = a[1] - b[1];
-        var dz = a[2] - b[2];
-        return dx * dx + dy * dy + dz * dz;
-    };
-
-    /*
-     * Function: V3.normalize
-     *
-     * Perform r = a / |a|.
-     *
-     * Parameters:
-     *
-     *   a - the vector operand
-     *   r - optional vector to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 3-element vector with the result.
-     */
-    V3.normalize = function V3_normalize(a, r) {
-        //MathUtils_assert(a.length == 3, "a.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(3);
-        var im = 1.0 / V3.length(a);
-        r[0] = a[0] * im;
-        r[1] = a[1] * im;
-        r[2] = a[2] * im;
-        return r;
-    };
-
-    /*
-     * Function: V3.scale
-     *
-     * Perform r = k * a.
-     *
-     * Parameters:
-     *
-     *   a - the vector operand
-     *   k - a scalar value
-     *   r - optional vector to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 3-element vector with the result.
-     */
-    V3.scale = function V3_scale(k, a, r) {
-        //MathUtils_assert(a.length == 3, "a.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(3);
-        r[0] = a[0] * k;
-        r[1] = a[1] * k;
-        r[2] = a[2] * k;
-        return r;
-    };
-
-    /*
-     * Function: V3.dot
-     *
-     * Perform
-     * r = dot(a, b).
-     *
-     * Parameters:
-     *
-     *   a - the first vector operand
-     *   b - the second vector operand
-     *
-     * Returns:
-     *
-     *   The dot product of a and b.
-     */
-    V3.dot = function V3_dot(a, b) {
-        //MathUtils_assert(a.length == 3, "a.length == 3");
-        //MathUtils_assert(b.length == 3, "b.length == 3");
-
-        return a[0] * b[0] +
-            a[1] * b[1] +
-            a[2] * b[2];
-    };
-
-    /*
-     * Function: V3.cross
-     *
-     * Perform r = a x b.
-     *
-     * Parameters:
-     *
-     *   a - the first vector operand
-     *   b - the second vector operand
-     *   r - optional vector to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 3-element vector with the result.
-     */
-    V3.cross = function V3_cross(a, b, r) {
-        //MathUtils_assert(a.length == 3, "a.length == 3");
-        //MathUtils_assert(b.length == 3, "b.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(3);
-        r[0] = a[1]*b[2] - a[2]*b[1];
-        r[1] = a[2]*b[0] - a[0]*b[2];
-        r[2] = a[0]*b[1] - a[1]*b[0];
-        return r;
-    };
-
-    /*
-     * Function: V3.mul4x4
-     *
-     * Perform
-     * r = m * v.
-     *
-     * Parameters:
-     *
-     *   m - the 4x4 matrix operand
-     *   v - the 3-element vector operand
-     *   r - optional vector to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 3-element vector with the result.
-     *   The 4-element result vector is divided by the w component
-     *   and returned as a 3-element vector.
-     */
-    V3.mul4x4 = function V3_mul4x4(m, v, r) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(v.length == 3, "v.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
-
-        var w;
-        var tmp = V3._temp1;
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(3);
-        tmp[0] = m[ 3];
-        tmp[1] = m[ 7];
-        tmp[2] = m[11];
-        w    =  V3.dot(v, tmp) + m[15];
-        tmp[0] = m[ 0];
-        tmp[1] = m[ 4];
-        tmp[2] = m[ 8];
-        r[0] = (V3.dot(v, tmp) + m[12])/w;
-        tmp[0] = m[ 1];
-        tmp[1] = m[ 5];
-        tmp[2] = m[ 9];
-        r[1] = (V3.dot(v, tmp) + m[13])/w;
-        tmp[0] = m[ 2];
-        tmp[1] = m[ 6];
-        tmp[2] = m[10];
-        r[2] = (V3.dot(v, tmp) + m[14])/w;
-        return r;
-    };
-
-    /*
-     * Class: M4x4
-     *
-     * Methods for working with 4x4 matrices.  A matrix is represented by a 16-element array
-     * in column-major order.  Any valid JavaScript array type may be used, but if new
-     * matrices are created they are created using the configured MJS_FLOAT_ARRAY_TYPE.
-     */
-
-    var M4x4 = { };
-
-    M4x4._temp1 = new MJS_FLOAT_ARRAY_TYPE(16);
-    M4x4._temp2 = new MJS_FLOAT_ARRAY_TYPE(16);
-
-    if (MJS_FLOAT_ARRAY_TYPE == Array) {
-        M4x4.I = [1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-                0.0, 0.0, 1.0, 0.0,
-                0.0, 0.0, 0.0, 1.0];
-
-        M4x4.$ = function M4x4_$(m00, m01, m02, m03,
-                m04, m05, m06, m07,
-                m08, m09, m10, m11,
-                m12, m13, m14, m15)
-        {
-            return [m00, m01, m02, m03,
-            m04, m05, m06, m07,
-            m08, m09, m10, m11,
-            m12, m13, m14, m15];
-        };
-    } else {
-        M4x4.I = new MJS_FLOAT_ARRAY_TYPE([1.0, 0.0, 0.0, 0.0,
-                0.0, 1.0, 0.0, 0.0,
-                0.0, 0.0, 1.0, 0.0,
-                0.0, 0.0, 0.0, 1.0]);
-
-        /*
-         * Function: M4x4.$
-         *
-         * Creates a new 4x4 matrix with the given values.
-         *
-         * Parameters:
-         *
-         *   m00..m15 - the 16 elements of the new matrix.
-         *
-         * Returns:
-         *
-         * A new matrix filled with the given argument values.
-         */
-        M4x4.$ = function M4x4_$(m00, m01, m02, m03,
-                m04, m05, m06, m07,
-                m08, m09, m10, m11,
-                m12, m13, m14, m15)
-        {
-            return new MJS_FLOAT_ARRAY_TYPE([m00, m01, m02, m03,
-                    m04, m05, m06, m07,
-                    m08, m09, m10, m11,
-                    m12, m13, m14, m15]);
-        };
-    }
-
-    M4x4.identity = M4x4.I;
-
-    /*
-     * Function: M4x4.fromList
-     *
-     * Creates a new 4x4 matrix with the given values.
-     *
-     * Parameters:
-     *
-     *   list - A list of the 16 elements of the new matrix.
-     *
-     * Returns:
-     *
-     * Just a new matrix filled with the given argument values.
-     * Nothing, if the length of the list is not exactly 16.
-     */
-    M4x4.fromList = function(list) {
-        var m = _elm_lang$core$Native_List.toArray(list);
-        if (m.length === 16) {
-            return _elm_lang$core$Maybe$Just(M4x4.$(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], m[12], m[13], m[14], m[15]));
-        } else {
-            return _elm_lang$core$Maybe$Nothing;
-        }
-    }
-
-    /*
-     * Function: M4x4.topLeft3x3
-     *
-     * Return the top left 3x3 matrix from the given 4x4 matrix m.
-     *
-     * Parameters:
-     *
-     *   m - the matrix
-     *   r - optional 3x3 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 3x3 matrix with the result.
-     */
-    M4x4.topLeft3x3 = function M4x4_topLeft3x3(m, r) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 9, "r == undefined || r.length == 9");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(9);
-        r[0] = m[0]; r[1] = m[1]; r[2] = m[2];
-        r[3] = m[4]; r[4] = m[5]; r[5] = m[6];
-        r[6] = m[8]; r[7] = m[9]; r[8] = m[10];
-        return r;
-    };
-
-    /*
-     * Function: M4x4.inverse
-     *
-     * Computes the inverse of the given matrix m.
-     *
-     * Parameters:
-     *
-     *   m - the matrix
-     *   r - optional 4x4 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 4x4 matrix with the result.
-     */
-    M4x4.inverse = function M4x4_inverse(m, r) {
-        if (r == undefined) {
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-        }
-
-        r[0] = m[5] * m[10] * m[15] - m[5] * m[11] * m[14] - m[9] * m[6] * m[15] +
-            m[9] * m[7] * m[14] + m[13] * m[6] * m[11] - m[13] * m[7] * m[10];
-        r[4] = -m[4] * m[10] * m[15] + m[4] * m[11] * m[14] + m[8] * m[6] * m[15] -
-            m[8] * m[7] * m[14] - m[12] * m[6] * m[11] + m[12] * m[7] * m[10];
-        r[8] = m[4] * m[9] * m[15] - m[4] * m[11] * m[13] - m[8] * m[5] * m[15] +
-            m[8] * m[7] * m[13] + m[12] * m[5] * m[11] - m[12] * m[7] * m[9];
-        r[12] = -m[4] * m[9] * m[14] + m[4] * m[10] * m[13] + m[8] * m[5] * m[14] -
-            m[8] * m[6] * m[13] - m[12] * m[5] * m[10] + m[12] * m[6] * m[9];
-        r[1] = -m[1] * m[10] * m[15] + m[1] * m[11] * m[14] + m[9] * m[2] * m[15] -
-            m[9] * m[3] * m[14] - m[13] * m[2] * m[11] + m[13] * m[3] * m[10];
-        r[5] = m[0] * m[10] * m[15] - m[0] * m[11] * m[14] - m[8] * m[2] * m[15] +
-            m[8] * m[3] * m[14] + m[12] * m[2] * m[11] - m[12] * m[3] * m[10];
-        r[9] = -m[0] * m[9] * m[15] + m[0] * m[11] * m[13] + m[8] * m[1] * m[15] -
-            m[8] * m[3] * m[13] - m[12] * m[1] * m[11] + m[12] * m[3] * m[9];
-        r[13] = m[0] * m[9] * m[14] - m[0] * m[10] * m[13] - m[8] * m[1] * m[14] +
-            m[8] * m[2] * m[13] + m[12] * m[1] * m[10] - m[12] * m[2] * m[9];
-        r[2] = m[1] * m[6] * m[15] - m[1] * m[7] * m[14] - m[5] * m[2] * m[15] +
-            m[5] * m[3] * m[14] + m[13] * m[2] * m[7] - m[13] * m[3] * m[6];
-        r[6] = -m[0] * m[6] * m[15] + m[0] * m[7] * m[14] + m[4] * m[2] * m[15] -
-            m[4] * m[3] * m[14] - m[12] * m[2] * m[7] + m[12] * m[3] * m[6];
-        r[10] = m[0] * m[5] * m[15] - m[0] * m[7] * m[13] - m[4] * m[1] * m[15] +
-            m[4] * m[3] * m[13] + m[12] * m[1] * m[7] - m[12] * m[3] * m[5];
-        r[14] = -m[0] * m[5] * m[14] + m[0] * m[6] * m[13] + m[4] * m[1] * m[14] -
-            m[4] * m[2] * m[13] - m[12] * m[1] * m[6] + m[12] * m[2] * m[5];
-        r[3] = -m[1] * m[6] * m[11] + m[1] * m[7] * m[10] + m[5] * m[2] * m[11] -
-            m[5] * m[3] * m[10] - m[9] * m[2] * m[7] + m[9] * m[3] * m[6];
-        r[7] = m[0] * m[6] * m[11] - m[0] * m[7] * m[10] - m[4] * m[2] * m[11] +
-            m[4] * m[3] * m[10] + m[8] * m[2] * m[7] - m[8] * m[3] * m[6];
-        r[11] = -m[0] * m[5] * m[11] + m[0] * m[7] * m[9] + m[4] * m[1] * m[11] -
-            m[4] * m[3] * m[9] - m[8] * m[1] * m[7] + m[8] * m[3] * m[5];
-        r[15] = m[0] * m[5] * m[10] - m[0] * m[6] * m[9] - m[4] * m[1] * m[10] +
-            m[4] * m[2] * m[9] + m[8] * m[1] * m[6] - m[8] * m[2] * m[5];
-
-        var det = m[0] * r[0] + m[1] * r[4] + m[2] * r[8] + m[3] * r[12];
-
-        if (det === 0) {
-            return _elm_lang$core$Maybe$Nothing;
-        }
-
-        det = 1.0 / det;
-
-        for (var i = 0; i < 16; i = i + 1) {
-            r[i] = r[i] * det;
-        }
-
-        return _elm_lang$core$Maybe$Just(r);
-    };
-
-    /*
-     * Function: M4x4.inverseOrthonormal
-     *
-     * Computes the inverse of the given matrix m, assuming that
-     * the matrix is orthonormal.
-     *
-     * Parameters:
-     *
-     *   m - the matrix
-     *   r - optional 4x4 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 4x4 matrix with the result.
-     */
-    M4x4.inverseOrthonormal = function M4x4_inverseOrthonormal(m, r) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-        //MathUtils_assert(m != r, "m != r");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-        M4x4.transpose(m, r);
-        var t = [m[12], m[13], m[14]];
-        r[3] = r[7] = r[11] = 0;
-        r[12] = -V3.dot([r[0], r[4], r[8]], t);
-        r[13] = -V3.dot([r[1], r[5], r[9]], t);
-        r[14] = -V3.dot([r[2], r[6], r[10]], t);
-        return r;
-    };
-
-    /*
-     * Function: M4x4.inverseTo3x3
-     *
-     * Computes the inverse of the given matrix m, but calculates
-     * only the top left 3x3 values of the result.
-     *
-     * Parameters:
-     *
-     *   m - the matrix
-     *   r - optional 3x3 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 3x3 matrix with the result.
-     */
-    M4x4.inverseTo3x3 = function M4x4_inverseTo3x3(m, r) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 9, "r == undefined || r.length == 9");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(9);
-
-        var a11 = m[10]*m[5]-m[6]*m[9],
-            a21 = -m[10]*m[1]+m[2]*m[9],
-            a31 = m[6]*m[1]-m[2]*m[5],
-            a12 = -m[10]*m[4]+m[6]*m[8],
-            a22 = m[10]*m[0]-m[2]*m[8],
-            a32 = -m[6]*m[0]+m[2]*m[4],
-            a13 = m[9]*m[4]-m[5]*m[8],
-            a23 = -m[9]*m[0]+m[1]*m[8],
-            a33 = m[5]*m[0]-m[1]*m[4];
-        var det = m[0]*(a11) + m[1]*(a12) + m[2]*(a13);
-        if (det == 0) // no inverse
-            throw "matrix not invertible";
-        var idet = 1.0 / det;
-
-        r[0] = idet*a11;
-        r[1] = idet*a21;
-        r[2] = idet*a31;
-        r[3] = idet*a12;
-        r[4] = idet*a22;
-        r[5] = idet*a32;
-        r[6] = idet*a13;
-        r[7] = idet*a23;
-        r[8] = idet*a33;
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.makeFrustum
-     *
-     * Creates a matrix for a projection frustum with the given parameters.
-     *
-     * Parameters:
-     *
-     *   left - the left coordinate of the frustum
-     *   right- the right coordinate of the frustum
-     *   bottom - the bottom coordinate of the frustum
-     *   top - the top coordinate of the frustum
-     *   znear - the near z distance of the frustum
-     *   zfar - the far z distance of the frustum
-     *   r - optional 4x4 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after creating the projection matrix.
-     *   Otherwise, returns a new 4x4 matrix.
-     */
-    M4x4.makeFrustum = function M4x4_makeFrustum(left, right, bottom, top, znear, zfar, r) {
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-
-        var X = 2*znear/(right-left);
-        var Y = 2*znear/(top-bottom);
-        var A = (right+left)/(right-left);
-        var B = (top+bottom)/(top-bottom);
-        var C = -(zfar+znear)/(zfar-znear);
-        var D = -2*zfar*znear/(zfar-znear);
-
-        r[0] = 2*znear/(right-left);
-        r[1] = 0;
-        r[2] = 0;
-        r[3] = 0;
-        r[4] = 0;
-        r[5] = 2*znear/(top-bottom);
-        r[6] = 0;
-        r[7] = 0;
-        r[8] = (right+left)/(right-left);
-        r[9] = (top+bottom)/(top-bottom);
-        r[10] = -(zfar+znear)/(zfar-znear);
-        r[11] = -1;
-        r[12] = 0;
-        r[13] = 0;
-        r[14] = -2*zfar*znear/(zfar-znear);
-        r[15] = 0;
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.makePerspective
-     *
-     * Creates a matrix for a perspective projection with the given parameters.
-     *
-     * Parameters:
-     *
-     *   fovy - field of view in the y axis, in degrees
-     *   aspect - aspect ratio
-     *   znear - the near z distance of the projection
-     *   zfar - the far z distance of the projection
-     *   r - optional 4x4 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after creating the projection matrix.
-     *   Otherwise, returns a new 4x4 matrix.
-     */
-    M4x4.makePerspective = function M4x4_makePerspective (fovy, aspect, znear, zfar, r) {
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        var ymax = znear * Math.tan(fovy * Math.PI / 360.0);
-        var ymin = -ymax;
-        var xmin = ymin * aspect;
-        var xmax = ymax * aspect;
-
-        return M4x4.makeFrustum(xmin, xmax, ymin, ymax, znear, zfar, r);
-    };
-
-    /*
-     * Function: M4x4.makeOrtho
-     *
-     * Creates a matrix for an orthogonal frustum projection with the given parameters.
-     *
-     * Parameters:
-     *
-     *   left - the left coordinate of the frustum
-     *   right- the right coordinate of the frustum
-     *   bottom - the bottom coordinate of the frustum
-     *   top - the top coordinate of the frustum
-     *   znear - the near z distance of the frustum
-     *   zfar - the far z distance of the frustum
-     *   r - optional 4x4 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after creating the projection matrix.
-     *   Otherwise, returns a new 4x4 matrix.
-     */
-    M4x4.makeOrtho = function M4x4_makeOrtho (left, right, bottom, top, znear, zfar, r) {
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-
-        var tX = -(right+left)/(right-left);
-        var tY = -(top+bottom)/(top-bottom);
-        var tZ = -(zfar+znear)/(zfar-znear);
-        var X = 2 / (right-left);
-        var Y = 2 / (top-bottom);
-        var Z = -2 / (zfar-znear);
-
-        r[0] = 2 / (right-left);
-        r[1] = 0;
-        r[2] = 0;
-        r[3] = 0;
-        r[4] = 0;
-        r[5] = 2 / (top-bottom);
-        r[6] = 0;
-        r[7] = 0;
-        r[8] = 0;
-        r[9] = 0;
-        r[10] = -2 / (zfar-znear);
-        r[11] = 0;
-        r[12] = -(right+left)/(right-left);
-        r[13] = -(top+bottom)/(top-bottom);
-        r[14] = -(zfar+znear)/(zfar-znear);
-        r[15] = 1;
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.makeOrtho2D
-     *
-     * Creates a matrix for a 2D orthogonal frustum projection with the given parameters.
-     * znear and zfar are assumed to be -1 and 1, respectively.
-     *
-     * Parameters:
-     *
-     *   left - the left coordinate of the frustum
-     *   right- the right coordinate of the frustum
-     *   bottom - the bottom coordinate of the frustum
-     *   top - the top coordinate of the frustum
-     *   r - optional 4x4 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after creating the projection matrix.
-     *   Otherwise, returns a new 4x4 matrix.
-     */
-    M4x4.makeOrtho2D = function M4x4_makeOrtho2D (left, right, bottom, top, r) {
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        return M4x4.makeOrtho(left, right, bottom, top, -1, 1, r);
-    };
-
-    /*
-     * Function: M4x4.mul
-     *
-     * Performs r = a * b.
-     *
-     * Parameters:
-     *
-     *   a - the first matrix operand
-     *   b - the second matrix operand
-     *   r - optional 4x4 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 4x4 matrix with the result.
-     */
-    M4x4.mul = function M4x4_mul(a, b, r) {
-        //MathUtils_assert(a.length == 16, "a.length == 16");
-        //MathUtils_assert(b.length == 16, "b.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-        //MathUtils_assert(a != r && b != r, "a != r && b != r");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-
-        var a11 = a[0];
-        var a21 = a[1];
-        var a31 = a[2];
-        var a41 = a[3];
-        var a12 = a[4];
-        var a22 = a[5];
-        var a32 = a[6];
-        var a42 = a[7];
-        var a13 = a[8];
-        var a23 = a[9];
-        var a33 = a[10];
-        var a43 = a[11];
-        var a14 = a[12];
-        var a24 = a[13];
-        var a34 = a[14];
-        var a44 = a[15];
-
-        var b11 = b[0];
-        var b21 = b[1];
-        var b31 = b[2];
-        var b41 = b[3];
-        var b12 = b[4];
-        var b22 = b[5];
-        var b32 = b[6];
-        var b42 = b[7];
-        var b13 = b[8];
-        var b23 = b[9];
-        var b33 = b[10];
-        var b43 = b[11];
-        var b14 = b[12];
-        var b24 = b[13];
-        var b34 = b[14];
-        var b44 = b[15];
-
-        r[0] = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
-        r[1] = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
-        r[2] = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
-        r[3] = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
-        r[4] = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
-        r[5] = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
-        r[6] = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
-        r[7] = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
-        r[8] = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
-        r[9] = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
-        r[10] = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
-        r[11] = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
-        r[12] = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
-        r[13] = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
-        r[14] = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
-        r[15] = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.mulAffine
-     *
-     * Performs r = a * b, assuming a and b are affine (elements 3,7,11,15 = 0,0,0,1)
-     *
-     * Parameters:
-     *
-     *   a - the first matrix operand
-     *   b - the second matrix operand
-     *   r - optional 4x4 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 4x4 matrix with the result.
-     */
-    M4x4.mulAffine = function M4x4_mulAffine(a, b, r) {
-        //MathUtils_assert(a.length == 16, "a.length == 16");
-        //MathUtils_assert(b.length == 16, "b.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-        //MathUtils_assert(a != r && b != r, "a != r && b != r");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-        var a11 = a[0];
-        var a21 = a[1];
-        var a31 = a[2];
-        var a12 = a[4];
-        var a22 = a[5];
-        var a32 = a[6];
-        var a13 = a[8];
-        var a23 = a[9];
-        var a33 = a[10];
-        var a14 = a[12];
-        var a24 = a[13];
-        var a34 = a[14];
-
-        var b11 = b[0];
-        var b21 = b[1];
-        var b31 = b[2];
-        var b12 = b[4];
-        var b22 = b[5];
-        var b32 = b[6];
-        var b13 = b[8];
-        var b23 = b[9];
-        var b33 = b[10];
-        var b14 = b[12];
-        var b24 = b[13];
-        var b34 = b[14];
-
-        r[0] = a11 * b11 + a12 * b21 + a13 * b31;
-        r[1] = a21 * b11 + a22 * b21 + a23 * b31;
-        r[2] = a31 * b11 + a32 * b21 + a33 * b31;
-        r[3] = 0;
-        r[4] = a11 * b12 + a12 * b22 + a13 * b32;
-        r[5] = a21 * b12 + a22 * b22 + a23 * b32;
-        r[6] = a31 * b12 + a32 * b22 + a33 * b32;
-        r[7] = 0;
-        r[8] = a11 * b13 + a12 * b23 + a13 * b33;
-        r[9] = a21 * b13 + a22 * b23 + a23 * b33;
-        r[10] = a31 * b13 + a32 * b23 + a33 * b33;
-        r[11] = 0;
-        r[12] = a11 * b14 + a12 * b24 + a13 * b34 + a14;
-        r[13] = a21 * b14 + a22 * b24 + a23 * b34 + a24;
-        r[14] = a31 * b14 + a32 * b24 + a33 * b34 + a34;
-        r[15] = 1;
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.makeRotate
-     *
-     * Creates a transformation matrix for rotation by angle radians about the 3-element vector axis.
-     *
-     * Parameters:
-     *
-     *   angle - the angle of rotation, in radians
-     *   axis - the axis around which the rotation is performed, a 3-element vector
-     *   r - optional 4x4 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after creating the matrix.
-     *   Otherwise, returns a new 4x4 matrix with the result.
-     */
-    M4x4.makeRotate = function M4x4_makeRotate(angle, axis, r) {
-        //MathUtils_assert(angle.length == 3, "angle.length == 3");
-        //MathUtils_assert(axis.length == 3, "axis.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-
-        axis = V3.normalize(axis, V3._temp1);
-        var x = axis[0], y = axis[1], z = axis[2];
-        var c = Math.cos(angle);
-        var c1 = 1-c;
-        var s = Math.sin(angle);
-
-        r[0] = x*x*c1+c;
-        r[1] = y*x*c1+z*s;
-        r[2] = z*x*c1-y*s;
-        r[3] = 0;
-        r[4] = x*y*c1-z*s;
-        r[5] = y*y*c1+c;
-        r[6] = y*z*c1+x*s;
-        r[7] = 0;
-        r[8] = x*z*c1+y*s;
-        r[9] = y*z*c1-x*s;
-        r[10] = z*z*c1+c;
-        r[11] = 0;
-        r[12] = 0;
-        r[13] = 0;
-        r[14] = 0;
-        r[15] = 1;
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.rotate
-     *
-     * Concatenates a rotation of angle radians about the axis to the give matrix m.
-     *
-     * Parameters:
-     *
-     *   angle - the angle of rotation, in radians
-     *   axis - the axis around which the rotation is performed, a 3-element vector
-     *   m - the matrix to concatenate the rotation to
-     *   r - optional 4x4 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after performing the operation.
-     *   Otherwise, returns a new 4x4 matrix with the result.
-     */
-    M4x4.rotate = function M4x4_rotate(angle, axis, m, r) {
-        //MathUtils_assert(angle.length == 3, "angle.length == 3");
-        //MathUtils_assert(axis.length == 3, "axis.length == 3");
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-        var a0=axis [0], a1=axis [1], a2=axis [2];
-        var l = Math.sqrt(a0*a0 + a1*a1 + a2*a2);
-        var x = a0, y = a1, z = a2;
-        if (l != 1.0) {
-            var im = 1.0 / l;
-            x *= im;
-            y *= im;
-            z *= im;
-        }
-        var c = Math.cos(angle);
-        var c1 = 1-c;
-        var s = Math.sin(angle);
-        var xs = x*s;
-        var ys = y*s;
-        var zs = z*s;
-        var xyc1 = x * y * c1;
-        var xzc1 = x * z * c1;
-        var yzc1 = y * z * c1;
-
-        var m11 = m[0];
-        var m21 = m[1];
-        var m31 = m[2];
-        var m41 = m[3];
-        var m12 = m[4];
-        var m22 = m[5];
-        var m32 = m[6];
-        var m42 = m[7];
-        var m13 = m[8];
-        var m23 = m[9];
-        var m33 = m[10];
-        var m43 = m[11];
-
-        var t11 = x * x * c1 + c;
-        var t21 = xyc1 + zs;
-        var t31 = xzc1 - ys;
-        var t12 = xyc1 - zs;
-        var t22 = y * y * c1 + c;
-        var t32 = yzc1 + xs;
-        var t13 = xzc1 + ys;
-        var t23 = yzc1 - xs;
-        var t33 = z * z * c1 + c;
-
-        r[0] = m11 * t11 + m12 * t21 + m13 * t31;
-        r[1] = m21 * t11 + m22 * t21 + m23 * t31;
-        r[2] = m31 * t11 + m32 * t21 + m33 * t31;
-        r[3] = m41 * t11 + m42 * t21 + m43 * t31;
-        r[4] = m11 * t12 + m12 * t22 + m13 * t32;
-        r[5] = m21 * t12 + m22 * t22 + m23 * t32;
-        r[6] = m31 * t12 + m32 * t22 + m33 * t32;
-        r[7] = m41 * t12 + m42 * t22 + m43 * t32;
-        r[8] = m11 * t13 + m12 * t23 + m13 * t33;
-        r[9] = m21 * t13 + m22 * t23 + m23 * t33;
-        r[10] = m31 * t13 + m32 * t23 + m33 * t33;
-        r[11] = m41 * t13 + m42 * t23 + m43 * t33;
-        if (r != m) {
-            r[12] = m[12];
-            r[13] = m[13];
-            r[14] = m[14];
-            r[15] = m[15];
-        }
-        return r;
-    };
-
-    /*
-     * Function: M4x4.makeScale3
-     *
-     * Creates a transformation matrix for scaling by 3 scalar values, one for
-     * each of the x, y, and z directions.
-     *
-     * Parameters:
-     *
-     *   x - the scale for the x axis
-     *   y - the scale for the y axis
-     *   z - the scale for the z axis
-     *   r - optional 4x4 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after creating the matrix.
-     *   Otherwise, returns a new 4x4 matrix with the result.
-     */
-    M4x4.makeScale3 = function M4x4_makeScale3(x, y, z, r) {
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-
-        r[0] = x;
-        r[1] = 0;
-        r[2] = 0;
-        r[3] = 0;
-        r[4] = 0;
-        r[5] = y;
-        r[6] = 0;
-        r[7] = 0;
-        r[8] = 0;
-        r[9] = 0;
-        r[10] = z;
-        r[11] = 0;
-        r[12] = 0;
-        r[13] = 0;
-        r[14] = 0;
-        r[15] = 1;
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.makeScale1
-     *
-     * Creates a transformation matrix for a uniform scale by a single scalar value.
-     *
-     * Parameters:
-     *
-     *   k - the scale factor
-     *   r - optional 4x4 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after creating the matrix.
-     *   Otherwise, returns a new 4x4 matrix with the result.
-     */
-    M4x4.makeScale1 = function M4x4_makeScale1(k, r) {
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        return M4x4.makeScale3(k, k, k, r);
-    };
-
-    /*
-     * Function: M4x4.makeScale
-     *
-     * Creates a transformation matrix for scaling each of the x, y, and z axes by the amount
-     * given in the corresponding element of the 3-element vector.
-     *
-     * Parameters:
-     *
-     *   v - the 3-element vector containing the scale factors
-     *   r - optional 4x4 matrix to store the result in
-     *
-     * Returns:
-     *
-     *   If r is specified, returns r after creating the matrix.
-     *   Otherwise, returns a new 4x4 matrix with the result.
-     */
-    M4x4.makeScale = function M4x4_makeScale(v, r) {
-        //MathUtils_assert(v.length == 3, "v.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        return M4x4.makeScale3(v[0], v[1], v[2], r);
-    };
-
-    /*
-     * Function: M4x4.scale3
-     */
-    M4x4.scale3 = function M4x4_scale3(x, y, z, m, r) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        if (r == m) {
-            m[0] *= x;
-            m[1] *= x;
-            m[2] *= x;
-            m[3] *= x;
-            m[4] *= y;
-            m[5] *= y;
-            m[6] *= y;
-            m[7] *= y;
-            m[8] *= z;
-            m[9] *= z;
-            m[10] *= z;
-            m[11] *= z;
-            return m;
-        }
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-
-        r[0] = m[0] * x;
-        r[1] = m[1] * x;
-        r[2] = m[2] * x;
-        r[3] = m[3] * x;
-        r[4] = m[4] * y;
-        r[5] = m[5] * y;
-        r[6] = m[6] * y;
-        r[7] = m[7] * y;
-        r[8] = m[8] * z;
-        r[9] = m[9] * z;
-        r[10] = m[10] * z;
-        r[11] = m[11] * z;
-        r[12] = m[12];
-        r[13] = m[13];
-        r[14] = m[14];
-        r[15] = m[15];
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.scale1
-     */
-    M4x4.scale1 = function M4x4_scale1(k, m, r) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-        if (r == m) {
-            m[0] *= k;
-            m[1] *= k;
-            m[2] *= k;
-            m[3] *= k;
-            m[4] *= k;
-            m[5] *= k;
-            m[6] *= k;
-            m[7] *= k;
-            m[8] *= k;
-            m[9] *= k;
-            m[10] *= k;
-            m[11] *= k;
-            return m;
-        }
-
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-
-        r[0] = m[0] * k;
-        r[1] = m[1] * k;
-        r[2] = m[2] * k;
-        r[3] = m[3] * k;
-        r[4] = m[4] * k;
-        r[5] = m[5] * k;
-        r[6] = m[6] * k;
-        r[7] = m[7] * k;
-        r[8] = m[8] * k;
-        r[9] = m[9] * k;
-        r[10] = m[10] * k;
-        r[11] = m[11] * k;
-        r[12] = m[12];
-        r[13] = m[13];
-        r[14] = m[14];
-        r[15] = m[15];
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.scale1
-     */
-    M4x4.scale = function M4x4_scale(v, m, r) {
-        //MathUtils_assert(v.length == 3, "v.length == 3");
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-        var x = v[0], y = v[1], z = v[2];
-
-        if (r == m) {
-            m[0] *= x;
-            m[1] *= x;
-            m[2] *= x;
-            m[3] *= x;
-            m[4] *= y;
-            m[5] *= y;
-            m[6] *= y;
-            m[7] *= y;
-            m[8] *= z;
-            m[9] *= z;
-            m[10] *= z;
-            m[11] *= z;
-            return m;
-        }
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-
-
-        r[0] = m[0] * x;
-        r[1] = m[1] * x;
-        r[2] = m[2] * x;
-        r[3] = m[3] * x;
-        r[4] = m[4] * y;
-        r[5] = m[5] * y;
-        r[6] = m[6] * y;
-        r[7] = m[7] * y;
-        r[8] = m[8] * z;
-        r[9] = m[9] * z;
-        r[10] = m[10] * z;
-        r[11] = m[11] * z;
-        r[12] = m[12];
-        r[13] = m[13];
-        r[14] = m[14];
-        r[15] = m[15];
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.makeTranslate3
-     */
-    M4x4.makeTranslate3 = function M4x4_makeTranslate3(x, y, z, r) {
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-
-        r[0] = 1;
-        r[1] = 0;
-        r[2] = 0;
-        r[3] = 0;
-        r[4] = 0;
-        r[5] = 1;
-        r[6] = 0;
-        r[7] = 0;
-        r[8] = 0;
-        r[9] = 0;
-        r[10] = 1;
-        r[11] = 0;
-        r[12] = x;
-        r[13] = y;
-        r[14] = z;
-        r[15] = 1;
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.makeTranslate1
-     */
-    M4x4.makeTranslate1 = function M4x4_makeTranslate1 (k, r) {
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        return M4x4.makeTranslate3(k, k, k, r);
-    };
-
-    /*
-     * Function: M4x4.makeTranslate
-     */
-    M4x4.makeTranslate = function M4x4_makeTranslate (v, r) {
-        //MathUtils_assert(v.length == 3, "v.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        return M4x4.makeTranslate3(v[0], v[1], v[2], r);
-    };
-
-    /*
-     * Function: M4x4.translate3Self
-     */
-    M4x4.translate3Self = function M4x4_translate3Self (x, y, z, m) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-        m[12] += m[0] * x + m[4] * y + m[8] * z;
-        m[13] += m[1] * x + m[5] * y + m[9] * z;
-        m[14] += m[2] * x + m[6] * y + m[10] * z;
-        m[15] += m[3] * x + m[7] * y + m[11] * z;
-        return m;
-    };
-
-    /*
-     * Function: M4x4.translate3
-     */
-    M4x4.translate3 = function M4x4_translate3 (x, y, z, m, r) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        if (r == m) {
-            m[12] += m[0] * x + m[4] * y + m[8] * z;
-            m[13] += m[1] * x + m[5] * y + m[9] * z;
-            m[14] += m[2] * x + m[6] * y + m[10] * z;
-            m[15] += m[3] * x + m[7] * y + m[11] * z;
-            return m;
-        }
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-
-        var m11 = m[0];
-        var m21 = m[1];
-        var m31 = m[2];
-        var m41 = m[3];
-        var m12 = m[4];
-        var m22 = m[5];
-        var m32 = m[6];
-        var m42 = m[7];
-        var m13 = m[8];
-        var m23 = m[9];
-        var m33 = m[10];
-        var m43 = m[11];
-
-
-        r[0] = m11;
-        r[1] = m21;
-        r[2] = m31;
-        r[3] = m41;
-        r[4] = m12;
-        r[5] = m22;
-        r[6] = m32;
-        r[7] = m42;
-        r[8] = m13;
-        r[9] = m23;
-        r[10] = m33;
-        r[11] = m43;
-        r[12] = m11 * x + m12 * y + m13 * z + m[12];
-        r[13] = m21 * x + m22 * y + m23 * z + m[13];
-        r[14] = m31 * x + m32 * y + m33 * z + m[14];
-        r[15] = m41 * x + m42 * y + m43 * z + m[15];
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.translate1
-     */
-    M4x4.translate1 = function M4x4_translate1 (k, m, r) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        return M4x4.translate3(k, k, k, m, r);
-    };
-    /*
-     * Function: M4x4.translateSelf
-     */
-    M4x4.translateSelf = function M4x4_translateSelf (v, m) {
-        //MathUtils_assert(v.length == 3, "v.length == 3");
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        var x=v[0], y=v[1], z=v[2];
-        m[12] += m[0] * x + m[4] * y + m[8] * z;
-        m[13] += m[1] * x + m[5] * y + m[9] * z;
-        m[14] += m[2] * x + m[6] * y + m[10] * z;
-        m[15] += m[3] * x + m[7] * y + m[11] * z;
-        return m;
-    };
-    /*
-     * Function: M4x4.translate
-     */
-    M4x4.translate = function M4x4_translate (v, m, r) {
-        //MathUtils_assert(v.length == 3, "v.length == 3");
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-        var x=v[0], y=v[1], z=v[2];
-        if (r == m) {
-            m[12] += m[0] * x + m[4] * y + m[8] * z;
-            m[13] += m[1] * x + m[5] * y + m[9] * z;
-            m[14] += m[2] * x + m[6] * y + m[10] * z;
-            m[15] += m[3] * x + m[7] * y + m[11] * z;
-            return m;
-        }
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-
-        var m11 = m[0];
-        var m21 = m[1];
-        var m31 = m[2];
-        var m41 = m[3];
-        var m12 = m[4];
-        var m22 = m[5];
-        var m32 = m[6];
-        var m42 = m[7];
-        var m13 = m[8];
-        var m23 = m[9];
-        var m33 = m[10];
-        var m43 = m[11];
-
-        r[0] = m11;
-        r[1] = m21;
-        r[2] = m31;
-        r[3] = m41;
-        r[4] = m12;
-        r[5] = m22;
-        r[6] = m32;
-        r[7] = m42;
-        r[8] = m13;
-        r[9] = m23;
-        r[10] = m33;
-        r[11] = m43;
-        r[12] = m11 * x + m12 * y + m13 * z + m[12];
-        r[13] = m21 * x + m22 * y + m23 * z + m[13];
-        r[14] = m31 * x + m32 * y + m33 * z + m[14];
-        r[15] = m41 * x + m42 * y + m43 * z + m[15];
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.makeLookAt
-     */
-    M4x4.makeLookAt = function M4x4_makeLookAt (eye, center, up, r) {
-        //MathUtils_assert(eye.length == 3, "eye.length == 3");
-        //MathUtils_assert(center.length == 3, "center.length == 3");
-        //MathUtils_assert(up.length == 3, "up.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        var z = V3.direction(eye, center, V3._temp1);
-        var x = V3.normalize(V3.cross(up, z, V3._temp2), V3._temp2);
-        var y = V3.normalize(V3.cross(z, x, V3._temp3), V3._temp3);
-
-        var tm1 = M4x4._temp1;
-        var tm2 = M4x4._temp2;
-
-        tm1[0] = x[0];
-        tm1[1] = y[0];
-        tm1[2] = z[0];
-        tm1[3] = 0;
-        tm1[4] = x[1];
-        tm1[5] = y[1];
-        tm1[6] = z[1];
-        tm1[7] = 0;
-        tm1[8] = x[2];
-        tm1[9] = y[2];
-        tm1[10] = z[2];
-        tm1[11] = 0;
-        tm1[12] = 0;
-        tm1[13] = 0;
-        tm1[14] = 0;
-        tm1[15] = 1;
-
-        tm2[0] = 1; tm2[1] = 0; tm2[2] = 0; tm2[3] = 0;
-        tm2[4] = 0; tm2[5] = 1; tm2[6] = 0; tm2[7] = 0;
-        tm2[8] = 0; tm2[9] = 0; tm2[10] = 1; tm2[11] = 0;
-        tm2[12] = -eye[0]; tm2[13] = -eye[1]; tm2[14] = -eye[2]; tm2[15] = 1;
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-        return M4x4.mul(tm1, tm2, r);
-    };
-
-    /*
-     * Function: M4x4.transposeSelf
-     */
-    M4x4.transposeSelf = function M4x4_transposeSelf (m) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        var tmp = m[1]; m[1] = m[4]; m[4] = tmp;
-        tmp = m[2]; m[2] = m[8]; m[8] = tmp;
-        tmp = m[3]; m[3] = m[12]; m[12] = tmp;
-        tmp = m[6]; m[6] = m[9]; m[9] = tmp;
-        tmp = m[7]; m[7] = m[13]; m[13] = tmp;
-        tmp = m[11]; m[11] = m[14]; m[14] = tmp;
-        return m;
-    };
-    /*
-     * Function: M4x4.transpose
-     */
-    M4x4.transpose = function M4x4_transpose (m, r) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
-
-        if (m == r) {
-            var tmp = 0.0;
-            tmp = m[1]; m[1] = m[4]; m[4] = tmp;
-            tmp = m[2]; m[2] = m[8]; m[8] = tmp;
-            tmp = m[3]; m[3] = m[12]; m[12] = tmp;
-            tmp = m[6]; m[6] = m[9]; m[9] = tmp;
-            tmp = m[7]; m[7] = m[13]; m[13] = tmp;
-            tmp = m[11]; m[11] = m[14]; m[14] = tmp;
-            return m;
-        }
-
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(16);
-
-        r[0] = m[0]; r[1] = m[4]; r[2] = m[8]; r[3] = m[12];
-        r[4] = m[1]; r[5] = m[5]; r[6] = m[9]; r[7] = m[13];
-        r[8] = m[2]; r[9] = m[6]; r[10] = m[10]; r[11] = m[14];
-        r[12] = m[3]; r[13] = m[7]; r[14] = m[11]; r[15] = m[15];
-
-        return r;
-    };
-
-
-    /*
-     * Function: M4x4.transformPoint
-     */
-    M4x4.transformPoint = function M4x4_transformPoint (m, v, r) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(v.length == 3, "v.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(3);
-
-        var v0 = v[0], v1 = v[1], v2 = v[2];
-
-        r[0] = m[0] * v0 + m[4] * v1 + m[8] * v2 + m[12];
-        r[1] = m[1] * v0 + m[5] * v1 + m[9] * v2 + m[13];
-        r[2] = m[2] * v0 + m[6] * v1 + m[10] * v2 + m[14];
-        var w = m[3] * v0 + m[7] * v1 + m[11] * v2 + m[15];
-
-        if (w != 1.0) {
-            r[0] /= w;
-            r[1] /= w;
-            r[2] /= w;
-        }
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.transformLine
-     */
-    M4x4.transformLine = function M4x4_transformLine(m, v, r) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(v.length == 3, "v.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(3);
-
-        var v0 = v[0], v1 = v[1], v2 = v[2];
-        r[0] = m[0] * v0 + m[4] * v1 + m[8] * v2;
-        r[1] = m[1] * v0 + m[5] * v1 + m[9] * v2;
-        r[2] = m[2] * v0 + m[6] * v1 + m[10] * v2;
-        var w = m[3] * v0 + m[7] * v1 + m[11] * v2;
-
-        if (w != 1.0) {
-            r[0] /= w;
-            r[1] /= w;
-            r[2] /= w;
-        }
-
-        return r;
-    };
-
-
-    /*
-     * Function: M4x4.transformPointAffine
-     */
-    M4x4.transformPointAffine = function M4x4_transformPointAffine (m, v, r) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(v.length == 3, "v.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(3);
-
-        var v0 = v[0], v1 = v[1], v2 = v[2];
-
-        r[0] = m[0] * v0 + m[4] * v1 + m[8] * v2 + m[12];
-        r[1] = m[1] * v0 + m[5] * v1 + m[9] * v2 + m[13];
-        r[2] = m[2] * v0 + m[6] * v1 + m[10] * v2 + m[14];
-
-        return r;
-    };
-
-    /*
-     * Function: M4x4.transformLineAffine
-     */
-    M4x4.transformLineAffine = function M4x4_transformLineAffine(m, v, r) {
-        //MathUtils_assert(m.length == 16, "m.length == 16");
-        //MathUtils_assert(v.length == 3, "v.length == 3");
-        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
-        if (r == undefined)
-            r = new MJS_FLOAT_ARRAY_TYPE(3);
-
-        var v0 = v[0], v1 = v[1], v2 = v[2];
-        r[0] = m[0] * v0 + m[4] * v1 + m[8] * v2;
-        r[1] = m[1] * v0 + m[5] * v1 + m[9] * v2;
-        r[2] = m[2] * v0 + m[6] * v1 + m[10] * v2;
-
-        return r;
-    };
-
-    M4x4.makeBasis = function M4x4_makeBasis(vx,vy,vz) {
-
-        var r = new MJS_FLOAT_ARRAY_TYPE(16);
-
-        r[0] = vx[0];
-        r[1] = vx[1];
-        r[2] = vx[2];
-        r[3] = 0;
-        r[4] = vy[0];
-        r[5] = vy[1];
-        r[6] = vy[2];
-        r[7] = 0;
-        r[8] = vz[0];
-        r[9] = vz[1];
-        r[10] = vz[2];
-        r[11] = 0;
-        r[12] = 0;
-        r[13] = 0;
-        r[14] = 0;
-        r[15] = 1;
-
-        return r;
-
-    };
-
-    return {
-        vec3: F3(V3.$),
-        v3getX: V3.getX,
-        v3getY: V3.getY,
-        v3getZ: V3.getZ,
-        v3setX: F2(V3.setX),
-        v3setY: F2(V3.setY),
-        v3setZ: F2(V3.setZ),
-        toTuple3: V3.toTuple3,
-        toRecord3: V3.toRecord3,
-        fromTuple3: V3.fromTuple3,
-        fromRecord3: V3.fromRecord3,
-        v3add: F2(V3.add),
-        v3sub: F2(V3.sub),
-        v3neg: V3.neg,
-        v3direction: F2(V3.direction),
-        v3length: V3.length,
-        v3lengthSquared: V3.lengthSquared,
-        v3distance: F2(V3.distance),
-        v3distanceSquared: F2(V3.distanceSquared),
-        v3normalize: V3.normalize,
-        v3scale: F2(V3.scale),
-        v3dot: F2(V3.dot),
-        v3cross: F2(V3.cross),
-        v3mul4x4: F2(V3.mul4x4),
-        m4x4fromList: M4x4.fromList,
-        m4x4identity: M4x4.identity,
-        m4x4topLeft3x3: M4x4.topLeft3x3,
-        m4x4inverse: M4x4.inverse,
-        m4x4inverseOrthonormal: M4x4.inverseOrthonormal,
-        m4x4inverseTo3x3: M4x4.inverseTo3x3,
-        m4x4makeFrustum: F6(M4x4.makeFrustum),
-        m4x4makePerspective: F4(M4x4.makePerspective),
-        m4x4makeOrtho: F6(M4x4.makeOrtho),
-        m4x4makeOrtho2D: F4(M4x4.makeOrtho2D),
-        m4x4mul: F2(M4x4.mul),
-        m4x4Affine: F2(M4x4.mulAffine),
-        m4x4makeRotate: F2(M4x4.makeRotate),
-        m4x4rotate: F3(M4x4.rotate),
-        m4x4makeScale3: F3(M4x4.makeScale3),
-        m4x4makeScale1: M4x4.makeScale1,
-        m4x4makeScale: M4x4.makeScale,
-        m4x4scale3: F4(M4x4.scale3),
-        m4x4scale: F2(M4x4.scale),
-        m4x4makeTranslate3: F3(M4x4.makeTranslate3),
-        m4x4makeTranslate: M4x4.makeTranslate,
-        m4x4translate3: F4(M4x4.translate3),
-        m4x4translate: F2(M4x4.translate),
-        m4x4makeLookAt: F3(M4x4.makeLookAt),
-        m4x4transpose: M4x4.transpose,
-        m4x4transformPoint: F2(M4x4.transformPoint),
-        m4x4makeBasis: F3(M4x4.makeBasis)
-    };
+//import Native.List //
+
+var _elm_lang$core$Native_Array = function() {
+
+// A RRB-Tree has two distinct data types.
+// Leaf -> "height"  is always 0
+//         "table"   is an array of elements
+// Node -> "height"  is always greater than 0
+//         "table"   is an array of child nodes
+//         "lengths" is an array of accumulated lengths of the child nodes
+
+// M is the maximal table size. 32 seems fast. E is the allowed increase
+// of search steps when concatting to find an index. Lower values will
+// decrease balancing, but will increase search steps.
+var M = 32;
+var E = 2;
+
+// An empty array.
+var empty = {
+	ctor: '_Array',
+	height: 0,
+	table: []
+};
+
+
+function get(i, array)
+{
+	if (i < 0 || i >= length(array))
+	{
+		throw new Error(
+			'Index ' + i + ' is out of range. Check the length of ' +
+			'your array first or use getMaybe or getWithDefault.');
+	}
+	return unsafeGet(i, array);
+}
+
+
+function unsafeGet(i, array)
+{
+	for (var x = array.height; x > 0; x--)
+	{
+		var slot = i >> (x * 5);
+		while (array.lengths[slot] <= i)
+		{
+			slot++;
+		}
+		if (slot > 0)
+		{
+			i -= array.lengths[slot - 1];
+		}
+		array = array.table[slot];
+	}
+	return array.table[i];
+}
+
+
+// Sets the value at the index i. Only the nodes leading to i will get
+// copied and updated.
+function set(i, item, array)
+{
+	if (i < 0 || length(array) <= i)
+	{
+		return array;
+	}
+	return unsafeSet(i, item, array);
+}
+
+
+function unsafeSet(i, item, array)
+{
+	array = nodeCopy(array);
+
+	if (array.height === 0)
+	{
+		array.table[i] = item;
+	}
+	else
+	{
+		var slot = getSlot(i, array);
+		if (slot > 0)
+		{
+			i -= array.lengths[slot - 1];
+		}
+		array.table[slot] = unsafeSet(i, item, array.table[slot]);
+	}
+	return array;
+}
+
+
+function initialize(len, f)
+{
+	if (len <= 0)
+	{
+		return empty;
+	}
+	var h = Math.floor( Math.log(len) / Math.log(M) );
+	return initialize_(f, h, 0, len);
+}
+
+function initialize_(f, h, from, to)
+{
+	if (h === 0)
+	{
+		var table = new Array((to - from) % (M + 1));
+		for (var i = 0; i < table.length; i++)
+		{
+		  table[i] = f(from + i);
+		}
+		return {
+			ctor: '_Array',
+			height: 0,
+			table: table
+		};
+	}
+
+	var step = Math.pow(M, h);
+	var table = new Array(Math.ceil((to - from) / step));
+	var lengths = new Array(table.length);
+	for (var i = 0; i < table.length; i++)
+	{
+		table[i] = initialize_(f, h - 1, from + (i * step), Math.min(from + ((i + 1) * step), to));
+		lengths[i] = length(table[i]) + (i > 0 ? lengths[i-1] : 0);
+	}
+	return {
+		ctor: '_Array',
+		height: h,
+		table: table,
+		lengths: lengths
+	};
+}
+
+function fromList(list)
+{
+	if (list.ctor === '[]')
+	{
+		return empty;
+	}
+
+	// Allocate M sized blocks (table) and write list elements to it.
+	var table = new Array(M);
+	var nodes = [];
+	var i = 0;
+
+	while (list.ctor !== '[]')
+	{
+		table[i] = list._0;
+		list = list._1;
+		i++;
+
+		// table is full, so we can push a leaf containing it into the
+		// next node.
+		if (i === M)
+		{
+			var leaf = {
+				ctor: '_Array',
+				height: 0,
+				table: table
+			};
+			fromListPush(leaf, nodes);
+			table = new Array(M);
+			i = 0;
+		}
+	}
+
+	// Maybe there is something left on the table.
+	if (i > 0)
+	{
+		var leaf = {
+			ctor: '_Array',
+			height: 0,
+			table: table.splice(0, i)
+		};
+		fromListPush(leaf, nodes);
+	}
+
+	// Go through all of the nodes and eventually push them into higher nodes.
+	for (var h = 0; h < nodes.length - 1; h++)
+	{
+		if (nodes[h].table.length > 0)
+		{
+			fromListPush(nodes[h], nodes);
+		}
+	}
+
+	var head = nodes[nodes.length - 1];
+	if (head.height > 0 && head.table.length === 1)
+	{
+		return head.table[0];
+	}
+	else
+	{
+		return head;
+	}
+}
+
+// Push a node into a higher node as a child.
+function fromListPush(toPush, nodes)
+{
+	var h = toPush.height;
+
+	// Maybe the node on this height does not exist.
+	if (nodes.length === h)
+	{
+		var node = {
+			ctor: '_Array',
+			height: h + 1,
+			table: [],
+			lengths: []
+		};
+		nodes.push(node);
+	}
+
+	nodes[h].table.push(toPush);
+	var len = length(toPush);
+	if (nodes[h].lengths.length > 0)
+	{
+		len += nodes[h].lengths[nodes[h].lengths.length - 1];
+	}
+	nodes[h].lengths.push(len);
+
+	if (nodes[h].table.length === M)
+	{
+		fromListPush(nodes[h], nodes);
+		nodes[h] = {
+			ctor: '_Array',
+			height: h + 1,
+			table: [],
+			lengths: []
+		};
+	}
+}
+
+// Pushes an item via push_ to the bottom right of a tree.
+function push(item, a)
+{
+	var pushed = push_(item, a);
+	if (pushed !== null)
+	{
+		return pushed;
+	}
+
+	var newTree = create(item, a.height);
+	return siblise(a, newTree);
+}
+
+// Recursively tries to push an item to the bottom-right most
+// tree possible. If there is no space left for the item,
+// null will be returned.
+function push_(item, a)
+{
+	// Handle resursion stop at leaf level.
+	if (a.height === 0)
+	{
+		if (a.table.length < M)
+		{
+			var newA = {
+				ctor: '_Array',
+				height: 0,
+				table: a.table.slice()
+			};
+			newA.table.push(item);
+			return newA;
+		}
+		else
+		{
+		  return null;
+		}
+	}
+
+	// Recursively push
+	var pushed = push_(item, botRight(a));
+
+	// There was space in the bottom right tree, so the slot will
+	// be updated.
+	if (pushed !== null)
+	{
+		var newA = nodeCopy(a);
+		newA.table[newA.table.length - 1] = pushed;
+		newA.lengths[newA.lengths.length - 1]++;
+		return newA;
+	}
+
+	// When there was no space left, check if there is space left
+	// for a new slot with a tree which contains only the item
+	// at the bottom.
+	if (a.table.length < M)
+	{
+		var newSlot = create(item, a.height - 1);
+		var newA = nodeCopy(a);
+		newA.table.push(newSlot);
+		newA.lengths.push(newA.lengths[newA.lengths.length - 1] + length(newSlot));
+		return newA;
+	}
+	else
+	{
+		return null;
+	}
+}
+
+// Converts an array into a list of elements.
+function toList(a)
+{
+	return toList_(_elm_lang$core$Native_List.Nil, a);
+}
+
+function toList_(list, a)
+{
+	for (var i = a.table.length - 1; i >= 0; i--)
+	{
+		list =
+			a.height === 0
+				? _elm_lang$core$Native_List.Cons(a.table[i], list)
+				: toList_(list, a.table[i]);
+	}
+	return list;
+}
+
+// Maps a function over the elements of an array.
+function map(f, a)
+{
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: new Array(a.table.length)
+	};
+	if (a.height > 0)
+	{
+		newA.lengths = a.lengths;
+	}
+	for (var i = 0; i < a.table.length; i++)
+	{
+		newA.table[i] =
+			a.height === 0
+				? f(a.table[i])
+				: map(f, a.table[i]);
+	}
+	return newA;
+}
+
+// Maps a function over the elements with their index as first argument.
+function indexedMap(f, a)
+{
+	return indexedMap_(f, a, 0);
+}
+
+function indexedMap_(f, a, from)
+{
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: new Array(a.table.length)
+	};
+	if (a.height > 0)
+	{
+		newA.lengths = a.lengths;
+	}
+	for (var i = 0; i < a.table.length; i++)
+	{
+		newA.table[i] =
+			a.height === 0
+				? A2(f, from + i, a.table[i])
+				: indexedMap_(f, a.table[i], i == 0 ? from : from + a.lengths[i - 1]);
+	}
+	return newA;
+}
+
+function foldl(f, b, a)
+{
+	if (a.height === 0)
+	{
+		for (var i = 0; i < a.table.length; i++)
+		{
+			b = A2(f, a.table[i], b);
+		}
+	}
+	else
+	{
+		for (var i = 0; i < a.table.length; i++)
+		{
+			b = foldl(f, b, a.table[i]);
+		}
+	}
+	return b;
+}
+
+function foldr(f, b, a)
+{
+	if (a.height === 0)
+	{
+		for (var i = a.table.length; i--; )
+		{
+			b = A2(f, a.table[i], b);
+		}
+	}
+	else
+	{
+		for (var i = a.table.length; i--; )
+		{
+			b = foldr(f, b, a.table[i]);
+		}
+	}
+	return b;
+}
+
+// TODO: currently, it slices the right, then the left. This can be
+// optimized.
+function slice(from, to, a)
+{
+	if (from < 0)
+	{
+		from += length(a);
+	}
+	if (to < 0)
+	{
+		to += length(a);
+	}
+	return sliceLeft(from, sliceRight(to, a));
+}
+
+function sliceRight(to, a)
+{
+	if (to === length(a))
+	{
+		return a;
+	}
+
+	// Handle leaf level.
+	if (a.height === 0)
+	{
+		var newA = { ctor:'_Array', height:0 };
+		newA.table = a.table.slice(0, to);
+		return newA;
+	}
+
+	// Slice the right recursively.
+	var right = getSlot(to, a);
+	var sliced = sliceRight(to - (right > 0 ? a.lengths[right - 1] : 0), a.table[right]);
+
+	// Maybe the a node is not even needed, as sliced contains the whole slice.
+	if (right === 0)
+	{
+		return sliced;
+	}
+
+	// Create new node.
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: a.table.slice(0, right),
+		lengths: a.lengths.slice(0, right)
+	};
+	if (sliced.table.length > 0)
+	{
+		newA.table[right] = sliced;
+		newA.lengths[right] = length(sliced) + (right > 0 ? newA.lengths[right - 1] : 0);
+	}
+	return newA;
+}
+
+function sliceLeft(from, a)
+{
+	if (from === 0)
+	{
+		return a;
+	}
+
+	// Handle leaf level.
+	if (a.height === 0)
+	{
+		var newA = { ctor:'_Array', height:0 };
+		newA.table = a.table.slice(from, a.table.length + 1);
+		return newA;
+	}
+
+	// Slice the left recursively.
+	var left = getSlot(from, a);
+	var sliced = sliceLeft(from - (left > 0 ? a.lengths[left - 1] : 0), a.table[left]);
+
+	// Maybe the a node is not even needed, as sliced contains the whole slice.
+	if (left === a.table.length - 1)
+	{
+		return sliced;
+	}
+
+	// Create new node.
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: a.table.slice(left, a.table.length + 1),
+		lengths: new Array(a.table.length - left)
+	};
+	newA.table[0] = sliced;
+	var len = 0;
+	for (var i = 0; i < newA.table.length; i++)
+	{
+		len += length(newA.table[i]);
+		newA.lengths[i] = len;
+	}
+
+	return newA;
+}
+
+// Appends two trees.
+function append(a,b)
+{
+	if (a.table.length === 0)
+	{
+		return b;
+	}
+	if (b.table.length === 0)
+	{
+		return a;
+	}
+
+	var c = append_(a, b);
+
+	// Check if both nodes can be crunshed together.
+	if (c[0].table.length + c[1].table.length <= M)
+	{
+		if (c[0].table.length === 0)
+		{
+			return c[1];
+		}
+		if (c[1].table.length === 0)
+		{
+			return c[0];
+		}
+
+		// Adjust .table and .lengths
+		c[0].table = c[0].table.concat(c[1].table);
+		if (c[0].height > 0)
+		{
+			var len = length(c[0]);
+			for (var i = 0; i < c[1].lengths.length; i++)
+			{
+				c[1].lengths[i] += len;
+			}
+			c[0].lengths = c[0].lengths.concat(c[1].lengths);
+		}
+
+		return c[0];
+	}
+
+	if (c[0].height > 0)
+	{
+		var toRemove = calcToRemove(a, b);
+		if (toRemove > E)
+		{
+			c = shuffle(c[0], c[1], toRemove);
+		}
+	}
+
+	return siblise(c[0], c[1]);
+}
+
+// Returns an array of two nodes; right and left. One node _may_ be empty.
+function append_(a, b)
+{
+	if (a.height === 0 && b.height === 0)
+	{
+		return [a, b];
+	}
+
+	if (a.height !== 1 || b.height !== 1)
+	{
+		if (a.height === b.height)
+		{
+			a = nodeCopy(a);
+			b = nodeCopy(b);
+			var appended = append_(botRight(a), botLeft(b));
+
+			insertRight(a, appended[1]);
+			insertLeft(b, appended[0]);
+		}
+		else if (a.height > b.height)
+		{
+			a = nodeCopy(a);
+			var appended = append_(botRight(a), b);
+
+			insertRight(a, appended[0]);
+			b = parentise(appended[1], appended[1].height + 1);
+		}
+		else
+		{
+			b = nodeCopy(b);
+			var appended = append_(a, botLeft(b));
+
+			var left = appended[0].table.length === 0 ? 0 : 1;
+			var right = left === 0 ? 1 : 0;
+			insertLeft(b, appended[left]);
+			a = parentise(appended[right], appended[right].height + 1);
+		}
+	}
+
+	// Check if balancing is needed and return based on that.
+	if (a.table.length === 0 || b.table.length === 0)
+	{
+		return [a, b];
+	}
+
+	var toRemove = calcToRemove(a, b);
+	if (toRemove <= E)
+	{
+		return [a, b];
+	}
+	return shuffle(a, b, toRemove);
+}
+
+// Helperfunctions for append_. Replaces a child node at the side of the parent.
+function insertRight(parent, node)
+{
+	var index = parent.table.length - 1;
+	parent.table[index] = node;
+	parent.lengths[index] = length(node);
+	parent.lengths[index] += index > 0 ? parent.lengths[index - 1] : 0;
+}
+
+function insertLeft(parent, node)
+{
+	if (node.table.length > 0)
+	{
+		parent.table[0] = node;
+		parent.lengths[0] = length(node);
+
+		var len = length(parent.table[0]);
+		for (var i = 1; i < parent.lengths.length; i++)
+		{
+			len += length(parent.table[i]);
+			parent.lengths[i] = len;
+		}
+	}
+	else
+	{
+		parent.table.shift();
+		for (var i = 1; i < parent.lengths.length; i++)
+		{
+			parent.lengths[i] = parent.lengths[i] - parent.lengths[0];
+		}
+		parent.lengths.shift();
+	}
+}
+
+// Returns the extra search steps for E. Refer to the paper.
+function calcToRemove(a, b)
+{
+	var subLengths = 0;
+	for (var i = 0; i < a.table.length; i++)
+	{
+		subLengths += a.table[i].table.length;
+	}
+	for (var i = 0; i < b.table.length; i++)
+	{
+		subLengths += b.table[i].table.length;
+	}
+
+	var toRemove = a.table.length + b.table.length;
+	return toRemove - (Math.floor((subLengths - 1) / M) + 1);
+}
+
+// get2, set2 and saveSlot are helpers for accessing elements over two arrays.
+function get2(a, b, index)
+{
+	return index < a.length
+		? a[index]
+		: b[index - a.length];
+}
+
+function set2(a, b, index, value)
+{
+	if (index < a.length)
+	{
+		a[index] = value;
+	}
+	else
+	{
+		b[index - a.length] = value;
+	}
+}
+
+function saveSlot(a, b, index, slot)
+{
+	set2(a.table, b.table, index, slot);
+
+	var l = (index === 0 || index === a.lengths.length)
+		? 0
+		: get2(a.lengths, a.lengths, index - 1);
+
+	set2(a.lengths, b.lengths, index, l + length(slot));
+}
+
+// Creates a node or leaf with a given length at their arrays for perfomance.
+// Is only used by shuffle.
+function createNode(h, length)
+{
+	if (length < 0)
+	{
+		length = 0;
+	}
+	var a = {
+		ctor: '_Array',
+		height: h,
+		table: new Array(length)
+	};
+	if (h > 0)
+	{
+		a.lengths = new Array(length);
+	}
+	return a;
+}
+
+// Returns an array of two balanced nodes.
+function shuffle(a, b, toRemove)
+{
+	var newA = createNode(a.height, Math.min(M, a.table.length + b.table.length - toRemove));
+	var newB = createNode(a.height, newA.table.length - (a.table.length + b.table.length - toRemove));
+
+	// Skip the slots with size M. More precise: copy the slot references
+	// to the new node
+	var read = 0;
+	while (get2(a.table, b.table, read).table.length % M === 0)
+	{
+		set2(newA.table, newB.table, read, get2(a.table, b.table, read));
+		set2(newA.lengths, newB.lengths, read, get2(a.lengths, b.lengths, read));
+		read++;
+	}
+
+	// Pulling items from left to right, caching in a slot before writing
+	// it into the new nodes.
+	var write = read;
+	var slot = new createNode(a.height - 1, 0);
+	var from = 0;
+
+	// If the current slot is still containing data, then there will be at
+	// least one more write, so we do not break this loop yet.
+	while (read - write - (slot.table.length > 0 ? 1 : 0) < toRemove)
+	{
+		// Find out the max possible items for copying.
+		var source = get2(a.table, b.table, read);
+		var to = Math.min(M - slot.table.length, source.table.length);
+
+		// Copy and adjust size table.
+		slot.table = slot.table.concat(source.table.slice(from, to));
+		if (slot.height > 0)
+		{
+			var len = slot.lengths.length;
+			for (var i = len; i < len + to - from; i++)
+			{
+				slot.lengths[i] = length(slot.table[i]);
+				slot.lengths[i] += (i > 0 ? slot.lengths[i - 1] : 0);
+			}
+		}
+
+		from += to;
+
+		// Only proceed to next slots[i] if the current one was
+		// fully copied.
+		if (source.table.length <= to)
+		{
+			read++; from = 0;
+		}
+
+		// Only create a new slot if the current one is filled up.
+		if (slot.table.length === M)
+		{
+			saveSlot(newA, newB, write, slot);
+			slot = createNode(a.height - 1, 0);
+			write++;
+		}
+	}
+
+	// Cleanup after the loop. Copy the last slot into the new nodes.
+	if (slot.table.length > 0)
+	{
+		saveSlot(newA, newB, write, slot);
+		write++;
+	}
+
+	// Shift the untouched slots to the left
+	while (read < a.table.length + b.table.length )
+	{
+		saveSlot(newA, newB, write, get2(a.table, b.table, read));
+		read++;
+		write++;
+	}
+
+	return [newA, newB];
+}
+
+// Navigation functions
+function botRight(a)
+{
+	return a.table[a.table.length - 1];
+}
+function botLeft(a)
+{
+	return a.table[0];
+}
+
+// Copies a node for updating. Note that you should not use this if
+// only updating only one of "table" or "lengths" for performance reasons.
+function nodeCopy(a)
+{
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: a.table.slice()
+	};
+	if (a.height > 0)
+	{
+		newA.lengths = a.lengths.slice();
+	}
+	return newA;
+}
+
+// Returns how many items are in the tree.
+function length(array)
+{
+	if (array.height === 0)
+	{
+		return array.table.length;
+	}
+	else
+	{
+		return array.lengths[array.lengths.length - 1];
+	}
+}
+
+// Calculates in which slot of "table" the item probably is, then
+// find the exact slot via forward searching in  "lengths". Returns the index.
+function getSlot(i, a)
+{
+	var slot = i >> (5 * a.height);
+	while (a.lengths[slot] <= i)
+	{
+		slot++;
+	}
+	return slot;
+}
+
+// Recursively creates a tree with a given height containing
+// only the given item.
+function create(item, h)
+{
+	if (h === 0)
+	{
+		return {
+			ctor: '_Array',
+			height: 0,
+			table: [item]
+		};
+	}
+	return {
+		ctor: '_Array',
+		height: h,
+		table: [create(item, h - 1)],
+		lengths: [1]
+	};
+}
+
+// Recursively creates a tree that contains the given tree.
+function parentise(tree, h)
+{
+	if (h === tree.height)
+	{
+		return tree;
+	}
+
+	return {
+		ctor: '_Array',
+		height: h,
+		table: [parentise(tree, h - 1)],
+		lengths: [length(tree)]
+	};
+}
+
+// Emphasizes blood brotherhood beneath two trees.
+function siblise(a, b)
+{
+	return {
+		ctor: '_Array',
+		height: a.height + 1,
+		table: [a, b],
+		lengths: [length(a), length(a) + length(b)]
+	};
+}
+
+function toJSArray(a)
+{
+	var jsArray = new Array(length(a));
+	toJSArray_(jsArray, 0, a);
+	return jsArray;
+}
+
+function toJSArray_(jsArray, i, a)
+{
+	for (var t = 0; t < a.table.length; t++)
+	{
+		if (a.height === 0)
+		{
+			jsArray[i + t] = a.table[t];
+		}
+		else
+		{
+			var inc = t === 0 ? 0 : a.lengths[t - 1];
+			toJSArray_(jsArray, i + inc, a.table[t]);
+		}
+	}
+}
+
+function fromJSArray(jsArray)
+{
+	if (jsArray.length === 0)
+	{
+		return empty;
+	}
+	var h = Math.floor(Math.log(jsArray.length) / Math.log(M));
+	return fromJSArray_(jsArray, h, 0, jsArray.length);
+}
+
+function fromJSArray_(jsArray, h, from, to)
+{
+	if (h === 0)
+	{
+		return {
+			ctor: '_Array',
+			height: 0,
+			table: jsArray.slice(from, to)
+		};
+	}
+
+	var step = Math.pow(M, h);
+	var table = new Array(Math.ceil((to - from) / step));
+	var lengths = new Array(table.length);
+	for (var i = 0; i < table.length; i++)
+	{
+		table[i] = fromJSArray_(jsArray, h - 1, from + (i * step), Math.min(from + ((i + 1) * step), to));
+		lengths[i] = length(table[i]) + (i > 0 ? lengths[i - 1] : 0);
+	}
+	return {
+		ctor: '_Array',
+		height: h,
+		table: table,
+		lengths: lengths
+	};
+}
+
+return {
+	empty: empty,
+	fromList: fromList,
+	toList: toList,
+	initialize: F2(initialize),
+	append: F2(append),
+	push: F2(push),
+	slice: F3(slice),
+	get: F2(get),
+	set: F3(set),
+	map: F2(map),
+	indexedMap: F2(indexedMap),
+	foldl: F3(foldl),
+	foldr: F3(foldr),
+	length: length,
+
+	toJSArray: toJSArray,
+	fromJSArray: fromJSArray
+};
 
 }();
-
 //import Native.Utils //
 
 var _elm_lang$core$Native_Basics = function() {
@@ -2768,39 +1856,6 @@ var _elm_lang$core$Basics$LT = {ctor: 'LT'};
 var _elm_lang$core$Basics$JustOneMore = function (a) {
 	return {ctor: 'JustOneMore', _0: a};
 };
-
-//import Native.Utils //
-
-var _elm_lang$core$Native_Debug = function() {
-
-function log(tag, value)
-{
-	var msg = tag + ': ' + _elm_lang$core$Native_Utils.toString(value);
-	var process = process || {};
-	if (process.stdout)
-	{
-		process.stdout.write(msg);
-	}
-	else
-	{
-		console.log(msg);
-	}
-	return value;
-}
-
-function crash(message)
-{
-	throw new Error(message);
-}
-
-return {
-	crash: crash,
-	log: F2(log)
-};
-
-}();
-var _elm_lang$core$Debug$crash = _elm_lang$core$Native_Debug.crash;
-var _elm_lang$core$Debug$log = _elm_lang$core$Native_Debug.log;
 
 var _elm_lang$core$Maybe$withDefault = F2(
 	function ($default, maybe) {
@@ -3564,6 +2619,94 @@ var _elm_lang$core$List$indexedMap = F2(
 				_elm_lang$core$List$length(xs) - 1),
 			xs);
 	});
+
+var _elm_lang$core$Array$append = _elm_lang$core$Native_Array.append;
+var _elm_lang$core$Array$length = _elm_lang$core$Native_Array.length;
+var _elm_lang$core$Array$isEmpty = function (array) {
+	return _elm_lang$core$Native_Utils.eq(
+		_elm_lang$core$Array$length(array),
+		0);
+};
+var _elm_lang$core$Array$slice = _elm_lang$core$Native_Array.slice;
+var _elm_lang$core$Array$set = _elm_lang$core$Native_Array.set;
+var _elm_lang$core$Array$get = F2(
+	function (i, array) {
+		return ((_elm_lang$core$Native_Utils.cmp(0, i) < 1) && (_elm_lang$core$Native_Utils.cmp(
+			i,
+			_elm_lang$core$Native_Array.length(array)) < 0)) ? _elm_lang$core$Maybe$Just(
+			A2(_elm_lang$core$Native_Array.get, i, array)) : _elm_lang$core$Maybe$Nothing;
+	});
+var _elm_lang$core$Array$push = _elm_lang$core$Native_Array.push;
+var _elm_lang$core$Array$empty = _elm_lang$core$Native_Array.empty;
+var _elm_lang$core$Array$filter = F2(
+	function (isOkay, arr) {
+		var update = F2(
+			function (x, xs) {
+				return isOkay(x) ? A2(_elm_lang$core$Native_Array.push, x, xs) : xs;
+			});
+		return A3(_elm_lang$core$Native_Array.foldl, update, _elm_lang$core$Native_Array.empty, arr);
+	});
+var _elm_lang$core$Array$foldr = _elm_lang$core$Native_Array.foldr;
+var _elm_lang$core$Array$foldl = _elm_lang$core$Native_Array.foldl;
+var _elm_lang$core$Array$indexedMap = _elm_lang$core$Native_Array.indexedMap;
+var _elm_lang$core$Array$map = _elm_lang$core$Native_Array.map;
+var _elm_lang$core$Array$toIndexedList = function (array) {
+	return A3(
+		_elm_lang$core$List$map2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		A2(
+			_elm_lang$core$List$range,
+			0,
+			_elm_lang$core$Native_Array.length(array) - 1),
+		_elm_lang$core$Native_Array.toList(array));
+};
+var _elm_lang$core$Array$toList = _elm_lang$core$Native_Array.toList;
+var _elm_lang$core$Array$fromList = _elm_lang$core$Native_Array.fromList;
+var _elm_lang$core$Array$initialize = _elm_lang$core$Native_Array.initialize;
+var _elm_lang$core$Array$repeat = F2(
+	function (n, e) {
+		return A2(
+			_elm_lang$core$Array$initialize,
+			n,
+			_elm_lang$core$Basics$always(e));
+	});
+var _elm_lang$core$Array$Array = {ctor: 'Array'};
+
+//import Native.Utils //
+
+var _elm_lang$core$Native_Debug = function() {
+
+function log(tag, value)
+{
+	var msg = tag + ': ' + _elm_lang$core$Native_Utils.toString(value);
+	var process = process || {};
+	if (process.stdout)
+	{
+		process.stdout.write(msg);
+	}
+	else
+	{
+		console.log(msg);
+	}
+	return value;
+}
+
+function crash(message)
+{
+	throw new Error(message);
+}
+
+return {
+	crash: crash,
+	log: F2(log)
+};
+
+}();
+var _elm_lang$core$Debug$crash = _elm_lang$core$Native_Debug.crash;
+var _elm_lang$core$Debug$log = _elm_lang$core$Native_Debug.log;
 
 var _elm_lang$core$Result$toMaybe = function (result) {
 	var _p0 = result;
@@ -5047,2021 +4190,269 @@ var _elm_lang$core$Platform$Task = {ctor: 'Task'};
 var _elm_lang$core$Platform$ProcessId = {ctor: 'ProcessId'};
 var _elm_lang$core$Platform$Router = {ctor: 'Router'};
 
-var _elm_community$linear_algebra$Math_Vector3$cross = _elm_community$linear_algebra$Native_MJS.v3cross;
-var _elm_community$linear_algebra$Math_Vector3$dot = _elm_community$linear_algebra$Native_MJS.v3dot;
-var _elm_community$linear_algebra$Math_Vector3$scale = _elm_community$linear_algebra$Native_MJS.v3scale;
-var _elm_community$linear_algebra$Math_Vector3$normalize = _elm_community$linear_algebra$Native_MJS.v3normalize;
-var _elm_community$linear_algebra$Math_Vector3$distanceSquared = _elm_community$linear_algebra$Native_MJS.v3distanceSquared;
-var _elm_community$linear_algebra$Math_Vector3$distance = _elm_community$linear_algebra$Native_MJS.v3distance;
-var _elm_community$linear_algebra$Math_Vector3$lengthSquared = _elm_community$linear_algebra$Native_MJS.v3lengthSquared;
-var _elm_community$linear_algebra$Math_Vector3$length = _elm_community$linear_algebra$Native_MJS.v3length;
-var _elm_community$linear_algebra$Math_Vector3$direction = _elm_community$linear_algebra$Native_MJS.v3direction;
-var _elm_community$linear_algebra$Math_Vector3$negate = _elm_community$linear_algebra$Native_MJS.v3neg;
-var _elm_community$linear_algebra$Math_Vector3$sub = _elm_community$linear_algebra$Native_MJS.v3sub;
-var _elm_community$linear_algebra$Math_Vector3$add = _elm_community$linear_algebra$Native_MJS.v3add;
-var _elm_community$linear_algebra$Math_Vector3$fromRecord = _elm_community$linear_algebra$Native_MJS.fromRecord3;
-var _elm_community$linear_algebra$Math_Vector3$fromTuple = _elm_community$linear_algebra$Native_MJS.fromTuple3;
-var _elm_community$linear_algebra$Math_Vector3$toRecord = _elm_community$linear_algebra$Native_MJS.toRecord3;
-var _elm_community$linear_algebra$Math_Vector3$toTuple = _elm_community$linear_algebra$Native_MJS.toTuple3;
-var _elm_community$linear_algebra$Math_Vector3$setZ = _elm_community$linear_algebra$Native_MJS.v3setZ;
-var _elm_community$linear_algebra$Math_Vector3$setY = _elm_community$linear_algebra$Native_MJS.v3setY;
-var _elm_community$linear_algebra$Math_Vector3$setX = _elm_community$linear_algebra$Native_MJS.v3setX;
-var _elm_community$linear_algebra$Math_Vector3$getZ = _elm_community$linear_algebra$Native_MJS.v3getZ;
-var _elm_community$linear_algebra$Math_Vector3$getY = _elm_community$linear_algebra$Native_MJS.v3getY;
-var _elm_community$linear_algebra$Math_Vector3$getX = _elm_community$linear_algebra$Native_MJS.v3getX;
-var _elm_community$linear_algebra$Math_Vector3$k = A3(_elm_community$linear_algebra$Native_MJS.vec3, 0, 0, 1);
-var _elm_community$linear_algebra$Math_Vector3$j = A3(_elm_community$linear_algebra$Native_MJS.vec3, 0, 1, 0);
-var _elm_community$linear_algebra$Math_Vector3$i = A3(_elm_community$linear_algebra$Native_MJS.vec3, 1, 0, 0);
-var _elm_community$linear_algebra$Math_Vector3$vec3 = _elm_community$linear_algebra$Native_MJS.vec3;
-var _elm_community$linear_algebra$Math_Vector3$Vec3 = {ctor: 'Vec3'};
-
-var _elm_community$linear_algebra$Math_Matrix4$makeFromList = _elm_community$linear_algebra$Native_MJS.m4x4fromList;
-var _elm_community$linear_algebra$Math_Matrix4$makeBasis = _elm_community$linear_algebra$Native_MJS.m4x4makeBasis;
-var _elm_community$linear_algebra$Math_Matrix4$transpose = _elm_community$linear_algebra$Native_MJS.m4x4transpose;
-var _elm_community$linear_algebra$Math_Matrix4$makeLookAt = _elm_community$linear_algebra$Native_MJS.m4x4makeLookAt;
-var _elm_community$linear_algebra$Math_Matrix4$translate = _elm_community$linear_algebra$Native_MJS.m4x4translate;
-var _elm_community$linear_algebra$Math_Matrix4$translate3 = _elm_community$linear_algebra$Native_MJS.m4x4translate3;
-var _elm_community$linear_algebra$Math_Matrix4$makeTranslate = _elm_community$linear_algebra$Native_MJS.m4x4makeTranslate;
-var _elm_community$linear_algebra$Math_Matrix4$makeTranslate3 = _elm_community$linear_algebra$Native_MJS.m4x4makeTranslate3;
-var _elm_community$linear_algebra$Math_Matrix4$scale = _elm_community$linear_algebra$Native_MJS.m4x4scale;
-var _elm_community$linear_algebra$Math_Matrix4$scale3 = _elm_community$linear_algebra$Native_MJS.m4x4scale3;
-var _elm_community$linear_algebra$Math_Matrix4$makeScale = _elm_community$linear_algebra$Native_MJS.m4x4makeScale;
-var _elm_community$linear_algebra$Math_Matrix4$makeScale3 = _elm_community$linear_algebra$Native_MJS.m4x4makeScale3;
-var _elm_community$linear_algebra$Math_Matrix4$rotate = _elm_community$linear_algebra$Native_MJS.m4x4rotate;
-var _elm_community$linear_algebra$Math_Matrix4$makeRotate = _elm_community$linear_algebra$Native_MJS.m4x4makeRotate;
-var _elm_community$linear_algebra$Math_Matrix4$mulAffine = _elm_community$linear_algebra$Native_MJS.m4x4mulAffine;
-var _elm_community$linear_algebra$Math_Matrix4$mul = _elm_community$linear_algebra$Native_MJS.m4x4mul;
-var _elm_community$linear_algebra$Math_Matrix4$makeOrtho2D = _elm_community$linear_algebra$Native_MJS.m4x4makeOrtho2D;
-var _elm_community$linear_algebra$Math_Matrix4$makeOrtho = _elm_community$linear_algebra$Native_MJS.m4x4makeOrtho;
-var _elm_community$linear_algebra$Math_Matrix4$makePerspective = _elm_community$linear_algebra$Native_MJS.m4x4makePerspective;
-var _elm_community$linear_algebra$Math_Matrix4$makeFrustum = _elm_community$linear_algebra$Native_MJS.m4x4makeFrustum;
-var _elm_community$linear_algebra$Math_Matrix4$inverseOrthonormal = _elm_community$linear_algebra$Native_MJS.m4x4inverseOrthonormal;
-var _elm_community$linear_algebra$Math_Matrix4$inverse = _elm_community$linear_algebra$Native_MJS.m4x4inverse;
-var _elm_community$linear_algebra$Math_Matrix4$identity = _elm_community$linear_algebra$Native_MJS.m4x4identity;
-var _elm_community$linear_algebra$Math_Matrix4$transform = _elm_community$linear_algebra$Native_MJS.v3mul4x4;
-var _elm_community$linear_algebra$Math_Matrix4$Mat4 = {ctor: 'Mat4'};
-
-
-/*
- * Copyright (c) 2010 Mozilla Corporation
- * Copyright (c) 2010 Vladimir Vukicevic
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
- */
-
-/*
- * File: mjs
- *
- * Vector and Matrix math utilities for JavaScript, optimized for WebGL.
- * Edited to work with the Elm Programming Language
- */
-
-var _elm_community$linear_algebra$Native_Math_Vector2 = function() {
-
-    var MJS_FLOAT_ARRAY_TYPE = Float32Array;
-
-    var V2 = { };
-
-    if (MJS_FLOAT_ARRAY_TYPE == Array) {
-        V2.$ = function V2_$(x, y) {
-            return [x, y];
-        };
-    } else {
-        V2.$ = function V2_$(x, y) {
-            return new MJS_FLOAT_ARRAY_TYPE([x, y]);
-        };
-    }
-
-    V2.getX = function V2_getX(a) {
-        return a[0];
-    }
-    V2.getY = function V2_getY(a) {
-        return a[1];
-    }
-    V2.setX = function V2_setX(x, a) {
-        return new MJS_FLOAT_ARRAY_TYPE([x, a[1]]);
-    }
-    V2.setY = function V2_setY(y, a) {
-        return new MJS_FLOAT_ARRAY_TYPE([a[0], y]);
-    }
-
-    V2.toTuple = function V2_toTuple(a) {
-        return {
-            ctor:"_Tuple2",
-            _0:a[0],
-            _1:a[1]
-        };
-    };
-    V2.fromTuple = function V2_fromTuple(t) {
-        return new MJS_FLOAT_ARRAY_TYPE([t._0, t._1]);
-    };
-
-    V2.toRecord = function V2_toRecord(a) {
-        return {
-            _:{},
-            x:a[0],
-            y:a[1]
-        };
-    };
-    V2.fromRecord = function V2_fromRecord(r) {
-        return new MJS_FLOAT_ARRAY_TYPE([r.x, r.y]);
-    };
-
-    V2.add = function V2_add(a, b) {
-        var r = new MJS_FLOAT_ARRAY_TYPE(2);
-        r[0] = a[0] + b[0];
-        r[1] = a[1] + b[1];
-        return r;
-    };
-
-    V2.sub = function V2_sub(a, b) {
-        var r = new MJS_FLOAT_ARRAY_TYPE(2);
-        r[0] = a[0] - b[0];
-        r[1] = a[1] - b[1];
-        return r;
-    };
-
-    V2.neg = function V2_neg(a) {
-        var r = new MJS_FLOAT_ARRAY_TYPE(2);
-        r[0] = - a[0];
-        r[1] = - a[1];
-        return r;
-    };
-
-    V2.direction = function V2_direction(a, b) {
-        var r = new MJS_FLOAT_ARRAY_TYPE(2);
-        r[0] = a[0] - b[0];
-        r[1] = a[1] - b[1];
-        var im = 1.0 / V2.length(r);
-        r[0] = r[0] * im;
-        r[1] = r[1] * im;
-        return r;
-    };
-
-    V2.length = function V2_length(a) {
-        return Math.sqrt(a[0]*a[0] + a[1]*a[1]);
-    };
-
-    V2.lengthSquared = function V2_lengthSquared(a) {
-        return a[0]*a[0] + a[1]*a[1];
-    };
-
-    V2.distance = function V2_distance(a, b) {
-        var dx = a[0] - b[0];
-        var dy = a[1] - b[1];
-        return Math.sqrt(dx * dx + dy * dy);
-    };
-
-    V2.distanceSquared = function V2_distanceSquared(a, b) {
-        var dx = a[0] - b[0];
-        var dy = a[1] - b[1];
-        return dx * dx + dy * dy;
-    };
-
-    V2.normalize = function V2_normalize(a) {
-        var r = new MJS_FLOAT_ARRAY_TYPE(2);
-        var im = 1.0 / V2.length(a);
-        r[0] = a[0] * im;
-        r[1] = a[1] * im;
-        return r;
-    };
-
-    V2.scale = function V2_scale(k, a) {
-        var r = new MJS_FLOAT_ARRAY_TYPE(2);
-        r[0] = a[0] * k;
-        r[1] = a[1] * k;
-        return r;
-    };
-
-    V2.dot = function V2_dot(a, b) {
-        return a[0] * b[0] + a[1] * b[1];
-    };
-
-    return {
-        vec2: F2(V2.$),
-        getX: V2.getX,
-        getY: V2.getY,
-        setX: F2(V2.setX),
-        setY: F2(V2.setY),
-        toTuple: V2.toTuple,
-        toRecord: V2.toRecord,
-        fromTuple: V2.fromTuple,
-        fromRecord: V2.fromRecord,
-        add: F2(V2.add),
-        sub: F2(V2.sub),
-        neg: V2.neg,
-        direction: F2(V2.direction),
-        length: V2.length,
-        lengthSquared: V2.lengthSquared,
-        distance: F2(V2.distance),
-        distanceSquared: F2(V2.distanceSquared),
-        normalize: V2.normalize,
-        scale: F2(V2.scale),
-        dot: F2(V2.dot)
-    };
-
-}();
-
-var _elm_community$linear_algebra$Math_Vector2$dot = _elm_community$linear_algebra$Native_Math_Vector2.dot;
-var _elm_community$linear_algebra$Math_Vector2$scale = _elm_community$linear_algebra$Native_Math_Vector2.scale;
-var _elm_community$linear_algebra$Math_Vector2$normalize = _elm_community$linear_algebra$Native_Math_Vector2.normalize;
-var _elm_community$linear_algebra$Math_Vector2$distanceSquared = _elm_community$linear_algebra$Native_Math_Vector2.distanceSquared;
-var _elm_community$linear_algebra$Math_Vector2$distance = _elm_community$linear_algebra$Native_Math_Vector2.distance;
-var _elm_community$linear_algebra$Math_Vector2$lengthSquared = _elm_community$linear_algebra$Native_Math_Vector2.lengthSquared;
-var _elm_community$linear_algebra$Math_Vector2$length = _elm_community$linear_algebra$Native_Math_Vector2.length;
-var _elm_community$linear_algebra$Math_Vector2$direction = _elm_community$linear_algebra$Native_Math_Vector2.direction;
-var _elm_community$linear_algebra$Math_Vector2$negate = _elm_community$linear_algebra$Native_Math_Vector2.neg;
-var _elm_community$linear_algebra$Math_Vector2$sub = _elm_community$linear_algebra$Native_Math_Vector2.sub;
-var _elm_community$linear_algebra$Math_Vector2$add = _elm_community$linear_algebra$Native_Math_Vector2.add;
-var _elm_community$linear_algebra$Math_Vector2$fromRecord = _elm_community$linear_algebra$Native_Math_Vector2.fromRecord;
-var _elm_community$linear_algebra$Math_Vector2$fromTuple = _elm_community$linear_algebra$Native_Math_Vector2.fromTuple;
-var _elm_community$linear_algebra$Math_Vector2$toRecord = _elm_community$linear_algebra$Native_Math_Vector2.toRecord;
-var _elm_community$linear_algebra$Math_Vector2$toTuple = _elm_community$linear_algebra$Native_Math_Vector2.toTuple;
-var _elm_community$linear_algebra$Math_Vector2$setY = _elm_community$linear_algebra$Native_Math_Vector2.setY;
-var _elm_community$linear_algebra$Math_Vector2$setX = _elm_community$linear_algebra$Native_Math_Vector2.setX;
-var _elm_community$linear_algebra$Math_Vector2$getY = _elm_community$linear_algebra$Native_Math_Vector2.getY;
-var _elm_community$linear_algebra$Math_Vector2$getX = _elm_community$linear_algebra$Native_Math_Vector2.getX;
-var _elm_community$linear_algebra$Math_Vector2$vec2 = _elm_community$linear_algebra$Native_Math_Vector2.vec2;
-var _elm_community$linear_algebra$Math_Vector2$Vec2 = {ctor: 'Vec2'};
-
-// eslint-disable-next-line no-unused-vars, camelcase
-var _elm_community$webgl$Native_Texture = function () {
-
-  var NEAREST = 9728;
-  var LINEAR = 9729;
-  var CLAMP_TO_EDGE = 33071;
-
-  function guid() {
-    // eslint-disable-next-line camelcase
-    return _elm_lang$core$Native_Utils.guid();
-  }
-
-  function load(magnify, mininify, horizontalWrap, verticalWrap, flipY, url) {
-    // eslint-disable-next-line camelcase
-    var Scheduler = _elm_lang$core$Native_Scheduler;
-    var isMipmap = mininify !== NEAREST && mininify !== LINEAR;
-    return Scheduler.nativeBinding(function (callback) {
-      var img = new Image();
-      function createTexture(gl) {
-        var tex = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flipY);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magnify);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, mininify);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, horizontalWrap);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, verticalWrap);
-        if (isMipmap) {
-          gl.generateMipmap(gl.TEXTURE_2D);
-        }
-        gl.bindTexture(gl.TEXTURE_2D, null);
-        return tex;
-      }
-      img.onload = function () {
-        var width = img.width;
-        var height = img.height;
-        var widthPowerOfTwo = (width & (width - 1)) === 0;
-        var heightPowerOfTwo = (height & (height - 1)) === 0;
-        var isSizeValid = (widthPowerOfTwo && heightPowerOfTwo) || (
-          !isMipmap
-          && horizontalWrap === CLAMP_TO_EDGE
-          && verticalWrap === CLAMP_TO_EDGE
-        );
-        if (isSizeValid) {
-          callback(Scheduler.succeed({
-            ctor: 'Texture',
-            id: guid(),
-            createTexture: createTexture,
-            width: width,
-            height: height
-          }));
-        } else {
-          callback(Scheduler.fail({
-            ctor: 'SizeError',
-            _0: width,
-            _1: height
-          }));
-        }
-      };
-      img.onerror = function () {
-        callback(Scheduler.fail({ ctor: 'LoadError' }));
-      };
-      if (url.slice(0, 5) !== 'data:') {
-        img.crossOrigin = 'Anonymous';
-      }
-      img.src = url;
-    });
-  }
-
-  function size(texture) {
-    // eslint-disable-next-line camelcase
-    return _elm_lang$core$Native_Utils.Tuple2(texture.width, texture.height);
-  }
-
-  return {
-    size: size,
-    load: F6(load)
-  };
-
-}();
-
-// eslint-disable-next-line no-unused-vars, camelcase
-var _elm_community$webgl$Native_WebGL = function () {
-
-  // setup logging
-  // eslint-disable-next-line no-unused-vars
-  function LOG(msg) {
-    // console.log(msg);
-  }
-
-  function guid() {
-    // eslint-disable-next-line camelcase
-    return _elm_lang$core$Native_Utils.guid();
-  }
-  function listEach(fn, list) {
-    while (list.ctor !== '[]') {
-      fn(list._0);
-      list = list._1;
-    }
-  }
-  function listLength(list) {
-    var length = 0;
-    while (list.ctor !== '[]') {
-      length++;
-      list = list._1;
-    }
-    return length;
-  }
-
-  var rAF = typeof requestAnimationFrame !== 'undefined' ?
-    requestAnimationFrame :
-    function (cb) { setTimeout(cb, 1000 / 60); };
-
-  function unsafeCoerceGLSL(src) {
-    return { src: src };
-  }
-
-  function entity(settings, vert, frag, buffer, uniforms) {
-
-    if (!buffer.guid) {
-      buffer.guid = guid();
-    }
-
-    return {
-      ctor: 'Entity',
-      vert: vert,
-      frag: frag,
-      buffer: buffer,
-      uniforms: uniforms,
-      settings: settings
-    };
-
-  }
-
- /**
-  *  Apply setting to the gl context
-  *
-  *  @param {WebGLRenderingContext} gl context
-  *  @param {Setting} setting coming in from Elm
-  */
-  function applySetting(gl, setting) {
-    switch (setting.ctor) {
-      case 'Blend':
-        gl.enable(gl.BLEND);
-        // eq1 f11 f12 eq2 f21 f22 r g b a
-        gl.blendEquationSeparate(setting._0, setting._3);
-        gl.blendFuncSeparate(setting._1, setting._2, setting._4, setting._5);
-        gl.blendColor(setting._6, setting._7, setting._8, setting._9);
-        break;
-      case 'DepthTest':
-        gl.enable(gl.DEPTH_TEST);
-        // func mask near far
-        gl.depthFunc(setting._0);
-        gl.depthMask(setting._1);
-        gl.depthRange(setting._2, setting._3);
-        break;
-      case 'StencilTest':
-        gl.enable(gl.STENCIL_TEST);
-        // ref mask writeMask test1 fail1 zfail1 zpass1 test2 fail2 zfail2 zpass2
-        gl.stencilFuncSeparate(gl.FRONT, setting._3, setting._0, setting._1);
-        gl.stencilOpSeparate(gl.FRONT, setting._4, setting._5, setting._6);
-        gl.stencilMaskSeparate(gl.FRONT, setting._2);
-        gl.stencilFuncSeparate(gl.BACK, setting._7, setting._0, setting._1);
-        gl.stencilOpSeparate(gl.BACK, setting._8, setting._9, setting._10);
-        gl.stencilMaskSeparate(gl.BACK, setting._2);
-        break;
-      case 'Scissor':
-        gl.enable(gl.SCISSOR_TEST);
-        gl.scissor(setting._0, setting._1, setting._2, setting._3);
-        break;
-      case 'ColorMask':
-        gl.colorMask(setting._0, setting._1, setting._2, setting._3);
-        break;
-      case 'CullFace':
-        gl.enable(gl.CULL_FACE);
-        gl.cullFace(setting._0);
-        break;
-      case 'PolygonOffset':
-        gl.enable(gl.POLYGON_OFFSET_FILL);
-        gl.polygonOffset(setting._0, setting._1);
-        break;
-      case 'SampleCoverage':
-        gl.enable(gl.SAMPLE_COVERAGE);
-        gl.sampleCoverage(setting._0, setting._1);
-        break;
-      case 'SampleAlphaToCoverage':
-        gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
-        break;
-    }
-  }
-
- /**
-  *  Revert setting that was applied to the gl context
-  *
-  *  @param {WebGLRenderingContext} gl context
-  *  @param {Setting} setting coming in from Elm
-  */
-  function revertSetting(gl, setting) {
-    switch (setting.ctor) {
-      case 'Blend':
-        gl.disable(gl.BLEND);
-        break;
-      case 'DepthTest':
-        gl.disable(gl.DEPTH_TEST);
-        break;
-      case 'StencilTest':
-        gl.disable(gl.STENCIL_TEST);
-        break;
-      case 'Scissor':
-        gl.disable(gl.SCISSOR_TEST);
-        break;
-      case 'ColorMask':
-        gl.colorMask(true, true, true, true);
-        break;
-      case 'CullFace':
-        gl.disable(gl.CULL_FACE);
-        break;
-      case 'PolygonOffset':
-        gl.disable(gl.POLYGON_OFFSET_FILL);
-        break;
-      case 'SampleCoverage':
-        gl.disable(gl.SAMPLE_COVERAGE);
-        break;
-      case 'SampleAlphaToCoverage':
-        gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
-        break;
-    }
-  }
-
-  function doCompile(gl, src, type) {
-
-    var shader = gl.createShader(type);
-    LOG('Created shader');
-
-    gl.shaderSource(shader, src);
-    gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      throw gl.getShaderInfoLog(shader);
-    }
-
-    return shader;
-
-  }
-
-  function doLink(gl, vshader, fshader) {
-
-    var program = gl.createProgram();
-    LOG('Created program');
-
-    gl.attachShader(program, vshader);
-    gl.attachShader(program, fshader);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      throw gl.getProgramInfoLog(program);
-    }
-
-    return program;
-
-  }
-
-  function getRenderInfo(gl, renderType) {
-    switch (renderType) {
-      case 'Triangles':
-        return { mode: gl.TRIANGLES, elemSize: 3, indexSize: 0 };
-      case 'LineStrip':
-        return { mode: gl.LINE_STRIP, elemSize: 1, indexSize: 0 };
-      case 'LineLoop':
-        return { mode: gl.LINE_LOOP, elemSize: 1, indexSize: 0 };
-      case 'Points':
-        return { mode: gl.POINTS, elemSize: 1, indexSize: 0 };
-      case 'Lines':
-        return { mode: gl.LINES, elemSize: 2, indexSize: 0 };
-      case 'TriangleStrip':
-        return { mode: gl.TRIANGLE_STRIP, elemSize: 1, indexSize: 0 };
-      case 'TriangleFan':
-        return { mode: gl.TRIANGLE_FAN, elemSize: 1, indexSize: 0 };
-      case 'IndexedTriangles':
-        return { mode: gl.TRIANGLES, elemSize: 1, indexSize: 3 };
-    }
-  }
-
-  function getAttributeInfo(gl, type) {
-    switch (type) {
-      case gl.FLOAT:
-        return { size: 1, type: Float32Array, baseType: gl.FLOAT };
-      case gl.FLOAT_VEC2:
-        return { size: 2, type: Float32Array, baseType: gl.FLOAT };
-      case gl.FLOAT_VEC3:
-        return { size: 3, type: Float32Array, baseType: gl.FLOAT };
-      case gl.FLOAT_VEC4:
-        return { size: 4, type: Float32Array, baseType: gl.FLOAT };
-      case gl.INT:
-        return { size: 1, type: Int32Array, baseType: gl.INT };
-      case gl.INT_VEC2:
-        return { size: 2, type: Int32Array, baseType: gl.INT };
-      case gl.INT_VEC3:
-        return { size: 3, type: Int32Array, baseType: gl.INT };
-      case gl.INT_VEC4:
-        return { size: 4, type: Int32Array, baseType: gl.INT };
-    }
-  }
-
- /**
-  *  Form the buffer for a given attribute.
-  *
-  *  @param {WebGLRenderingContext} gl context
-  *  @param {WebGLActiveInfo} attribute the attribute to bind to.
-  *         We use its name to grab the record by name and also to know
-  *         how many elements we need to grab.
-  *  @param {List} bufferElems The list coming in from Elm.
-  *  @param {Number} elemSize The length of the number of vertices that
-  *         complete one 'thing' based on the drawing mode.
-  *         ie, 2 for Lines, 3 for Triangles, etc.
-  *  @return {WebGLBuffer}
-  */
-  function doBindAttribute(gl, attribute, bufferElems, elemSize) {
-    var idxKeys = [];
-    for (var i = 0; i < elemSize; i++) {
-      idxKeys.push('_' + i);
-    }
-
-    function dataFill(data, cnt, fillOffset, elem, key) {
-      if (elemSize === 1) {
-        for (var i = 0; i < cnt; i++) {
-          data[fillOffset++] = cnt === 1 ? elem[key] : elem[key][i];
-        }
-      } else {
-        idxKeys.forEach(function (idx) {
-          for (var i = 0; i < cnt; i++) {
-            data[fillOffset++] = cnt === 1 ? elem[idx][key] : elem[idx][key][i];
-          }
-        });
-      }
-    }
-
-    var attributeInfo = getAttributeInfo(gl, attribute.type);
-
-    if (attributeInfo === undefined) {
-      throw new Error('No info available for: ' + attribute.type);
-    }
-
-    var dataIdx = 0;
-    var array = new attributeInfo.type(listLength(bufferElems) * attributeInfo.size * elemSize);
-
-    listEach(function (elem) {
-      dataFill(array, attributeInfo.size, dataIdx, elem, attribute.name);
-      dataIdx += attributeInfo.size * elemSize;
-    }, bufferElems);
-
-    var buffer = gl.createBuffer();
-    LOG('Created attribute buffer ' + attribute.name);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
-    return buffer;
-  }
-
- /**
-  *  This sets up the binding caching buffers.
-  *
-  *  We don't actually bind any buffers now except for the indices buffer.
-  *  The problem with filling the buffers here is that it is possible to
-  *  have a buffer shared between two webgl shaders;
-  *  which could have different active attributes. If we bind it here against
-  *  a particular program, we might not bind them all. That final bind is now
-  *  done right before drawing.
-  *
-  *  @param {WebGLRenderingContext} gl context
-  *  @param {Object} renderType
-  *  @param {Number} renderType.indexSize size of the index
-  *  @param {Number} renderType.elemSize size of the element
-  *  @param {Drawable} drawable a drawable object from Elm
-  *         that contains elements and optionally indices
-  *  @return {Object} buffer - an object with the following properties
-  *  @return {Number} buffer.numIndices
-  *  @return {WebGLBuffer} buffer.indexBuffer
-  *  @return {Object} buffer.buffers - will be used to buffer attributes
-  */
-  function doBindSetup(gl, renderType, drawable) {
-    LOG('Created index buffer');
-    var indexBuffer = gl.createBuffer();
-    var indices = (renderType.indexSize === 0)
-      ? makeSequentialBuffer(renderType.elemSize * listLength(drawable._0))
-      : makeIndexedBuffer(drawable._1, renderType.indexSize);
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-
-    return {
-      numIndices: indices.length,
-      indexBuffer: indexBuffer,
-      buffers: {}
-    };
-  }
-
- /**
-  *  Create an indices array and fill it with 0..n
-  *
-  *  @param {Number} numIndices The number of indices
-  *  @return {Uint16Array} indices
-  */
-  function makeSequentialBuffer(numIndices) {
-    var indices = new Uint16Array(numIndices);
-    for (var i = 0; i < numIndices; i++) {
-      indices[i] = i;
-    }
-    return indices;
-  }
-
- /**
-  *  Create an indices array and fill it from indices
-  *  based on the size of the index
-  *
-  *  @param {List} indicesList the list of indices
-  *  @param {Number} indexSize the size of the index
-  *  @return {Uint16Array} indices
-  */
-  function makeIndexedBuffer(indicesList, indexSize) {
-    var indices = new Uint16Array(listLength(indicesList) * indexSize);
-    var fillOffset = 0;
-    var i;
-    listEach(function (elem) {
-      if (indexSize === 1) {
-        indices[fillOffset++] = elem;
-      } else {
-        for (i = 0; i < indexSize; i++) {
-          indices[fillOffset++] = elem['_' + i.toString()];
-        }
-      }
-    }, indicesList);
-    return indices;
-  }
-
-  function getProgID(vertID, fragID) {
-    return vertID + '#' + fragID;
-  }
-
-  function drawGL(domNode, data) {
-
-    var model = data.model;
-    var gl = model.cache.gl;
-
-    if (!gl) {
-      return domNode;
-    }
-
-    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-    LOG('Drawing');
-
-    function drawEntity(entity) {
-      if (listLength(entity.buffer._0) === 0) {
-        return;
-      }
-
-      var progid;
-      var program;
-      if (entity.vert.id && entity.frag.id) {
-        progid = getProgID(entity.vert.id, entity.frag.id);
-        program = model.cache.programs[progid];
-      }
-
-      if (!program) {
-
-        var vshader;
-        if (entity.vert.id) {
-          vshader = model.cache.shaders[entity.vert.id];
-        } else {
-          entity.vert.id = guid();
-        }
-
-        if (!vshader) {
-          vshader = doCompile(gl, entity.vert.src, gl.VERTEX_SHADER);
-          model.cache.shaders[entity.vert.id] = vshader;
-        }
-
-        var fshader;
-        if (entity.frag.id) {
-          fshader = model.cache.shaders[entity.frag.id];
-        } else {
-          entity.frag.id = guid();
-        }
-
-        if (!fshader) {
-          fshader = doCompile(gl, entity.frag.src, gl.FRAGMENT_SHADER);
-          model.cache.shaders[entity.frag.id] = fshader;
-        }
-
-        program = doLink(gl, vshader, fshader);
-        progid = getProgID(entity.vert.id, entity.frag.id);
-        model.cache.programs[progid] = program;
-
-      }
-
-      gl.useProgram(program);
-
-      progid = progid || getProgID(entity.vert.id, entity.frag.id);
-      var setters = model.cache.uniformSetters[progid];
-      if (!setters) {
-        setters = createUniformSetters(gl, model, program);
-        model.cache.uniformSetters[progid] = setters;
-      }
-
-      setUniforms(setters, entity.uniforms);
-
-      var entityType = getRenderInfo(gl, entity.buffer.ctor);
-      var buffer = model.cache.buffers[entity.buffer.guid];
-
-      if (!buffer) {
-        buffer = doBindSetup(gl, entityType, entity.buffer);
-        model.cache.buffers[entity.buffer.guid] = buffer;
-      }
-
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer.indexBuffer);
-
-      var numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
-
-      for (var i = 0; i < numAttributes; i++) {
-        var attribute = gl.getActiveAttrib(program, i);
-
-        var attribLocation = gl.getAttribLocation(program, attribute.name);
-        gl.enableVertexAttribArray(attribLocation);
-
-        if (buffer.buffers[attribute.name] === undefined) {
-          buffer.buffers[attribute.name] = doBindAttribute(gl, attribute, entity.buffer._0, entityType.elemSize);
-        }
-        var attributeBuffer = buffer.buffers[attribute.name];
-        var attributeInfo = getAttributeInfo(gl, attribute.type);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, attributeBuffer);
-        gl.vertexAttribPointer(attribLocation, attributeInfo.size, attributeInfo.baseType, false, 0, 0);
-      }
-
-      listEach(function (setting) {
-        applySetting(gl, setting);
-      }, entity.settings);
-
-      gl.drawElements(entityType.mode, buffer.numIndices, gl.UNSIGNED_SHORT, 0);
-
-      listEach(function (setting) {
-        revertSetting(gl, setting);
-      }, entity.settings);
-
-    }
-
-    listEach(drawEntity, model.entities);
-    return domNode;
-  }
-
-  function createUniformSetters(gl, model, program) {
-    var textureCounter = 0;
-    function createUniformSetter(program, uniform) {
-      var uniformLocation = gl.getUniformLocation(program, uniform.name);
-      switch (uniform.type) {
-        case gl.INT:
-          return function (value) {
-            gl.uniform1i(uniformLocation, value);
-          };
-        case gl.FLOAT:
-          return function (value) {
-            gl.uniform1f(uniformLocation, value);
-          };
-        case gl.FLOAT_VEC2:
-          return function (value) {
-            gl.uniform2fv(uniformLocation, new Float32Array(value));
-          };
-        case gl.FLOAT_VEC3:
-          return function (value) {
-            gl.uniform3fv(uniformLocation, new Float32Array(value));
-          };
-        case gl.FLOAT_VEC4:
-          return function (value) {
-            gl.uniform4fv(uniformLocation, new Float32Array(value));
-          };
-        case gl.FLOAT_MAT4:
-          return function (value) {
-            gl.uniformMatrix4fv(uniformLocation, false, new Float32Array(value));
-          };
-        case gl.SAMPLER_2D:
-          var currentTexture = textureCounter++;
-          return function (texture) {
-            gl.activeTexture(gl.TEXTURE0 + currentTexture);
-            var tex = model.cache.textures[texture.id];
-            if (!tex) {
-              LOG('Created texture');
-              tex = texture.createTexture(gl);
-              model.cache.textures[texture.id] = tex;
-            }
-            gl.bindTexture(gl.TEXTURE_2D, tex);
-            gl.uniform1i(uniformLocation, currentTexture);
-          };
-        case gl.BOOL:
-          return function (value) {
-            gl.uniform1i(uniformLocation, value);
-          };
-        default:
-          LOG('Unsupported uniform type: ' + uniform.type);
-          return function () {};
-      }
-    }
-
-    var uniformSetters = {};
-    var numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-    for (var i = 0; i < numUniforms; i++) {
-      var uniform = gl.getActiveUniform(program, i);
-      uniformSetters[uniform.name] = createUniformSetter(program, uniform);
-    }
-
-    return uniformSetters;
-  }
-
-  function setUniforms(setters, values) {
-    Object.keys(values).forEach(function (name) {
-      var setter = setters[name];
-      if (setter) {
-        setter(values[name]);
-      }
-    });
-  }
-
-  // VIRTUAL-DOM WIDGET
-
-  function toHtml(options, factList, entities) {
-    var model = {
-      entities: entities,
-      cache: {},
-      options: options
-    };
-    // eslint-disable-next-line camelcase
-    return _elm_lang$virtual_dom$Native_VirtualDom.custom(factList, model, implementation);
-  }
-
-  var implementation = {
-    render: render,
-    diff: diff
-  };
-
-  /**
-   *  Creates canvas and schedules initial drawGL
-   *  @param {Object} model
-   *  @param {Object} model.cache that may contain the following properties:
-             gl, shaders, programs, uniformSetters, buffers, textures
-   *  @param {List<Option>} model.options list of options coming from Elm
-   *  @param {List<Entity>} model.entities list of entities coming from Elm
-   *  @return {HTMLElement} <canvas> if WebGL is supported, otherwise a <div>
-   */
-  function render(model) {
-
-    var contextAttributes = {
-      alpha: false,
-      depth: false,
-      stencil: false,
-      antialias: false,
-      premultipliedAlpha: false
-    };
-    var sceneSettings = [];
-
-    listEach(function (option) {
-      var s1 = option._0;
-      switch (option.ctor) {
-        case 'Alpha':
-          contextAttributes.alpha = true;
-          contextAttributes.premultipliedAlpha = s1;
-          break;
-        case 'Antialias':
-          contextAttributes.antialias = true;
-          break;
-        case 'Depth':
-          contextAttributes.depth = true;
-          sceneSettings.push(function (gl) {
-            gl.clearDepth(s1);
-          });
-          break;
-        case 'ClearColor':
-          sceneSettings.push(function (gl) {
-            gl.clearColor(option._0, option._1, option._2, option._3);
-          });
-          break;
-        case 'Stencil':
-          contextAttributes.stencil = true;
-          sceneSettings.push(function (gl) {
-            gl.clearStencil(s1);
-          });
-          break;
-      }
-    }, model.options);
-
-    LOG('Render canvas');
-    var canvas = document.createElement('canvas');
-    var gl = canvas.getContext && (
-      canvas.getContext('webgl', contextAttributes) ||
-      canvas.getContext('experimental-webgl', contextAttributes)
-    );
-
-    if (gl) {
-      sceneSettings.forEach(function (sceneSetting) {
-        sceneSetting(gl);
-      });
-    } else {
-      canvas = document.createElement('div');
-      canvas.innerHTML = '<a href="http://get.webgl.org/">Enable WebGL</a> to see this content!';
-    }
-
-    model.cache.gl = gl;
-    model.cache.shaders = [];
-    model.cache.programs = {};
-    model.cache.uniformSetters = {};
-    model.cache.buffers = [];
-    model.cache.textures = [];
-
-    // Render for the first time.
-    // This has to be done in animation frame,
-    // because the canvas is not in the DOM yet,
-    // when renderCanvas is called by virtual-dom
-    rAF(function () {
-      drawGL(canvas, {model: model});
-    });
-
-    return canvas;
-  }
-
-
-  function diff(oldModel, newModel) {
-    newModel.model.cache = oldModel.model.cache;
-    return {
-      applyPatch: drawGL,
-      data: newModel
-    };
-  }
-
-  return {
-    unsafeCoerceGLSL: unsafeCoerceGLSL,
-    entity: F5(entity),
-    toHtml: F3(toHtml)
-  };
-
-}();
-
-//import Native.List //
-
-var _elm_lang$core$Native_Array = function() {
-
-// A RRB-Tree has two distinct data types.
-// Leaf -> "height"  is always 0
-//         "table"   is an array of elements
-// Node -> "height"  is always greater than 0
-//         "table"   is an array of child nodes
-//         "lengths" is an array of accumulated lengths of the child nodes
-
-// M is the maximal table size. 32 seems fast. E is the allowed increase
-// of search steps when concatting to find an index. Lower values will
-// decrease balancing, but will increase search steps.
-var M = 32;
-var E = 2;
-
-// An empty array.
-var empty = {
-	ctor: '_Array',
-	height: 0,
-	table: []
-};
-
-
-function get(i, array)
-{
-	if (i < 0 || i >= length(array))
-	{
-		throw new Error(
-			'Index ' + i + ' is out of range. Check the length of ' +
-			'your array first or use getMaybe or getWithDefault.');
-	}
-	return unsafeGet(i, array);
-}
-
-
-function unsafeGet(i, array)
-{
-	for (var x = array.height; x > 0; x--)
-	{
-		var slot = i >> (x * 5);
-		while (array.lengths[slot] <= i)
-		{
-			slot++;
-		}
-		if (slot > 0)
-		{
-			i -= array.lengths[slot - 1];
-		}
-		array = array.table[slot];
-	}
-	return array.table[i];
-}
-
-
-// Sets the value at the index i. Only the nodes leading to i will get
-// copied and updated.
-function set(i, item, array)
-{
-	if (i < 0 || length(array) <= i)
-	{
-		return array;
-	}
-	return unsafeSet(i, item, array);
-}
-
-
-function unsafeSet(i, item, array)
-{
-	array = nodeCopy(array);
-
-	if (array.height === 0)
-	{
-		array.table[i] = item;
-	}
-	else
-	{
-		var slot = getSlot(i, array);
-		if (slot > 0)
-		{
-			i -= array.lengths[slot - 1];
-		}
-		array.table[slot] = unsafeSet(i, item, array.table[slot]);
-	}
-	return array;
-}
-
-
-function initialize(len, f)
-{
-	if (len <= 0)
-	{
-		return empty;
-	}
-	var h = Math.floor( Math.log(len) / Math.log(M) );
-	return initialize_(f, h, 0, len);
-}
-
-function initialize_(f, h, from, to)
-{
-	if (h === 0)
-	{
-		var table = new Array((to - from) % (M + 1));
-		for (var i = 0; i < table.length; i++)
-		{
-		  table[i] = f(from + i);
-		}
-		return {
-			ctor: '_Array',
-			height: 0,
-			table: table
-		};
-	}
-
-	var step = Math.pow(M, h);
-	var table = new Array(Math.ceil((to - from) / step));
-	var lengths = new Array(table.length);
-	for (var i = 0; i < table.length; i++)
-	{
-		table[i] = initialize_(f, h - 1, from + (i * step), Math.min(from + ((i + 1) * step), to));
-		lengths[i] = length(table[i]) + (i > 0 ? lengths[i-1] : 0);
-	}
-	return {
-		ctor: '_Array',
-		height: h,
-		table: table,
-		lengths: lengths
-	};
-}
-
-function fromList(list)
-{
-	if (list.ctor === '[]')
-	{
-		return empty;
-	}
-
-	// Allocate M sized blocks (table) and write list elements to it.
-	var table = new Array(M);
-	var nodes = [];
-	var i = 0;
-
-	while (list.ctor !== '[]')
-	{
-		table[i] = list._0;
-		list = list._1;
-		i++;
-
-		// table is full, so we can push a leaf containing it into the
-		// next node.
-		if (i === M)
-		{
-			var leaf = {
-				ctor: '_Array',
-				height: 0,
-				table: table
-			};
-			fromListPush(leaf, nodes);
-			table = new Array(M);
-			i = 0;
-		}
-	}
-
-	// Maybe there is something left on the table.
-	if (i > 0)
-	{
-		var leaf = {
-			ctor: '_Array',
-			height: 0,
-			table: table.splice(0, i)
-		};
-		fromListPush(leaf, nodes);
-	}
-
-	// Go through all of the nodes and eventually push them into higher nodes.
-	for (var h = 0; h < nodes.length - 1; h++)
-	{
-		if (nodes[h].table.length > 0)
-		{
-			fromListPush(nodes[h], nodes);
-		}
-	}
-
-	var head = nodes[nodes.length - 1];
-	if (head.height > 0 && head.table.length === 1)
-	{
-		return head.table[0];
-	}
-	else
-	{
-		return head;
-	}
-}
-
-// Push a node into a higher node as a child.
-function fromListPush(toPush, nodes)
-{
-	var h = toPush.height;
-
-	// Maybe the node on this height does not exist.
-	if (nodes.length === h)
-	{
-		var node = {
-			ctor: '_Array',
-			height: h + 1,
-			table: [],
-			lengths: []
-		};
-		nodes.push(node);
-	}
-
-	nodes[h].table.push(toPush);
-	var len = length(toPush);
-	if (nodes[h].lengths.length > 0)
-	{
-		len += nodes[h].lengths[nodes[h].lengths.length - 1];
-	}
-	nodes[h].lengths.push(len);
-
-	if (nodes[h].table.length === M)
-	{
-		fromListPush(nodes[h], nodes);
-		nodes[h] = {
-			ctor: '_Array',
-			height: h + 1,
-			table: [],
-			lengths: []
-		};
-	}
-}
-
-// Pushes an item via push_ to the bottom right of a tree.
-function push(item, a)
-{
-	var pushed = push_(item, a);
-	if (pushed !== null)
-	{
-		return pushed;
-	}
-
-	var newTree = create(item, a.height);
-	return siblise(a, newTree);
-}
-
-// Recursively tries to push an item to the bottom-right most
-// tree possible. If there is no space left for the item,
-// null will be returned.
-function push_(item, a)
-{
-	// Handle resursion stop at leaf level.
-	if (a.height === 0)
-	{
-		if (a.table.length < M)
-		{
-			var newA = {
-				ctor: '_Array',
-				height: 0,
-				table: a.table.slice()
-			};
-			newA.table.push(item);
-			return newA;
-		}
-		else
-		{
-		  return null;
-		}
-	}
-
-	// Recursively push
-	var pushed = push_(item, botRight(a));
-
-	// There was space in the bottom right tree, so the slot will
-	// be updated.
-	if (pushed !== null)
-	{
-		var newA = nodeCopy(a);
-		newA.table[newA.table.length - 1] = pushed;
-		newA.lengths[newA.lengths.length - 1]++;
-		return newA;
-	}
-
-	// When there was no space left, check if there is space left
-	// for a new slot with a tree which contains only the item
-	// at the bottom.
-	if (a.table.length < M)
-	{
-		var newSlot = create(item, a.height - 1);
-		var newA = nodeCopy(a);
-		newA.table.push(newSlot);
-		newA.lengths.push(newA.lengths[newA.lengths.length - 1] + length(newSlot));
-		return newA;
-	}
-	else
-	{
-		return null;
-	}
-}
-
-// Converts an array into a list of elements.
-function toList(a)
-{
-	return toList_(_elm_lang$core$Native_List.Nil, a);
-}
-
-function toList_(list, a)
-{
-	for (var i = a.table.length - 1; i >= 0; i--)
-	{
-		list =
-			a.height === 0
-				? _elm_lang$core$Native_List.Cons(a.table[i], list)
-				: toList_(list, a.table[i]);
-	}
-	return list;
-}
-
-// Maps a function over the elements of an array.
-function map(f, a)
-{
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: new Array(a.table.length)
-	};
-	if (a.height > 0)
-	{
-		newA.lengths = a.lengths;
-	}
-	for (var i = 0; i < a.table.length; i++)
-	{
-		newA.table[i] =
-			a.height === 0
-				? f(a.table[i])
-				: map(f, a.table[i]);
-	}
-	return newA;
-}
-
-// Maps a function over the elements with their index as first argument.
-function indexedMap(f, a)
-{
-	return indexedMap_(f, a, 0);
-}
-
-function indexedMap_(f, a, from)
-{
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: new Array(a.table.length)
-	};
-	if (a.height > 0)
-	{
-		newA.lengths = a.lengths;
-	}
-	for (var i = 0; i < a.table.length; i++)
-	{
-		newA.table[i] =
-			a.height === 0
-				? A2(f, from + i, a.table[i])
-				: indexedMap_(f, a.table[i], i == 0 ? from : from + a.lengths[i - 1]);
-	}
-	return newA;
-}
-
-function foldl(f, b, a)
-{
-	if (a.height === 0)
-	{
-		for (var i = 0; i < a.table.length; i++)
-		{
-			b = A2(f, a.table[i], b);
-		}
-	}
-	else
-	{
-		for (var i = 0; i < a.table.length; i++)
-		{
-			b = foldl(f, b, a.table[i]);
-		}
-	}
-	return b;
-}
-
-function foldr(f, b, a)
-{
-	if (a.height === 0)
-	{
-		for (var i = a.table.length; i--; )
-		{
-			b = A2(f, a.table[i], b);
-		}
-	}
-	else
-	{
-		for (var i = a.table.length; i--; )
-		{
-			b = foldr(f, b, a.table[i]);
-		}
-	}
-	return b;
-}
-
-// TODO: currently, it slices the right, then the left. This can be
-// optimized.
-function slice(from, to, a)
-{
-	if (from < 0)
-	{
-		from += length(a);
-	}
-	if (to < 0)
-	{
-		to += length(a);
-	}
-	return sliceLeft(from, sliceRight(to, a));
-}
-
-function sliceRight(to, a)
-{
-	if (to === length(a))
-	{
-		return a;
-	}
-
-	// Handle leaf level.
-	if (a.height === 0)
-	{
-		var newA = { ctor:'_Array', height:0 };
-		newA.table = a.table.slice(0, to);
-		return newA;
-	}
-
-	// Slice the right recursively.
-	var right = getSlot(to, a);
-	var sliced = sliceRight(to - (right > 0 ? a.lengths[right - 1] : 0), a.table[right]);
-
-	// Maybe the a node is not even needed, as sliced contains the whole slice.
-	if (right === 0)
-	{
-		return sliced;
-	}
-
-	// Create new node.
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: a.table.slice(0, right),
-		lengths: a.lengths.slice(0, right)
-	};
-	if (sliced.table.length > 0)
-	{
-		newA.table[right] = sliced;
-		newA.lengths[right] = length(sliced) + (right > 0 ? newA.lengths[right - 1] : 0);
-	}
-	return newA;
-}
-
-function sliceLeft(from, a)
-{
-	if (from === 0)
-	{
-		return a;
-	}
-
-	// Handle leaf level.
-	if (a.height === 0)
-	{
-		var newA = { ctor:'_Array', height:0 };
-		newA.table = a.table.slice(from, a.table.length + 1);
-		return newA;
-	}
-
-	// Slice the left recursively.
-	var left = getSlot(from, a);
-	var sliced = sliceLeft(from - (left > 0 ? a.lengths[left - 1] : 0), a.table[left]);
-
-	// Maybe the a node is not even needed, as sliced contains the whole slice.
-	if (left === a.table.length - 1)
-	{
-		return sliced;
-	}
-
-	// Create new node.
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: a.table.slice(left, a.table.length + 1),
-		lengths: new Array(a.table.length - left)
-	};
-	newA.table[0] = sliced;
-	var len = 0;
-	for (var i = 0; i < newA.table.length; i++)
-	{
-		len += length(newA.table[i]);
-		newA.lengths[i] = len;
-	}
-
-	return newA;
-}
-
-// Appends two trees.
-function append(a,b)
-{
-	if (a.table.length === 0)
-	{
-		return b;
-	}
-	if (b.table.length === 0)
-	{
-		return a;
-	}
-
-	var c = append_(a, b);
-
-	// Check if both nodes can be crunshed together.
-	if (c[0].table.length + c[1].table.length <= M)
-	{
-		if (c[0].table.length === 0)
-		{
-			return c[1];
-		}
-		if (c[1].table.length === 0)
-		{
-			return c[0];
-		}
-
-		// Adjust .table and .lengths
-		c[0].table = c[0].table.concat(c[1].table);
-		if (c[0].height > 0)
-		{
-			var len = length(c[0]);
-			for (var i = 0; i < c[1].lengths.length; i++)
-			{
-				c[1].lengths[i] += len;
-			}
-			c[0].lengths = c[0].lengths.concat(c[1].lengths);
-		}
-
-		return c[0];
-	}
-
-	if (c[0].height > 0)
-	{
-		var toRemove = calcToRemove(a, b);
-		if (toRemove > E)
-		{
-			c = shuffle(c[0], c[1], toRemove);
-		}
-	}
-
-	return siblise(c[0], c[1]);
-}
-
-// Returns an array of two nodes; right and left. One node _may_ be empty.
-function append_(a, b)
-{
-	if (a.height === 0 && b.height === 0)
-	{
-		return [a, b];
-	}
-
-	if (a.height !== 1 || b.height !== 1)
-	{
-		if (a.height === b.height)
-		{
-			a = nodeCopy(a);
-			b = nodeCopy(b);
-			var appended = append_(botRight(a), botLeft(b));
-
-			insertRight(a, appended[1]);
-			insertLeft(b, appended[0]);
-		}
-		else if (a.height > b.height)
-		{
-			a = nodeCopy(a);
-			var appended = append_(botRight(a), b);
-
-			insertRight(a, appended[0]);
-			b = parentise(appended[1], appended[1].height + 1);
-		}
-		else
-		{
-			b = nodeCopy(b);
-			var appended = append_(a, botLeft(b));
-
-			var left = appended[0].table.length === 0 ? 0 : 1;
-			var right = left === 0 ? 1 : 0;
-			insertLeft(b, appended[left]);
-			a = parentise(appended[right], appended[right].height + 1);
-		}
-	}
-
-	// Check if balancing is needed and return based on that.
-	if (a.table.length === 0 || b.table.length === 0)
-	{
-		return [a, b];
-	}
-
-	var toRemove = calcToRemove(a, b);
-	if (toRemove <= E)
-	{
-		return [a, b];
-	}
-	return shuffle(a, b, toRemove);
-}
-
-// Helperfunctions for append_. Replaces a child node at the side of the parent.
-function insertRight(parent, node)
-{
-	var index = parent.table.length - 1;
-	parent.table[index] = node;
-	parent.lengths[index] = length(node);
-	parent.lengths[index] += index > 0 ? parent.lengths[index - 1] : 0;
-}
-
-function insertLeft(parent, node)
-{
-	if (node.table.length > 0)
-	{
-		parent.table[0] = node;
-		parent.lengths[0] = length(node);
-
-		var len = length(parent.table[0]);
-		for (var i = 1; i < parent.lengths.length; i++)
-		{
-			len += length(parent.table[i]);
-			parent.lengths[i] = len;
-		}
-	}
-	else
-	{
-		parent.table.shift();
-		for (var i = 1; i < parent.lengths.length; i++)
-		{
-			parent.lengths[i] = parent.lengths[i] - parent.lengths[0];
-		}
-		parent.lengths.shift();
-	}
-}
-
-// Returns the extra search steps for E. Refer to the paper.
-function calcToRemove(a, b)
-{
-	var subLengths = 0;
-	for (var i = 0; i < a.table.length; i++)
-	{
-		subLengths += a.table[i].table.length;
-	}
-	for (var i = 0; i < b.table.length; i++)
-	{
-		subLengths += b.table[i].table.length;
-	}
-
-	var toRemove = a.table.length + b.table.length;
-	return toRemove - (Math.floor((subLengths - 1) / M) + 1);
-}
-
-// get2, set2 and saveSlot are helpers for accessing elements over two arrays.
-function get2(a, b, index)
-{
-	return index < a.length
-		? a[index]
-		: b[index - a.length];
-}
-
-function set2(a, b, index, value)
-{
-	if (index < a.length)
-	{
-		a[index] = value;
-	}
-	else
-	{
-		b[index - a.length] = value;
-	}
-}
-
-function saveSlot(a, b, index, slot)
-{
-	set2(a.table, b.table, index, slot);
-
-	var l = (index === 0 || index === a.lengths.length)
-		? 0
-		: get2(a.lengths, a.lengths, index - 1);
-
-	set2(a.lengths, b.lengths, index, l + length(slot));
-}
-
-// Creates a node or leaf with a given length at their arrays for perfomance.
-// Is only used by shuffle.
-function createNode(h, length)
-{
-	if (length < 0)
-	{
-		length = 0;
-	}
-	var a = {
-		ctor: '_Array',
-		height: h,
-		table: new Array(length)
-	};
-	if (h > 0)
-	{
-		a.lengths = new Array(length);
-	}
-	return a;
-}
-
-// Returns an array of two balanced nodes.
-function shuffle(a, b, toRemove)
-{
-	var newA = createNode(a.height, Math.min(M, a.table.length + b.table.length - toRemove));
-	var newB = createNode(a.height, newA.table.length - (a.table.length + b.table.length - toRemove));
-
-	// Skip the slots with size M. More precise: copy the slot references
-	// to the new node
-	var read = 0;
-	while (get2(a.table, b.table, read).table.length % M === 0)
-	{
-		set2(newA.table, newB.table, read, get2(a.table, b.table, read));
-		set2(newA.lengths, newB.lengths, read, get2(a.lengths, b.lengths, read));
-		read++;
-	}
-
-	// Pulling items from left to right, caching in a slot before writing
-	// it into the new nodes.
-	var write = read;
-	var slot = new createNode(a.height - 1, 0);
-	var from = 0;
-
-	// If the current slot is still containing data, then there will be at
-	// least one more write, so we do not break this loop yet.
-	while (read - write - (slot.table.length > 0 ? 1 : 0) < toRemove)
-	{
-		// Find out the max possible items for copying.
-		var source = get2(a.table, b.table, read);
-		var to = Math.min(M - slot.table.length, source.table.length);
-
-		// Copy and adjust size table.
-		slot.table = slot.table.concat(source.table.slice(from, to));
-		if (slot.height > 0)
-		{
-			var len = slot.lengths.length;
-			for (var i = len; i < len + to - from; i++)
-			{
-				slot.lengths[i] = length(slot.table[i]);
-				slot.lengths[i] += (i > 0 ? slot.lengths[i - 1] : 0);
-			}
-		}
-
-		from += to;
-
-		// Only proceed to next slots[i] if the current one was
-		// fully copied.
-		if (source.table.length <= to)
-		{
-			read++; from = 0;
-		}
-
-		// Only create a new slot if the current one is filled up.
-		if (slot.table.length === M)
-		{
-			saveSlot(newA, newB, write, slot);
-			slot = createNode(a.height - 1, 0);
-			write++;
-		}
-	}
-
-	// Cleanup after the loop. Copy the last slot into the new nodes.
-	if (slot.table.length > 0)
-	{
-		saveSlot(newA, newB, write, slot);
-		write++;
-	}
-
-	// Shift the untouched slots to the left
-	while (read < a.table.length + b.table.length )
-	{
-		saveSlot(newA, newB, write, get2(a.table, b.table, read));
-		read++;
-		write++;
-	}
-
-	return [newA, newB];
-}
-
-// Navigation functions
-function botRight(a)
-{
-	return a.table[a.table.length - 1];
-}
-function botLeft(a)
-{
-	return a.table[0];
-}
-
-// Copies a node for updating. Note that you should not use this if
-// only updating only one of "table" or "lengths" for performance reasons.
-function nodeCopy(a)
-{
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: a.table.slice()
-	};
-	if (a.height > 0)
-	{
-		newA.lengths = a.lengths.slice();
-	}
-	return newA;
-}
-
-// Returns how many items are in the tree.
-function length(array)
-{
-	if (array.height === 0)
-	{
-		return array.table.length;
-	}
-	else
-	{
-		return array.lengths[array.lengths.length - 1];
-	}
-}
-
-// Calculates in which slot of "table" the item probably is, then
-// find the exact slot via forward searching in  "lengths". Returns the index.
-function getSlot(i, a)
-{
-	var slot = i >> (5 * a.height);
-	while (a.lengths[slot] <= i)
-	{
-		slot++;
-	}
-	return slot;
-}
-
-// Recursively creates a tree with a given height containing
-// only the given item.
-function create(item, h)
-{
-	if (h === 0)
-	{
-		return {
-			ctor: '_Array',
-			height: 0,
-			table: [item]
-		};
-	}
-	return {
-		ctor: '_Array',
-		height: h,
-		table: [create(item, h - 1)],
-		lengths: [1]
-	};
-}
-
-// Recursively creates a tree that contains the given tree.
-function parentise(tree, h)
-{
-	if (h === tree.height)
-	{
-		return tree;
-	}
-
-	return {
-		ctor: '_Array',
-		height: h,
-		table: [parentise(tree, h - 1)],
-		lengths: [length(tree)]
-	};
-}
-
-// Emphasizes blood brotherhood beneath two trees.
-function siblise(a, b)
-{
-	return {
-		ctor: '_Array',
-		height: a.height + 1,
-		table: [a, b],
-		lengths: [length(a), length(a) + length(b)]
-	};
-}
-
-function toJSArray(a)
-{
-	var jsArray = new Array(length(a));
-	toJSArray_(jsArray, 0, a);
-	return jsArray;
-}
-
-function toJSArray_(jsArray, i, a)
-{
-	for (var t = 0; t < a.table.length; t++)
-	{
-		if (a.height === 0)
-		{
-			jsArray[i + t] = a.table[t];
-		}
-		else
-		{
-			var inc = t === 0 ? 0 : a.lengths[t - 1];
-			toJSArray_(jsArray, i + inc, a.table[t]);
-		}
-	}
-}
-
-function fromJSArray(jsArray)
-{
-	if (jsArray.length === 0)
-	{
-		return empty;
-	}
-	var h = Math.floor(Math.log(jsArray.length) / Math.log(M));
-	return fromJSArray_(jsArray, h, 0, jsArray.length);
-}
-
-function fromJSArray_(jsArray, h, from, to)
-{
-	if (h === 0)
-	{
-		return {
-			ctor: '_Array',
-			height: 0,
-			table: jsArray.slice(from, to)
-		};
-	}
-
-	var step = Math.pow(M, h);
-	var table = new Array(Math.ceil((to - from) / step));
-	var lengths = new Array(table.length);
-	for (var i = 0; i < table.length; i++)
-	{
-		table[i] = fromJSArray_(jsArray, h - 1, from + (i * step), Math.min(from + ((i + 1) * step), to));
-		lengths[i] = length(table[i]) + (i > 0 ? lengths[i - 1] : 0);
-	}
-	return {
-		ctor: '_Array',
-		height: h,
-		table: table,
-		lengths: lengths
-	};
-}
-
-return {
-	empty: empty,
-	fromList: fromList,
-	toList: toList,
-	initialize: F2(initialize),
-	append: F2(append),
-	push: F2(push),
-	slice: F3(slice),
-	get: F2(get),
-	set: F3(set),
-	map: F2(map),
-	indexedMap: F2(indexedMap),
-	foldl: F3(foldl),
-	foldr: F3(foldr),
-	length: length,
-
-	toJSArray: toJSArray,
-	fromJSArray: fromJSArray
-};
-
-}();
-var _elm_lang$core$Array$append = _elm_lang$core$Native_Array.append;
-var _elm_lang$core$Array$length = _elm_lang$core$Native_Array.length;
-var _elm_lang$core$Array$isEmpty = function (array) {
-	return _elm_lang$core$Native_Utils.eq(
-		_elm_lang$core$Array$length(array),
-		0);
-};
-var _elm_lang$core$Array$slice = _elm_lang$core$Native_Array.slice;
-var _elm_lang$core$Array$set = _elm_lang$core$Native_Array.set;
-var _elm_lang$core$Array$get = F2(
-	function (i, array) {
-		return ((_elm_lang$core$Native_Utils.cmp(0, i) < 1) && (_elm_lang$core$Native_Utils.cmp(
-			i,
-			_elm_lang$core$Native_Array.length(array)) < 0)) ? _elm_lang$core$Maybe$Just(
-			A2(_elm_lang$core$Native_Array.get, i, array)) : _elm_lang$core$Maybe$Nothing;
+var _eeue56$elm_flat_matrix$Matrix$filter = F2(
+	function (f, matrix) {
+		return A2(_elm_lang$core$Array$filter, f, matrix.data);
 	});
-var _elm_lang$core$Array$push = _elm_lang$core$Native_Array.push;
-var _elm_lang$core$Array$empty = _elm_lang$core$Native_Array.empty;
-var _elm_lang$core$Array$filter = F2(
-	function (isOkay, arr) {
-		var update = F2(
-			function (x, xs) {
-				return isOkay(x) ? A2(_elm_lang$core$Native_Array.push, x, xs) : xs;
+var _eeue56$elm_flat_matrix$Matrix$map2 = F3(
+	function (f, a, b) {
+		return _elm_lang$core$Native_Utils.eq(a.size, b.size) ? _elm_lang$core$Maybe$Just(
+			_elm_lang$core$Native_Utils.update(
+				a,
+				{
+					data: _elm_lang$core$Array$fromList(
+						A3(
+							_elm_lang$core$List$map2,
+							f,
+							_elm_lang$core$Array$toList(a.data),
+							_elm_lang$core$Array$toList(b.data)))
+				})) : _elm_lang$core$Maybe$Nothing;
+	});
+var _eeue56$elm_flat_matrix$Matrix$map = F2(
+	function (f, matrix) {
+		return _elm_lang$core$Native_Utils.update(
+			matrix,
+			{
+				data: A2(_elm_lang$core$Array$map, f, matrix.data)
 			});
-		return A3(_elm_lang$core$Native_Array.foldl, update, _elm_lang$core$Native_Array.empty, arr);
 	});
-var _elm_lang$core$Array$foldr = _elm_lang$core$Native_Array.foldr;
-var _elm_lang$core$Array$foldl = _elm_lang$core$Native_Array.foldl;
-var _elm_lang$core$Array$indexedMap = _elm_lang$core$Native_Array.indexedMap;
-var _elm_lang$core$Array$map = _elm_lang$core$Native_Array.map;
-var _elm_lang$core$Array$toIndexedList = function (array) {
-	return A3(
-		_elm_lang$core$List$map2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
+var _eeue56$elm_flat_matrix$Matrix$concatVertical = F2(
+	function (a, b) {
+		return (!_elm_lang$core$Native_Utils.eq(
+			_elm_lang$core$Tuple$first(a.size),
+			_elm_lang$core$Tuple$first(b.size))) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+			_elm_lang$core$Native_Utils.update(
+				a,
+				{
+					size: {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Tuple$first(a.size),
+						_1: _elm_lang$core$Tuple$second(a.size) + _elm_lang$core$Tuple$second(b.size)
+					},
+					data: A2(_elm_lang$core$Array$append, a.data, b.data)
+				}));
+	});
+var _eeue56$elm_flat_matrix$Matrix$getColumn = F2(
+	function (i, matrix) {
+		var height = _elm_lang$core$Tuple$second(matrix.size);
+		var width = _elm_lang$core$Tuple$first(matrix.size);
+		var indices = A2(
+			_elm_lang$core$List$map,
+			function (x) {
+				return (x * width) + i;
+			},
+			A2(_elm_lang$core$List$range, 0, height - 1));
+		return (_elm_lang$core$Native_Utils.cmp(i, width) > -1) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+			_elm_lang$core$Array$fromList(
+				A3(
+					_elm_lang$core$List$foldl,
+					F2(
+						function (index, ls) {
+							var _p0 = A2(_elm_lang$core$Array$get, index, matrix.data);
+							if (_p0.ctor === 'Just') {
+								return A2(
+									_elm_lang$core$Basics_ops['++'],
+									ls,
+									{
+										ctor: '::',
+										_0: _p0._0,
+										_1: {ctor: '[]'}
+									});
+							} else {
+								return ls;
+							}
+						}),
+					{ctor: '[]'},
+					indices)));
+	});
+var _eeue56$elm_flat_matrix$Matrix$fromList = function (list) {
+	var width = _elm_lang$core$List$length(
+		function () {
+			var _p1 = _elm_lang$core$List$head(list);
+			if (_p1.ctor === 'Just') {
+				return _p1._0;
+			} else {
+				return {ctor: '[]'};
+			}
+		}());
+	var allSame = _elm_lang$core$List$isEmpty(
 		A2(
-			_elm_lang$core$List$range,
-			0,
-			_elm_lang$core$Native_Array.length(array) - 1),
-		_elm_lang$core$Native_Array.toList(array));
+			_elm_lang$core$List$filter,
+			function (x) {
+				return !_elm_lang$core$Native_Utils.eq(
+					_elm_lang$core$List$length(x),
+					width);
+			},
+			list));
+	var height = _elm_lang$core$List$length(list);
+	return (!allSame) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+		{
+			size: {ctor: '_Tuple2', _0: width, _1: height},
+			data: _elm_lang$core$Array$fromList(
+				_elm_lang$core$List$concat(list))
+		});
 };
-var _elm_lang$core$Array$toList = _elm_lang$core$Native_Array.toList;
-var _elm_lang$core$Array$fromList = _elm_lang$core$Native_Array.fromList;
-var _elm_lang$core$Array$initialize = _elm_lang$core$Native_Array.initialize;
-var _elm_lang$core$Array$repeat = F2(
-	function (n, e) {
-		return A2(
-			_elm_lang$core$Array$initialize,
-			n,
-			_elm_lang$core$Basics$always(e));
+var _eeue56$elm_flat_matrix$Matrix$repeat = F3(
+	function (x, y, v) {
+		return {
+			size: {ctor: '_Tuple2', _0: x, _1: y},
+			data: A2(_elm_lang$core$Array$repeat, x * y, v)
+		};
 	});
-var _elm_lang$core$Array$Array = {ctor: 'Array'};
+var _eeue56$elm_flat_matrix$Matrix$height = function (matrix) {
+	return _elm_lang$core$Tuple$second(matrix.size);
+};
+var _eeue56$elm_flat_matrix$Matrix$width = function (matrix) {
+	return _elm_lang$core$Tuple$first(matrix.size);
+};
+var _eeue56$elm_flat_matrix$Matrix$get = F3(
+	function (i, j, matrix) {
+		var pos = (j * _eeue56$elm_flat_matrix$Matrix$width(matrix)) + i;
+		return (((_elm_lang$core$Native_Utils.cmp(
+			i,
+			_eeue56$elm_flat_matrix$Matrix$width(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(i, -1) > 0)) && ((_elm_lang$core$Native_Utils.cmp(
+			j,
+			_eeue56$elm_flat_matrix$Matrix$height(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(j, -1) > 0))) ? A2(_elm_lang$core$Array$get, pos, matrix.data) : _elm_lang$core$Maybe$Nothing;
+	});
+var _eeue56$elm_flat_matrix$Matrix$getRow = F2(
+	function (j, matrix) {
+		var start = j * _eeue56$elm_flat_matrix$Matrix$width(matrix);
+		var end = start + _eeue56$elm_flat_matrix$Matrix$width(matrix);
+		return (_elm_lang$core$Native_Utils.cmp(
+			end,
+			_eeue56$elm_flat_matrix$Matrix$width(matrix) * _eeue56$elm_flat_matrix$Matrix$height(matrix)) > 0) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+			A3(_elm_lang$core$Array$slice, start, end, matrix.data));
+	});
+var _eeue56$elm_flat_matrix$Matrix$concatHorizontal = F2(
+	function (a, b) {
+		var insert = F3(
+			function (i, xs, array) {
+				return A2(
+					_elm_lang$core$Array$append,
+					A2(
+						_elm_lang$core$Array$append,
+						A3(_elm_lang$core$Array$slice, 0, i, array),
+						xs),
+					A3(
+						_elm_lang$core$Array$slice,
+						i,
+						_elm_lang$core$Array$length(array),
+						array));
+			});
+		var finalWidth = _elm_lang$core$Tuple$first(a.size) + _elm_lang$core$Tuple$first(b.size);
+		return (!_elm_lang$core$Native_Utils.eq(
+			_elm_lang$core$Tuple$second(a.size),
+			_elm_lang$core$Tuple$second(b.size))) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+			_elm_lang$core$Native_Utils.update(
+				a,
+				{
+					size: {
+						ctor: '_Tuple2',
+						_0: finalWidth,
+						_1: _elm_lang$core$Tuple$second(a.size)
+					},
+					data: A3(
+						_elm_lang$core$List$foldl,
+						F2(
+							function (_p2, acc) {
+								var _p3 = _p2;
+								return A3(insert, _p3._0 * finalWidth, _p3._1, acc);
+							}),
+						b.data,
+						A3(
+							_elm_lang$core$List$foldl,
+							F2(
+								function (i, ls) {
+									var _p4 = A2(_eeue56$elm_flat_matrix$Matrix$getRow, i, a);
+									if (_p4.ctor === 'Just') {
+										return A2(
+											_elm_lang$core$Basics_ops['++'],
+											ls,
+											{
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: i, _1: _p4._0},
+												_1: {ctor: '[]'}
+											});
+									} else {
+										return ls;
+									}
+								}),
+							{ctor: '[]'},
+							A2(
+								_elm_lang$core$List$range,
+								0,
+								_elm_lang$core$Tuple$second(a.size) - 1)))
+				}));
+	});
+var _eeue56$elm_flat_matrix$Matrix$set = F4(
+	function (i, j, v, matrix) {
+		var pos = (j * _elm_lang$core$Tuple$first(matrix.size)) + i;
+		return (((_elm_lang$core$Native_Utils.cmp(
+			i,
+			_eeue56$elm_flat_matrix$Matrix$width(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(i, -1) > 0)) && ((_elm_lang$core$Native_Utils.cmp(
+			j,
+			_eeue56$elm_flat_matrix$Matrix$height(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(j, -1) > 0))) ? _elm_lang$core$Native_Utils.update(
+			matrix,
+			{
+				data: A3(_elm_lang$core$Array$set, pos, v, matrix.data)
+			}) : matrix;
+	});
+var _eeue56$elm_flat_matrix$Matrix$update = F4(
+	function (x, y, f, matrix) {
+		var _p5 = A3(_eeue56$elm_flat_matrix$Matrix$get, x, y, matrix);
+		if (_p5.ctor === 'Nothing') {
+			return matrix;
+		} else {
+			return A4(
+				_eeue56$elm_flat_matrix$Matrix$set,
+				x,
+				y,
+				f(_p5._0),
+				matrix);
+		}
+	});
+var _eeue56$elm_flat_matrix$Matrix$indexedMap = F2(
+	function (f, matrix) {
+		var f_ = F2(
+			function (i, v) {
+				var y = (i / _eeue56$elm_flat_matrix$Matrix$width(matrix)) | 0;
+				var x = A2(
+					_elm_lang$core$Basics_ops['%'],
+					i,
+					_eeue56$elm_flat_matrix$Matrix$width(matrix));
+				return A3(f, x, y, v);
+			});
+		return _elm_lang$core$Native_Utils.update(
+			matrix,
+			{
+				data: _elm_lang$core$Array$fromList(
+					A2(
+						_elm_lang$core$List$indexedMap,
+						f_,
+						_elm_lang$core$Array$toList(matrix.data)))
+			});
+	});
+var _eeue56$elm_flat_matrix$Matrix$toIndexedArray = function (matrix) {
+	return A2(
+		_eeue56$elm_flat_matrix$Matrix$indexedMap,
+		F3(
+			function (x, y, v) {
+				return {
+					ctor: '_Tuple2',
+					_0: {ctor: '_Tuple2', _0: x, _1: y},
+					_1: v
+				};
+			}),
+		matrix).data;
+};
+var _eeue56$elm_flat_matrix$Matrix$empty = {
+	size: {ctor: '_Tuple2', _0: 0, _1: 0},
+	data: _elm_lang$core$Array$empty
+};
+var _eeue56$elm_flat_matrix$Matrix$Matrix = F2(
+	function (a, b) {
+		return {size: a, data: b};
+	});
 
 var _elm_lang$core$Dict$foldr = F3(
 	function (f, acc, t) {
@@ -14824,6 +12215,3229 @@ var _elm_lang$html$Html$summary = _elm_lang$html$Html$node('summary');
 var _elm_lang$html$Html$menuitem = _elm_lang$html$Html$node('menuitem');
 var _elm_lang$html$Html$menu = _elm_lang$html$Html$node('menu');
 
+var _elm_lang$html$Html_Attributes$map = _elm_lang$virtual_dom$VirtualDom$mapProperty;
+var _elm_lang$html$Html_Attributes$attribute = _elm_lang$virtual_dom$VirtualDom$attribute;
+var _elm_lang$html$Html_Attributes$contextmenu = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'contextmenu', value);
+};
+var _elm_lang$html$Html_Attributes$draggable = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'draggable', value);
+};
+var _elm_lang$html$Html_Attributes$itemprop = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'itemprop', value);
+};
+var _elm_lang$html$Html_Attributes$tabindex = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'tabIndex',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$charset = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'charset', value);
+};
+var _elm_lang$html$Html_Attributes$height = function (value) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'height',
+		_elm_lang$core$Basics$toString(value));
+};
+var _elm_lang$html$Html_Attributes$width = function (value) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'width',
+		_elm_lang$core$Basics$toString(value));
+};
+var _elm_lang$html$Html_Attributes$formaction = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'formAction', value);
+};
+var _elm_lang$html$Html_Attributes$list = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'list', value);
+};
+var _elm_lang$html$Html_Attributes$minlength = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'minLength',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$maxlength = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'maxlength',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$size = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'size',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$form = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'form', value);
+};
+var _elm_lang$html$Html_Attributes$cols = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'cols',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$rows = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'rows',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$challenge = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'challenge', value);
+};
+var _elm_lang$html$Html_Attributes$media = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'media', value);
+};
+var _elm_lang$html$Html_Attributes$rel = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'rel', value);
+};
+var _elm_lang$html$Html_Attributes$datetime = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'datetime', value);
+};
+var _elm_lang$html$Html_Attributes$pubdate = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'pubdate', value);
+};
+var _elm_lang$html$Html_Attributes$colspan = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'colspan',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$rowspan = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'rowspan',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$manifest = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'manifest', value);
+};
+var _elm_lang$html$Html_Attributes$property = _elm_lang$virtual_dom$VirtualDom$property;
+var _elm_lang$html$Html_Attributes$stringProperty = F2(
+	function (name, string) {
+		return A2(
+			_elm_lang$html$Html_Attributes$property,
+			name,
+			_elm_lang$core$Json_Encode$string(string));
+	});
+var _elm_lang$html$Html_Attributes$class = function (name) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'className', name);
+};
+var _elm_lang$html$Html_Attributes$id = function (name) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'id', name);
+};
+var _elm_lang$html$Html_Attributes$title = function (name) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'title', name);
+};
+var _elm_lang$html$Html_Attributes$accesskey = function ($char) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'accessKey',
+		_elm_lang$core$String$fromChar($char));
+};
+var _elm_lang$html$Html_Attributes$dir = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dir', value);
+};
+var _elm_lang$html$Html_Attributes$dropzone = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dropzone', value);
+};
+var _elm_lang$html$Html_Attributes$lang = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'lang', value);
+};
+var _elm_lang$html$Html_Attributes$content = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'content', value);
+};
+var _elm_lang$html$Html_Attributes$httpEquiv = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'httpEquiv', value);
+};
+var _elm_lang$html$Html_Attributes$language = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'language', value);
+};
+var _elm_lang$html$Html_Attributes$src = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'src', value);
+};
+var _elm_lang$html$Html_Attributes$alt = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'alt', value);
+};
+var _elm_lang$html$Html_Attributes$preload = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'preload', value);
+};
+var _elm_lang$html$Html_Attributes$poster = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'poster', value);
+};
+var _elm_lang$html$Html_Attributes$kind = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'kind', value);
+};
+var _elm_lang$html$Html_Attributes$srclang = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'srclang', value);
+};
+var _elm_lang$html$Html_Attributes$sandbox = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'sandbox', value);
+};
+var _elm_lang$html$Html_Attributes$srcdoc = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'srcdoc', value);
+};
+var _elm_lang$html$Html_Attributes$type_ = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'type', value);
+};
+var _elm_lang$html$Html_Attributes$value = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'value', value);
+};
+var _elm_lang$html$Html_Attributes$defaultValue = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'defaultValue', value);
+};
+var _elm_lang$html$Html_Attributes$placeholder = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'placeholder', value);
+};
+var _elm_lang$html$Html_Attributes$accept = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'accept', value);
+};
+var _elm_lang$html$Html_Attributes$acceptCharset = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'acceptCharset', value);
+};
+var _elm_lang$html$Html_Attributes$action = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'action', value);
+};
+var _elm_lang$html$Html_Attributes$autocomplete = function (bool) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'autocomplete',
+		bool ? 'on' : 'off');
+};
+var _elm_lang$html$Html_Attributes$enctype = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'enctype', value);
+};
+var _elm_lang$html$Html_Attributes$method = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'method', value);
+};
+var _elm_lang$html$Html_Attributes$name = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'name', value);
+};
+var _elm_lang$html$Html_Attributes$pattern = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'pattern', value);
+};
+var _elm_lang$html$Html_Attributes$for = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'htmlFor', value);
+};
+var _elm_lang$html$Html_Attributes$max = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'max', value);
+};
+var _elm_lang$html$Html_Attributes$min = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'min', value);
+};
+var _elm_lang$html$Html_Attributes$step = function (n) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'step', n);
+};
+var _elm_lang$html$Html_Attributes$wrap = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'wrap', value);
+};
+var _elm_lang$html$Html_Attributes$usemap = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'useMap', value);
+};
+var _elm_lang$html$Html_Attributes$shape = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'shape', value);
+};
+var _elm_lang$html$Html_Attributes$coords = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'coords', value);
+};
+var _elm_lang$html$Html_Attributes$keytype = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'keytype', value);
+};
+var _elm_lang$html$Html_Attributes$align = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'align', value);
+};
+var _elm_lang$html$Html_Attributes$cite = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'cite', value);
+};
+var _elm_lang$html$Html_Attributes$href = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'href', value);
+};
+var _elm_lang$html$Html_Attributes$target = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'target', value);
+};
+var _elm_lang$html$Html_Attributes$downloadAs = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'download', value);
+};
+var _elm_lang$html$Html_Attributes$hreflang = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'hreflang', value);
+};
+var _elm_lang$html$Html_Attributes$ping = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'ping', value);
+};
+var _elm_lang$html$Html_Attributes$start = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'start',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$headers = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'headers', value);
+};
+var _elm_lang$html$Html_Attributes$scope = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'scope', value);
+};
+var _elm_lang$html$Html_Attributes$boolProperty = F2(
+	function (name, bool) {
+		return A2(
+			_elm_lang$html$Html_Attributes$property,
+			name,
+			_elm_lang$core$Json_Encode$bool(bool));
+	});
+var _elm_lang$html$Html_Attributes$hidden = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'hidden', bool);
+};
+var _elm_lang$html$Html_Attributes$contenteditable = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'contentEditable', bool);
+};
+var _elm_lang$html$Html_Attributes$spellcheck = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'spellcheck', bool);
+};
+var _elm_lang$html$Html_Attributes$async = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'async', bool);
+};
+var _elm_lang$html$Html_Attributes$defer = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'defer', bool);
+};
+var _elm_lang$html$Html_Attributes$scoped = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'scoped', bool);
+};
+var _elm_lang$html$Html_Attributes$autoplay = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'autoplay', bool);
+};
+var _elm_lang$html$Html_Attributes$controls = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'controls', bool);
+};
+var _elm_lang$html$Html_Attributes$loop = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'loop', bool);
+};
+var _elm_lang$html$Html_Attributes$default = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'default', bool);
+};
+var _elm_lang$html$Html_Attributes$seamless = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'seamless', bool);
+};
+var _elm_lang$html$Html_Attributes$checked = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'checked', bool);
+};
+var _elm_lang$html$Html_Attributes$selected = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'selected', bool);
+};
+var _elm_lang$html$Html_Attributes$autofocus = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'autofocus', bool);
+};
+var _elm_lang$html$Html_Attributes$disabled = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'disabled', bool);
+};
+var _elm_lang$html$Html_Attributes$multiple = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'multiple', bool);
+};
+var _elm_lang$html$Html_Attributes$novalidate = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'noValidate', bool);
+};
+var _elm_lang$html$Html_Attributes$readonly = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'readOnly', bool);
+};
+var _elm_lang$html$Html_Attributes$required = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'required', bool);
+};
+var _elm_lang$html$Html_Attributes$ismap = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'isMap', value);
+};
+var _elm_lang$html$Html_Attributes$download = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'download', bool);
+};
+var _elm_lang$html$Html_Attributes$reversed = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'reversed', bool);
+};
+var _elm_lang$html$Html_Attributes$classList = function (list) {
+	return _elm_lang$html$Html_Attributes$class(
+		A2(
+			_elm_lang$core$String$join,
+			' ',
+			A2(
+				_elm_lang$core$List$map,
+				_elm_lang$core$Tuple$first,
+				A2(_elm_lang$core$List$filter, _elm_lang$core$Tuple$second, list))));
+};
+var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
+
+
+/*
+ * Copyright (c) 2010 Mozilla Corporation
+ * Copyright (c) 2010 Vladimir Vukicevic
+ * Copyright (c) 2013 John Mayer
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/*
+ * File: mjs
+ *
+ * Vector and Matrix math utilities for JavaScript, optimized for WebGL.
+ * Edited to work with the Elm Programming Language
+ */
+
+var _elm_community$linear_algebra$Native_MJS = function() {
+
+
+    /*
+     * Constant: MJS_VERSION
+     *
+     * mjs version number aa.bb.cc, encoded as an integer of the form:
+     * 0xaabbcc.
+     */
+    var MJS_VERSION = 0x000000;
+
+    /*
+     * Constant: MJS_DO_ASSERT
+     *
+     * Enables or disables runtime assertions.
+     *
+     * For potentially more performance, the assert methods can be
+     * commented out in each place where they are called.
+     */
+    // var MJS_DO_ASSERT = false;
+
+    /*
+     * Constant: MJS_FLOAT_ARRAY_TYPE
+     *
+     * The base float array type.  By default, WebGLFloatArray.
+     *
+     * mjs can work with any array-like elements, but if an array
+     * creation is requested, it will create an array of the type
+     * MJS_FLOAT_ARRAY_TYPE.  Also, the builtin constants such as (M4x4.I)
+     * will be of this type.
+     */
+    //MJS_FLOAT_ARRAY_TYPE = WebGLFloatArray;
+    //MJS_FLOAT_ARRAY_TYPE = Float32Array;
+    var MJS_FLOAT_ARRAY_TYPE = Float64Array;
+    //MJS_FLOAT_ARRAY_TYPE = Array;
+
+    /*
+    if (MJS_DO_ASSERT) {
+        function MathUtils_assert(cond, msg) {
+            if (!cond) {
+                throw "Assertion failed: " + msg;
+            }
+        }
+    } else {
+    */
+        function MathUtils_assert() { }
+    //}
+
+    /*
+     * Class: V3
+     *
+     * Methods for working with 3-element vectors.  A vector is represented by a 3-element array.
+     * Any valid JavaScript array type may be used, but if new
+     * vectors are created they are created using the configured MJS_FLOAT_ARRAY_TYPE.
+     */
+
+    var V3 = { };
+
+    V3._temp1 = new MJS_FLOAT_ARRAY_TYPE(3);
+    V3._temp2 = new MJS_FLOAT_ARRAY_TYPE(3);
+    V3._temp3 = new MJS_FLOAT_ARRAY_TYPE(3);
+
+    if (MJS_FLOAT_ARRAY_TYPE == Array) {
+        V3.x = [1.0, 0.0, 0.0];
+        V3.y = [0.0, 1.0, 0.0];
+        V3.z = [0.0, 0.0, 1.0];
+
+        V3.$ = function V3_$(x, y, z) {
+            return [x, y, z];
+        };
+    } else {
+        V3.x = new MJS_FLOAT_ARRAY_TYPE([1.0, 0.0, 0.0]);
+        V3.y = new MJS_FLOAT_ARRAY_TYPE([0.0, 1.0, 0.0]);
+        V3.z = new MJS_FLOAT_ARRAY_TYPE([0.0, 0.0, 1.0]);
+
+        /*
+         * Function: V3.$
+         *
+         * Creates a new 3-element vector with the given values.
+         *
+         * Parameters:
+         *
+         *   x,y,z - the 3 elements of the new vector.
+         *
+         * Returns:
+         *
+         * A new vector containing with the given argument values.
+         */
+
+        V3.$ = function V3_$(x, y, z) {
+            return new MJS_FLOAT_ARRAY_TYPE([x, y, z]);
+        };
+    }
+
+    V3.u = V3.x;
+    V3.v = V3.y;
+
+    V3.getX = function V3_getX(a) {
+        return a[0];
+    }
+    V3.getY = function V3_getY(a) {
+        return a[1];
+    }
+    V3.getZ = function V3_getZ(a) {
+        return a[2];
+    }
+    V3.setX = function V3_setX(x, a) {
+        return new MJS_FLOAT_ARRAY_TYPE([x, a[1], a[2]]);
+    }
+    V3.setY = function V3_setY(y, a) {
+        return new MJS_FLOAT_ARRAY_TYPE([a[0], y, a[2]]);
+    }
+    V3.setZ = function V3_setZ(z, a) {
+        return new MJS_FLOAT_ARRAY_TYPE([a[0], a[1], z]);
+    }
+
+    V3.toTuple3 = function V3_toTuple3(a) {
+      return {
+        ctor:"_Tuple3",
+        _0:a[0],
+        _1:a[1],
+        _2:a[2]
+      };
+    };
+    V3.fromTuple3 = function V3_fromTuple3(t) {
+      return new MJS_FLOAT_ARRAY_TYPE([t._0, t._1, t._2]);
+    };
+
+    V3.toRecord3 = function V3_toRecord3(a) {
+      return {
+        _:{},
+        x:a[0],
+        y:a[1],
+        z:a[2]
+      };
+    };
+    V3.fromRecord3 = function V3_fromRecord3(r) {
+      return new MJS_FLOAT_ARRAY_TYPE([r.x, r.y, r.z]);
+    };
+
+    /*
+     * Function: V3.add
+     *
+     * Perform r = a + b.
+     *
+     * Parameters:
+     *
+     *   a - the first vector operand
+     *   b - the second vector operand
+     *   r - optional vector to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 3-element vector with the result.
+     */
+    V3.add = function V3_add(a, b, r) {
+        //MathUtils_assert(a.length == 3, "a.length == 3");
+        //MathUtils_assert(b.length == 3, "b.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(3);
+        r[0] = a[0] + b[0];
+        r[1] = a[1] + b[1];
+        r[2] = a[2] + b[2];
+        return r;
+    };
+
+    /*
+     * Function: V3.sub
+     *
+     * Perform
+     * r = a - b.
+     *
+     * Parameters:
+     *
+     *   a - the first vector operand
+     *   b - the second vector operand
+     *   r - optional vector to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 3-element vector with the result.
+     */
+    V3.sub = function V3_sub(a, b, r) {
+        //MathUtils_assert(a.length == 3, "a.length == 3");
+        //MathUtils_assert(b.length == 3, "b.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(3);
+        r[0] = a[0] - b[0];
+        r[1] = a[1] - b[1];
+        r[2] = a[2] - b[2];
+        return r;
+    };
+
+    /*
+     * Function: V3.neg
+     *
+     * Perform
+     * r = - a.
+     *
+     * Parameters:
+     *
+     *   a - the vector operand
+     *   r - optional vector to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 3-element vector with the result.
+     */
+    V3.neg = function V3_neg(a, r) {
+        //MathUtils_assert(a.length == 3, "a.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(3);
+        r[0] = - a[0];
+        r[1] = - a[1];
+        r[2] = - a[2];
+        return r;
+    };
+
+    /*
+     * Function: V3.direction
+     *
+     * Perform
+     * r = (a - b) / |a - b|.  The result is the normalized
+     * direction from a to b.
+     *
+     * Parameters:
+     *
+     *   a - the first vector operand
+     *   b - the second vector operand
+     *   r - optional vector to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 3-element vector with the result.
+     */
+    V3.direction = function V3_direction(a, b, r) {
+        //MathUtils_assert(a.length == 3, "a.length == 3");
+        //MathUtils_assert(b.length == 3, "b.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(3);
+        return V3.normalize(V3.sub(a, b, r), r);
+    };
+
+    /*
+     * Function: V3.length
+     *
+     * Perform r = |a|.
+     *
+     * Parameters:
+     *
+     *   a - the vector operand
+     *
+     * Returns:
+     *
+     *   The length of the given vector.
+     */
+    V3.length = function V3_length(a) {
+        //MathUtils_assert(a.length == 3, "a.length == 3");
+
+        return Math.sqrt(a[0]*a[0] + a[1]*a[1] + a[2]*a[2]);
+    };
+
+    /*
+     * Function: V3.lengthSquard
+     *
+     * Perform r = |a|*|a|.
+     *
+     * Parameters:
+     *
+     *   a - the vector operand
+     *
+     * Returns:
+     *
+     *   The square of the length of the given vector.
+     */
+    V3.lengthSquared = function V3_lengthSquared(a) {
+        //MathUtils_assert(a.length == 3, "a.length == 3");
+
+        return a[0]*a[0] + a[1]*a[1] + a[2]*a[2];
+    };
+
+    V3.distance = function V3_distance(a, b) {
+        var dx = a[0] - b[0];
+        var dy = a[1] - b[1];
+        var dz = a[2] - b[2];
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    };
+
+    V3.distanceSquared = function V3_distanceSquared(a, b) {
+        var dx = a[0] - b[0];
+        var dy = a[1] - b[1];
+        var dz = a[2] - b[2];
+        return dx * dx + dy * dy + dz * dz;
+    };
+
+    /*
+     * Function: V3.normalize
+     *
+     * Perform r = a / |a|.
+     *
+     * Parameters:
+     *
+     *   a - the vector operand
+     *   r - optional vector to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 3-element vector with the result.
+     */
+    V3.normalize = function V3_normalize(a, r) {
+        //MathUtils_assert(a.length == 3, "a.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(3);
+        var im = 1.0 / V3.length(a);
+        r[0] = a[0] * im;
+        r[1] = a[1] * im;
+        r[2] = a[2] * im;
+        return r;
+    };
+
+    /*
+     * Function: V3.scale
+     *
+     * Perform r = k * a.
+     *
+     * Parameters:
+     *
+     *   a - the vector operand
+     *   k - a scalar value
+     *   r - optional vector to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 3-element vector with the result.
+     */
+    V3.scale = function V3_scale(k, a, r) {
+        //MathUtils_assert(a.length == 3, "a.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(3);
+        r[0] = a[0] * k;
+        r[1] = a[1] * k;
+        r[2] = a[2] * k;
+        return r;
+    };
+
+    /*
+     * Function: V3.dot
+     *
+     * Perform
+     * r = dot(a, b).
+     *
+     * Parameters:
+     *
+     *   a - the first vector operand
+     *   b - the second vector operand
+     *
+     * Returns:
+     *
+     *   The dot product of a and b.
+     */
+    V3.dot = function V3_dot(a, b) {
+        //MathUtils_assert(a.length == 3, "a.length == 3");
+        //MathUtils_assert(b.length == 3, "b.length == 3");
+
+        return a[0] * b[0] +
+            a[1] * b[1] +
+            a[2] * b[2];
+    };
+
+    /*
+     * Function: V3.cross
+     *
+     * Perform r = a x b.
+     *
+     * Parameters:
+     *
+     *   a - the first vector operand
+     *   b - the second vector operand
+     *   r - optional vector to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 3-element vector with the result.
+     */
+    V3.cross = function V3_cross(a, b, r) {
+        //MathUtils_assert(a.length == 3, "a.length == 3");
+        //MathUtils_assert(b.length == 3, "b.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(3);
+        r[0] = a[1]*b[2] - a[2]*b[1];
+        r[1] = a[2]*b[0] - a[0]*b[2];
+        r[2] = a[0]*b[1] - a[1]*b[0];
+        return r;
+    };
+
+    /*
+     * Function: V3.mul4x4
+     *
+     * Perform
+     * r = m * v.
+     *
+     * Parameters:
+     *
+     *   m - the 4x4 matrix operand
+     *   v - the 3-element vector operand
+     *   r - optional vector to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 3-element vector with the result.
+     *   The 4-element result vector is divided by the w component
+     *   and returned as a 3-element vector.
+     */
+    V3.mul4x4 = function V3_mul4x4(m, v, r) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(v.length == 3, "v.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
+
+        var w;
+        var tmp = V3._temp1;
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(3);
+        tmp[0] = m[ 3];
+        tmp[1] = m[ 7];
+        tmp[2] = m[11];
+        w    =  V3.dot(v, tmp) + m[15];
+        tmp[0] = m[ 0];
+        tmp[1] = m[ 4];
+        tmp[2] = m[ 8];
+        r[0] = (V3.dot(v, tmp) + m[12])/w;
+        tmp[0] = m[ 1];
+        tmp[1] = m[ 5];
+        tmp[2] = m[ 9];
+        r[1] = (V3.dot(v, tmp) + m[13])/w;
+        tmp[0] = m[ 2];
+        tmp[1] = m[ 6];
+        tmp[2] = m[10];
+        r[2] = (V3.dot(v, tmp) + m[14])/w;
+        return r;
+    };
+
+    /*
+     * Class: M4x4
+     *
+     * Methods for working with 4x4 matrices.  A matrix is represented by a 16-element array
+     * in column-major order.  Any valid JavaScript array type may be used, but if new
+     * matrices are created they are created using the configured MJS_FLOAT_ARRAY_TYPE.
+     */
+
+    var M4x4 = { };
+
+    M4x4._temp1 = new MJS_FLOAT_ARRAY_TYPE(16);
+    M4x4._temp2 = new MJS_FLOAT_ARRAY_TYPE(16);
+
+    if (MJS_FLOAT_ARRAY_TYPE == Array) {
+        M4x4.I = [1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0];
+
+        M4x4.$ = function M4x4_$(m00, m01, m02, m03,
+                m04, m05, m06, m07,
+                m08, m09, m10, m11,
+                m12, m13, m14, m15)
+        {
+            return [m00, m01, m02, m03,
+            m04, m05, m06, m07,
+            m08, m09, m10, m11,
+            m12, m13, m14, m15];
+        };
+    } else {
+        M4x4.I = new MJS_FLOAT_ARRAY_TYPE([1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0]);
+
+        /*
+         * Function: M4x4.$
+         *
+         * Creates a new 4x4 matrix with the given values.
+         *
+         * Parameters:
+         *
+         *   m00..m15 - the 16 elements of the new matrix.
+         *
+         * Returns:
+         *
+         * A new matrix filled with the given argument values.
+         */
+        M4x4.$ = function M4x4_$(m00, m01, m02, m03,
+                m04, m05, m06, m07,
+                m08, m09, m10, m11,
+                m12, m13, m14, m15)
+        {
+            return new MJS_FLOAT_ARRAY_TYPE([m00, m01, m02, m03,
+                    m04, m05, m06, m07,
+                    m08, m09, m10, m11,
+                    m12, m13, m14, m15]);
+        };
+    }
+
+    M4x4.identity = M4x4.I;
+
+    /*
+     * Function: M4x4.fromList
+     *
+     * Creates a new 4x4 matrix with the given values.
+     *
+     * Parameters:
+     *
+     *   list - A list of the 16 elements of the new matrix.
+     *
+     * Returns:
+     *
+     * Just a new matrix filled with the given argument values.
+     * Nothing, if the length of the list is not exactly 16.
+     */
+    M4x4.fromList = function(list) {
+        var m = _elm_lang$core$Native_List.toArray(list);
+        if (m.length === 16) {
+            return _elm_lang$core$Maybe$Just(M4x4.$(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], m[12], m[13], m[14], m[15]));
+        } else {
+            return _elm_lang$core$Maybe$Nothing;
+        }
+    }
+
+    /*
+     * Function: M4x4.topLeft3x3
+     *
+     * Return the top left 3x3 matrix from the given 4x4 matrix m.
+     *
+     * Parameters:
+     *
+     *   m - the matrix
+     *   r - optional 3x3 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 3x3 matrix with the result.
+     */
+    M4x4.topLeft3x3 = function M4x4_topLeft3x3(m, r) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 9, "r == undefined || r.length == 9");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(9);
+        r[0] = m[0]; r[1] = m[1]; r[2] = m[2];
+        r[3] = m[4]; r[4] = m[5]; r[5] = m[6];
+        r[6] = m[8]; r[7] = m[9]; r[8] = m[10];
+        return r;
+    };
+
+    /*
+     * Function: M4x4.inverse
+     *
+     * Computes the inverse of the given matrix m.
+     *
+     * Parameters:
+     *
+     *   m - the matrix
+     *   r - optional 4x4 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 4x4 matrix with the result.
+     */
+    M4x4.inverse = function M4x4_inverse(m, r) {
+        if (r == undefined) {
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+        }
+
+        r[0] = m[5] * m[10] * m[15] - m[5] * m[11] * m[14] - m[9] * m[6] * m[15] +
+            m[9] * m[7] * m[14] + m[13] * m[6] * m[11] - m[13] * m[7] * m[10];
+        r[4] = -m[4] * m[10] * m[15] + m[4] * m[11] * m[14] + m[8] * m[6] * m[15] -
+            m[8] * m[7] * m[14] - m[12] * m[6] * m[11] + m[12] * m[7] * m[10];
+        r[8] = m[4] * m[9] * m[15] - m[4] * m[11] * m[13] - m[8] * m[5] * m[15] +
+            m[8] * m[7] * m[13] + m[12] * m[5] * m[11] - m[12] * m[7] * m[9];
+        r[12] = -m[4] * m[9] * m[14] + m[4] * m[10] * m[13] + m[8] * m[5] * m[14] -
+            m[8] * m[6] * m[13] - m[12] * m[5] * m[10] + m[12] * m[6] * m[9];
+        r[1] = -m[1] * m[10] * m[15] + m[1] * m[11] * m[14] + m[9] * m[2] * m[15] -
+            m[9] * m[3] * m[14] - m[13] * m[2] * m[11] + m[13] * m[3] * m[10];
+        r[5] = m[0] * m[10] * m[15] - m[0] * m[11] * m[14] - m[8] * m[2] * m[15] +
+            m[8] * m[3] * m[14] + m[12] * m[2] * m[11] - m[12] * m[3] * m[10];
+        r[9] = -m[0] * m[9] * m[15] + m[0] * m[11] * m[13] + m[8] * m[1] * m[15] -
+            m[8] * m[3] * m[13] - m[12] * m[1] * m[11] + m[12] * m[3] * m[9];
+        r[13] = m[0] * m[9] * m[14] - m[0] * m[10] * m[13] - m[8] * m[1] * m[14] +
+            m[8] * m[2] * m[13] + m[12] * m[1] * m[10] - m[12] * m[2] * m[9];
+        r[2] = m[1] * m[6] * m[15] - m[1] * m[7] * m[14] - m[5] * m[2] * m[15] +
+            m[5] * m[3] * m[14] + m[13] * m[2] * m[7] - m[13] * m[3] * m[6];
+        r[6] = -m[0] * m[6] * m[15] + m[0] * m[7] * m[14] + m[4] * m[2] * m[15] -
+            m[4] * m[3] * m[14] - m[12] * m[2] * m[7] + m[12] * m[3] * m[6];
+        r[10] = m[0] * m[5] * m[15] - m[0] * m[7] * m[13] - m[4] * m[1] * m[15] +
+            m[4] * m[3] * m[13] + m[12] * m[1] * m[7] - m[12] * m[3] * m[5];
+        r[14] = -m[0] * m[5] * m[14] + m[0] * m[6] * m[13] + m[4] * m[1] * m[14] -
+            m[4] * m[2] * m[13] - m[12] * m[1] * m[6] + m[12] * m[2] * m[5];
+        r[3] = -m[1] * m[6] * m[11] + m[1] * m[7] * m[10] + m[5] * m[2] * m[11] -
+            m[5] * m[3] * m[10] - m[9] * m[2] * m[7] + m[9] * m[3] * m[6];
+        r[7] = m[0] * m[6] * m[11] - m[0] * m[7] * m[10] - m[4] * m[2] * m[11] +
+            m[4] * m[3] * m[10] + m[8] * m[2] * m[7] - m[8] * m[3] * m[6];
+        r[11] = -m[0] * m[5] * m[11] + m[0] * m[7] * m[9] + m[4] * m[1] * m[11] -
+            m[4] * m[3] * m[9] - m[8] * m[1] * m[7] + m[8] * m[3] * m[5];
+        r[15] = m[0] * m[5] * m[10] - m[0] * m[6] * m[9] - m[4] * m[1] * m[10] +
+            m[4] * m[2] * m[9] + m[8] * m[1] * m[6] - m[8] * m[2] * m[5];
+
+        var det = m[0] * r[0] + m[1] * r[4] + m[2] * r[8] + m[3] * r[12];
+
+        if (det === 0) {
+            return _elm_lang$core$Maybe$Nothing;
+        }
+
+        det = 1.0 / det;
+
+        for (var i = 0; i < 16; i = i + 1) {
+            r[i] = r[i] * det;
+        }
+
+        return _elm_lang$core$Maybe$Just(r);
+    };
+
+    /*
+     * Function: M4x4.inverseOrthonormal
+     *
+     * Computes the inverse of the given matrix m, assuming that
+     * the matrix is orthonormal.
+     *
+     * Parameters:
+     *
+     *   m - the matrix
+     *   r - optional 4x4 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 4x4 matrix with the result.
+     */
+    M4x4.inverseOrthonormal = function M4x4_inverseOrthonormal(m, r) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+        //MathUtils_assert(m != r, "m != r");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+        M4x4.transpose(m, r);
+        var t = [m[12], m[13], m[14]];
+        r[3] = r[7] = r[11] = 0;
+        r[12] = -V3.dot([r[0], r[4], r[8]], t);
+        r[13] = -V3.dot([r[1], r[5], r[9]], t);
+        r[14] = -V3.dot([r[2], r[6], r[10]], t);
+        return r;
+    };
+
+    /*
+     * Function: M4x4.inverseTo3x3
+     *
+     * Computes the inverse of the given matrix m, but calculates
+     * only the top left 3x3 values of the result.
+     *
+     * Parameters:
+     *
+     *   m - the matrix
+     *   r - optional 3x3 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 3x3 matrix with the result.
+     */
+    M4x4.inverseTo3x3 = function M4x4_inverseTo3x3(m, r) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 9, "r == undefined || r.length == 9");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(9);
+
+        var a11 = m[10]*m[5]-m[6]*m[9],
+            a21 = -m[10]*m[1]+m[2]*m[9],
+            a31 = m[6]*m[1]-m[2]*m[5],
+            a12 = -m[10]*m[4]+m[6]*m[8],
+            a22 = m[10]*m[0]-m[2]*m[8],
+            a32 = -m[6]*m[0]+m[2]*m[4],
+            a13 = m[9]*m[4]-m[5]*m[8],
+            a23 = -m[9]*m[0]+m[1]*m[8],
+            a33 = m[5]*m[0]-m[1]*m[4];
+        var det = m[0]*(a11) + m[1]*(a12) + m[2]*(a13);
+        if (det == 0) // no inverse
+            throw "matrix not invertible";
+        var idet = 1.0 / det;
+
+        r[0] = idet*a11;
+        r[1] = idet*a21;
+        r[2] = idet*a31;
+        r[3] = idet*a12;
+        r[4] = idet*a22;
+        r[5] = idet*a32;
+        r[6] = idet*a13;
+        r[7] = idet*a23;
+        r[8] = idet*a33;
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.makeFrustum
+     *
+     * Creates a matrix for a projection frustum with the given parameters.
+     *
+     * Parameters:
+     *
+     *   left - the left coordinate of the frustum
+     *   right- the right coordinate of the frustum
+     *   bottom - the bottom coordinate of the frustum
+     *   top - the top coordinate of the frustum
+     *   znear - the near z distance of the frustum
+     *   zfar - the far z distance of the frustum
+     *   r - optional 4x4 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after creating the projection matrix.
+     *   Otherwise, returns a new 4x4 matrix.
+     */
+    M4x4.makeFrustum = function M4x4_makeFrustum(left, right, bottom, top, znear, zfar, r) {
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+
+        var X = 2*znear/(right-left);
+        var Y = 2*znear/(top-bottom);
+        var A = (right+left)/(right-left);
+        var B = (top+bottom)/(top-bottom);
+        var C = -(zfar+znear)/(zfar-znear);
+        var D = -2*zfar*znear/(zfar-znear);
+
+        r[0] = 2*znear/(right-left);
+        r[1] = 0;
+        r[2] = 0;
+        r[3] = 0;
+        r[4] = 0;
+        r[5] = 2*znear/(top-bottom);
+        r[6] = 0;
+        r[7] = 0;
+        r[8] = (right+left)/(right-left);
+        r[9] = (top+bottom)/(top-bottom);
+        r[10] = -(zfar+znear)/(zfar-znear);
+        r[11] = -1;
+        r[12] = 0;
+        r[13] = 0;
+        r[14] = -2*zfar*znear/(zfar-znear);
+        r[15] = 0;
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.makePerspective
+     *
+     * Creates a matrix for a perspective projection with the given parameters.
+     *
+     * Parameters:
+     *
+     *   fovy - field of view in the y axis, in degrees
+     *   aspect - aspect ratio
+     *   znear - the near z distance of the projection
+     *   zfar - the far z distance of the projection
+     *   r - optional 4x4 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after creating the projection matrix.
+     *   Otherwise, returns a new 4x4 matrix.
+     */
+    M4x4.makePerspective = function M4x4_makePerspective (fovy, aspect, znear, zfar, r) {
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        var ymax = znear * Math.tan(fovy * Math.PI / 360.0);
+        var ymin = -ymax;
+        var xmin = ymin * aspect;
+        var xmax = ymax * aspect;
+
+        return M4x4.makeFrustum(xmin, xmax, ymin, ymax, znear, zfar, r);
+    };
+
+    /*
+     * Function: M4x4.makeOrtho
+     *
+     * Creates a matrix for an orthogonal frustum projection with the given parameters.
+     *
+     * Parameters:
+     *
+     *   left - the left coordinate of the frustum
+     *   right- the right coordinate of the frustum
+     *   bottom - the bottom coordinate of the frustum
+     *   top - the top coordinate of the frustum
+     *   znear - the near z distance of the frustum
+     *   zfar - the far z distance of the frustum
+     *   r - optional 4x4 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after creating the projection matrix.
+     *   Otherwise, returns a new 4x4 matrix.
+     */
+    M4x4.makeOrtho = function M4x4_makeOrtho (left, right, bottom, top, znear, zfar, r) {
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+
+        var tX = -(right+left)/(right-left);
+        var tY = -(top+bottom)/(top-bottom);
+        var tZ = -(zfar+znear)/(zfar-znear);
+        var X = 2 / (right-left);
+        var Y = 2 / (top-bottom);
+        var Z = -2 / (zfar-znear);
+
+        r[0] = 2 / (right-left);
+        r[1] = 0;
+        r[2] = 0;
+        r[3] = 0;
+        r[4] = 0;
+        r[5] = 2 / (top-bottom);
+        r[6] = 0;
+        r[7] = 0;
+        r[8] = 0;
+        r[9] = 0;
+        r[10] = -2 / (zfar-znear);
+        r[11] = 0;
+        r[12] = -(right+left)/(right-left);
+        r[13] = -(top+bottom)/(top-bottom);
+        r[14] = -(zfar+znear)/(zfar-znear);
+        r[15] = 1;
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.makeOrtho2D
+     *
+     * Creates a matrix for a 2D orthogonal frustum projection with the given parameters.
+     * znear and zfar are assumed to be -1 and 1, respectively.
+     *
+     * Parameters:
+     *
+     *   left - the left coordinate of the frustum
+     *   right- the right coordinate of the frustum
+     *   bottom - the bottom coordinate of the frustum
+     *   top - the top coordinate of the frustum
+     *   r - optional 4x4 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after creating the projection matrix.
+     *   Otherwise, returns a new 4x4 matrix.
+     */
+    M4x4.makeOrtho2D = function M4x4_makeOrtho2D (left, right, bottom, top, r) {
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        return M4x4.makeOrtho(left, right, bottom, top, -1, 1, r);
+    };
+
+    /*
+     * Function: M4x4.mul
+     *
+     * Performs r = a * b.
+     *
+     * Parameters:
+     *
+     *   a - the first matrix operand
+     *   b - the second matrix operand
+     *   r - optional 4x4 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 4x4 matrix with the result.
+     */
+    M4x4.mul = function M4x4_mul(a, b, r) {
+        //MathUtils_assert(a.length == 16, "a.length == 16");
+        //MathUtils_assert(b.length == 16, "b.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+        //MathUtils_assert(a != r && b != r, "a != r && b != r");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+
+        var a11 = a[0];
+        var a21 = a[1];
+        var a31 = a[2];
+        var a41 = a[3];
+        var a12 = a[4];
+        var a22 = a[5];
+        var a32 = a[6];
+        var a42 = a[7];
+        var a13 = a[8];
+        var a23 = a[9];
+        var a33 = a[10];
+        var a43 = a[11];
+        var a14 = a[12];
+        var a24 = a[13];
+        var a34 = a[14];
+        var a44 = a[15];
+
+        var b11 = b[0];
+        var b21 = b[1];
+        var b31 = b[2];
+        var b41 = b[3];
+        var b12 = b[4];
+        var b22 = b[5];
+        var b32 = b[6];
+        var b42 = b[7];
+        var b13 = b[8];
+        var b23 = b[9];
+        var b33 = b[10];
+        var b43 = b[11];
+        var b14 = b[12];
+        var b24 = b[13];
+        var b34 = b[14];
+        var b44 = b[15];
+
+        r[0] = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
+        r[1] = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
+        r[2] = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
+        r[3] = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
+        r[4] = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
+        r[5] = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
+        r[6] = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
+        r[7] = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
+        r[8] = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
+        r[9] = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
+        r[10] = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
+        r[11] = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
+        r[12] = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
+        r[13] = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
+        r[14] = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
+        r[15] = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.mulAffine
+     *
+     * Performs r = a * b, assuming a and b are affine (elements 3,7,11,15 = 0,0,0,1)
+     *
+     * Parameters:
+     *
+     *   a - the first matrix operand
+     *   b - the second matrix operand
+     *   r - optional 4x4 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 4x4 matrix with the result.
+     */
+    M4x4.mulAffine = function M4x4_mulAffine(a, b, r) {
+        //MathUtils_assert(a.length == 16, "a.length == 16");
+        //MathUtils_assert(b.length == 16, "b.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+        //MathUtils_assert(a != r && b != r, "a != r && b != r");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+        var a11 = a[0];
+        var a21 = a[1];
+        var a31 = a[2];
+        var a12 = a[4];
+        var a22 = a[5];
+        var a32 = a[6];
+        var a13 = a[8];
+        var a23 = a[9];
+        var a33 = a[10];
+        var a14 = a[12];
+        var a24 = a[13];
+        var a34 = a[14];
+
+        var b11 = b[0];
+        var b21 = b[1];
+        var b31 = b[2];
+        var b12 = b[4];
+        var b22 = b[5];
+        var b32 = b[6];
+        var b13 = b[8];
+        var b23 = b[9];
+        var b33 = b[10];
+        var b14 = b[12];
+        var b24 = b[13];
+        var b34 = b[14];
+
+        r[0] = a11 * b11 + a12 * b21 + a13 * b31;
+        r[1] = a21 * b11 + a22 * b21 + a23 * b31;
+        r[2] = a31 * b11 + a32 * b21 + a33 * b31;
+        r[3] = 0;
+        r[4] = a11 * b12 + a12 * b22 + a13 * b32;
+        r[5] = a21 * b12 + a22 * b22 + a23 * b32;
+        r[6] = a31 * b12 + a32 * b22 + a33 * b32;
+        r[7] = 0;
+        r[8] = a11 * b13 + a12 * b23 + a13 * b33;
+        r[9] = a21 * b13 + a22 * b23 + a23 * b33;
+        r[10] = a31 * b13 + a32 * b23 + a33 * b33;
+        r[11] = 0;
+        r[12] = a11 * b14 + a12 * b24 + a13 * b34 + a14;
+        r[13] = a21 * b14 + a22 * b24 + a23 * b34 + a24;
+        r[14] = a31 * b14 + a32 * b24 + a33 * b34 + a34;
+        r[15] = 1;
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.makeRotate
+     *
+     * Creates a transformation matrix for rotation by angle radians about the 3-element vector axis.
+     *
+     * Parameters:
+     *
+     *   angle - the angle of rotation, in radians
+     *   axis - the axis around which the rotation is performed, a 3-element vector
+     *   r - optional 4x4 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after creating the matrix.
+     *   Otherwise, returns a new 4x4 matrix with the result.
+     */
+    M4x4.makeRotate = function M4x4_makeRotate(angle, axis, r) {
+        //MathUtils_assert(angle.length == 3, "angle.length == 3");
+        //MathUtils_assert(axis.length == 3, "axis.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+
+        axis = V3.normalize(axis, V3._temp1);
+        var x = axis[0], y = axis[1], z = axis[2];
+        var c = Math.cos(angle);
+        var c1 = 1-c;
+        var s = Math.sin(angle);
+
+        r[0] = x*x*c1+c;
+        r[1] = y*x*c1+z*s;
+        r[2] = z*x*c1-y*s;
+        r[3] = 0;
+        r[4] = x*y*c1-z*s;
+        r[5] = y*y*c1+c;
+        r[6] = y*z*c1+x*s;
+        r[7] = 0;
+        r[8] = x*z*c1+y*s;
+        r[9] = y*z*c1-x*s;
+        r[10] = z*z*c1+c;
+        r[11] = 0;
+        r[12] = 0;
+        r[13] = 0;
+        r[14] = 0;
+        r[15] = 1;
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.rotate
+     *
+     * Concatenates a rotation of angle radians about the axis to the give matrix m.
+     *
+     * Parameters:
+     *
+     *   angle - the angle of rotation, in radians
+     *   axis - the axis around which the rotation is performed, a 3-element vector
+     *   m - the matrix to concatenate the rotation to
+     *   r - optional 4x4 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after performing the operation.
+     *   Otherwise, returns a new 4x4 matrix with the result.
+     */
+    M4x4.rotate = function M4x4_rotate(angle, axis, m, r) {
+        //MathUtils_assert(angle.length == 3, "angle.length == 3");
+        //MathUtils_assert(axis.length == 3, "axis.length == 3");
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+        var a0=axis [0], a1=axis [1], a2=axis [2];
+        var l = Math.sqrt(a0*a0 + a1*a1 + a2*a2);
+        var x = a0, y = a1, z = a2;
+        if (l != 1.0) {
+            var im = 1.0 / l;
+            x *= im;
+            y *= im;
+            z *= im;
+        }
+        var c = Math.cos(angle);
+        var c1 = 1-c;
+        var s = Math.sin(angle);
+        var xs = x*s;
+        var ys = y*s;
+        var zs = z*s;
+        var xyc1 = x * y * c1;
+        var xzc1 = x * z * c1;
+        var yzc1 = y * z * c1;
+
+        var m11 = m[0];
+        var m21 = m[1];
+        var m31 = m[2];
+        var m41 = m[3];
+        var m12 = m[4];
+        var m22 = m[5];
+        var m32 = m[6];
+        var m42 = m[7];
+        var m13 = m[8];
+        var m23 = m[9];
+        var m33 = m[10];
+        var m43 = m[11];
+
+        var t11 = x * x * c1 + c;
+        var t21 = xyc1 + zs;
+        var t31 = xzc1 - ys;
+        var t12 = xyc1 - zs;
+        var t22 = y * y * c1 + c;
+        var t32 = yzc1 + xs;
+        var t13 = xzc1 + ys;
+        var t23 = yzc1 - xs;
+        var t33 = z * z * c1 + c;
+
+        r[0] = m11 * t11 + m12 * t21 + m13 * t31;
+        r[1] = m21 * t11 + m22 * t21 + m23 * t31;
+        r[2] = m31 * t11 + m32 * t21 + m33 * t31;
+        r[3] = m41 * t11 + m42 * t21 + m43 * t31;
+        r[4] = m11 * t12 + m12 * t22 + m13 * t32;
+        r[5] = m21 * t12 + m22 * t22 + m23 * t32;
+        r[6] = m31 * t12 + m32 * t22 + m33 * t32;
+        r[7] = m41 * t12 + m42 * t22 + m43 * t32;
+        r[8] = m11 * t13 + m12 * t23 + m13 * t33;
+        r[9] = m21 * t13 + m22 * t23 + m23 * t33;
+        r[10] = m31 * t13 + m32 * t23 + m33 * t33;
+        r[11] = m41 * t13 + m42 * t23 + m43 * t33;
+        if (r != m) {
+            r[12] = m[12];
+            r[13] = m[13];
+            r[14] = m[14];
+            r[15] = m[15];
+        }
+        return r;
+    };
+
+    /*
+     * Function: M4x4.makeScale3
+     *
+     * Creates a transformation matrix for scaling by 3 scalar values, one for
+     * each of the x, y, and z directions.
+     *
+     * Parameters:
+     *
+     *   x - the scale for the x axis
+     *   y - the scale for the y axis
+     *   z - the scale for the z axis
+     *   r - optional 4x4 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after creating the matrix.
+     *   Otherwise, returns a new 4x4 matrix with the result.
+     */
+    M4x4.makeScale3 = function M4x4_makeScale3(x, y, z, r) {
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+
+        r[0] = x;
+        r[1] = 0;
+        r[2] = 0;
+        r[3] = 0;
+        r[4] = 0;
+        r[5] = y;
+        r[6] = 0;
+        r[7] = 0;
+        r[8] = 0;
+        r[9] = 0;
+        r[10] = z;
+        r[11] = 0;
+        r[12] = 0;
+        r[13] = 0;
+        r[14] = 0;
+        r[15] = 1;
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.makeScale1
+     *
+     * Creates a transformation matrix for a uniform scale by a single scalar value.
+     *
+     * Parameters:
+     *
+     *   k - the scale factor
+     *   r - optional 4x4 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after creating the matrix.
+     *   Otherwise, returns a new 4x4 matrix with the result.
+     */
+    M4x4.makeScale1 = function M4x4_makeScale1(k, r) {
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        return M4x4.makeScale3(k, k, k, r);
+    };
+
+    /*
+     * Function: M4x4.makeScale
+     *
+     * Creates a transformation matrix for scaling each of the x, y, and z axes by the amount
+     * given in the corresponding element of the 3-element vector.
+     *
+     * Parameters:
+     *
+     *   v - the 3-element vector containing the scale factors
+     *   r - optional 4x4 matrix to store the result in
+     *
+     * Returns:
+     *
+     *   If r is specified, returns r after creating the matrix.
+     *   Otherwise, returns a new 4x4 matrix with the result.
+     */
+    M4x4.makeScale = function M4x4_makeScale(v, r) {
+        //MathUtils_assert(v.length == 3, "v.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        return M4x4.makeScale3(v[0], v[1], v[2], r);
+    };
+
+    /*
+     * Function: M4x4.scale3
+     */
+    M4x4.scale3 = function M4x4_scale3(x, y, z, m, r) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        if (r == m) {
+            m[0] *= x;
+            m[1] *= x;
+            m[2] *= x;
+            m[3] *= x;
+            m[4] *= y;
+            m[5] *= y;
+            m[6] *= y;
+            m[7] *= y;
+            m[8] *= z;
+            m[9] *= z;
+            m[10] *= z;
+            m[11] *= z;
+            return m;
+        }
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+
+        r[0] = m[0] * x;
+        r[1] = m[1] * x;
+        r[2] = m[2] * x;
+        r[3] = m[3] * x;
+        r[4] = m[4] * y;
+        r[5] = m[5] * y;
+        r[6] = m[6] * y;
+        r[7] = m[7] * y;
+        r[8] = m[8] * z;
+        r[9] = m[9] * z;
+        r[10] = m[10] * z;
+        r[11] = m[11] * z;
+        r[12] = m[12];
+        r[13] = m[13];
+        r[14] = m[14];
+        r[15] = m[15];
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.scale1
+     */
+    M4x4.scale1 = function M4x4_scale1(k, m, r) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+        if (r == m) {
+            m[0] *= k;
+            m[1] *= k;
+            m[2] *= k;
+            m[3] *= k;
+            m[4] *= k;
+            m[5] *= k;
+            m[6] *= k;
+            m[7] *= k;
+            m[8] *= k;
+            m[9] *= k;
+            m[10] *= k;
+            m[11] *= k;
+            return m;
+        }
+
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+
+        r[0] = m[0] * k;
+        r[1] = m[1] * k;
+        r[2] = m[2] * k;
+        r[3] = m[3] * k;
+        r[4] = m[4] * k;
+        r[5] = m[5] * k;
+        r[6] = m[6] * k;
+        r[7] = m[7] * k;
+        r[8] = m[8] * k;
+        r[9] = m[9] * k;
+        r[10] = m[10] * k;
+        r[11] = m[11] * k;
+        r[12] = m[12];
+        r[13] = m[13];
+        r[14] = m[14];
+        r[15] = m[15];
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.scale1
+     */
+    M4x4.scale = function M4x4_scale(v, m, r) {
+        //MathUtils_assert(v.length == 3, "v.length == 3");
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+        var x = v[0], y = v[1], z = v[2];
+
+        if (r == m) {
+            m[0] *= x;
+            m[1] *= x;
+            m[2] *= x;
+            m[3] *= x;
+            m[4] *= y;
+            m[5] *= y;
+            m[6] *= y;
+            m[7] *= y;
+            m[8] *= z;
+            m[9] *= z;
+            m[10] *= z;
+            m[11] *= z;
+            return m;
+        }
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+
+
+        r[0] = m[0] * x;
+        r[1] = m[1] * x;
+        r[2] = m[2] * x;
+        r[3] = m[3] * x;
+        r[4] = m[4] * y;
+        r[5] = m[5] * y;
+        r[6] = m[6] * y;
+        r[7] = m[7] * y;
+        r[8] = m[8] * z;
+        r[9] = m[9] * z;
+        r[10] = m[10] * z;
+        r[11] = m[11] * z;
+        r[12] = m[12];
+        r[13] = m[13];
+        r[14] = m[14];
+        r[15] = m[15];
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.makeTranslate3
+     */
+    M4x4.makeTranslate3 = function M4x4_makeTranslate3(x, y, z, r) {
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+
+        r[0] = 1;
+        r[1] = 0;
+        r[2] = 0;
+        r[3] = 0;
+        r[4] = 0;
+        r[5] = 1;
+        r[6] = 0;
+        r[7] = 0;
+        r[8] = 0;
+        r[9] = 0;
+        r[10] = 1;
+        r[11] = 0;
+        r[12] = x;
+        r[13] = y;
+        r[14] = z;
+        r[15] = 1;
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.makeTranslate1
+     */
+    M4x4.makeTranslate1 = function M4x4_makeTranslate1 (k, r) {
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        return M4x4.makeTranslate3(k, k, k, r);
+    };
+
+    /*
+     * Function: M4x4.makeTranslate
+     */
+    M4x4.makeTranslate = function M4x4_makeTranslate (v, r) {
+        //MathUtils_assert(v.length == 3, "v.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        return M4x4.makeTranslate3(v[0], v[1], v[2], r);
+    };
+
+    /*
+     * Function: M4x4.translate3Self
+     */
+    M4x4.translate3Self = function M4x4_translate3Self (x, y, z, m) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+        m[12] += m[0] * x + m[4] * y + m[8] * z;
+        m[13] += m[1] * x + m[5] * y + m[9] * z;
+        m[14] += m[2] * x + m[6] * y + m[10] * z;
+        m[15] += m[3] * x + m[7] * y + m[11] * z;
+        return m;
+    };
+
+    /*
+     * Function: M4x4.translate3
+     */
+    M4x4.translate3 = function M4x4_translate3 (x, y, z, m, r) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        if (r == m) {
+            m[12] += m[0] * x + m[4] * y + m[8] * z;
+            m[13] += m[1] * x + m[5] * y + m[9] * z;
+            m[14] += m[2] * x + m[6] * y + m[10] * z;
+            m[15] += m[3] * x + m[7] * y + m[11] * z;
+            return m;
+        }
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+
+        var m11 = m[0];
+        var m21 = m[1];
+        var m31 = m[2];
+        var m41 = m[3];
+        var m12 = m[4];
+        var m22 = m[5];
+        var m32 = m[6];
+        var m42 = m[7];
+        var m13 = m[8];
+        var m23 = m[9];
+        var m33 = m[10];
+        var m43 = m[11];
+
+
+        r[0] = m11;
+        r[1] = m21;
+        r[2] = m31;
+        r[3] = m41;
+        r[4] = m12;
+        r[5] = m22;
+        r[6] = m32;
+        r[7] = m42;
+        r[8] = m13;
+        r[9] = m23;
+        r[10] = m33;
+        r[11] = m43;
+        r[12] = m11 * x + m12 * y + m13 * z + m[12];
+        r[13] = m21 * x + m22 * y + m23 * z + m[13];
+        r[14] = m31 * x + m32 * y + m33 * z + m[14];
+        r[15] = m41 * x + m42 * y + m43 * z + m[15];
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.translate1
+     */
+    M4x4.translate1 = function M4x4_translate1 (k, m, r) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        return M4x4.translate3(k, k, k, m, r);
+    };
+    /*
+     * Function: M4x4.translateSelf
+     */
+    M4x4.translateSelf = function M4x4_translateSelf (v, m) {
+        //MathUtils_assert(v.length == 3, "v.length == 3");
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        var x=v[0], y=v[1], z=v[2];
+        m[12] += m[0] * x + m[4] * y + m[8] * z;
+        m[13] += m[1] * x + m[5] * y + m[9] * z;
+        m[14] += m[2] * x + m[6] * y + m[10] * z;
+        m[15] += m[3] * x + m[7] * y + m[11] * z;
+        return m;
+    };
+    /*
+     * Function: M4x4.translate
+     */
+    M4x4.translate = function M4x4_translate (v, m, r) {
+        //MathUtils_assert(v.length == 3, "v.length == 3");
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+        var x=v[0], y=v[1], z=v[2];
+        if (r == m) {
+            m[12] += m[0] * x + m[4] * y + m[8] * z;
+            m[13] += m[1] * x + m[5] * y + m[9] * z;
+            m[14] += m[2] * x + m[6] * y + m[10] * z;
+            m[15] += m[3] * x + m[7] * y + m[11] * z;
+            return m;
+        }
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+
+        var m11 = m[0];
+        var m21 = m[1];
+        var m31 = m[2];
+        var m41 = m[3];
+        var m12 = m[4];
+        var m22 = m[5];
+        var m32 = m[6];
+        var m42 = m[7];
+        var m13 = m[8];
+        var m23 = m[9];
+        var m33 = m[10];
+        var m43 = m[11];
+
+        r[0] = m11;
+        r[1] = m21;
+        r[2] = m31;
+        r[3] = m41;
+        r[4] = m12;
+        r[5] = m22;
+        r[6] = m32;
+        r[7] = m42;
+        r[8] = m13;
+        r[9] = m23;
+        r[10] = m33;
+        r[11] = m43;
+        r[12] = m11 * x + m12 * y + m13 * z + m[12];
+        r[13] = m21 * x + m22 * y + m23 * z + m[13];
+        r[14] = m31 * x + m32 * y + m33 * z + m[14];
+        r[15] = m41 * x + m42 * y + m43 * z + m[15];
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.makeLookAt
+     */
+    M4x4.makeLookAt = function M4x4_makeLookAt (eye, center, up, r) {
+        //MathUtils_assert(eye.length == 3, "eye.length == 3");
+        //MathUtils_assert(center.length == 3, "center.length == 3");
+        //MathUtils_assert(up.length == 3, "up.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        var z = V3.direction(eye, center, V3._temp1);
+        var x = V3.normalize(V3.cross(up, z, V3._temp2), V3._temp2);
+        var y = V3.normalize(V3.cross(z, x, V3._temp3), V3._temp3);
+
+        var tm1 = M4x4._temp1;
+        var tm2 = M4x4._temp2;
+
+        tm1[0] = x[0];
+        tm1[1] = y[0];
+        tm1[2] = z[0];
+        tm1[3] = 0;
+        tm1[4] = x[1];
+        tm1[5] = y[1];
+        tm1[6] = z[1];
+        tm1[7] = 0;
+        tm1[8] = x[2];
+        tm1[9] = y[2];
+        tm1[10] = z[2];
+        tm1[11] = 0;
+        tm1[12] = 0;
+        tm1[13] = 0;
+        tm1[14] = 0;
+        tm1[15] = 1;
+
+        tm2[0] = 1; tm2[1] = 0; tm2[2] = 0; tm2[3] = 0;
+        tm2[4] = 0; tm2[5] = 1; tm2[6] = 0; tm2[7] = 0;
+        tm2[8] = 0; tm2[9] = 0; tm2[10] = 1; tm2[11] = 0;
+        tm2[12] = -eye[0]; tm2[13] = -eye[1]; tm2[14] = -eye[2]; tm2[15] = 1;
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+        return M4x4.mul(tm1, tm2, r);
+    };
+
+    /*
+     * Function: M4x4.transposeSelf
+     */
+    M4x4.transposeSelf = function M4x4_transposeSelf (m) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        var tmp = m[1]; m[1] = m[4]; m[4] = tmp;
+        tmp = m[2]; m[2] = m[8]; m[8] = tmp;
+        tmp = m[3]; m[3] = m[12]; m[12] = tmp;
+        tmp = m[6]; m[6] = m[9]; m[9] = tmp;
+        tmp = m[7]; m[7] = m[13]; m[13] = tmp;
+        tmp = m[11]; m[11] = m[14]; m[14] = tmp;
+        return m;
+    };
+    /*
+     * Function: M4x4.transpose
+     */
+    M4x4.transpose = function M4x4_transpose (m, r) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
+
+        if (m == r) {
+            var tmp = 0.0;
+            tmp = m[1]; m[1] = m[4]; m[4] = tmp;
+            tmp = m[2]; m[2] = m[8]; m[8] = tmp;
+            tmp = m[3]; m[3] = m[12]; m[12] = tmp;
+            tmp = m[6]; m[6] = m[9]; m[9] = tmp;
+            tmp = m[7]; m[7] = m[13]; m[13] = tmp;
+            tmp = m[11]; m[11] = m[14]; m[14] = tmp;
+            return m;
+        }
+
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(16);
+
+        r[0] = m[0]; r[1] = m[4]; r[2] = m[8]; r[3] = m[12];
+        r[4] = m[1]; r[5] = m[5]; r[6] = m[9]; r[7] = m[13];
+        r[8] = m[2]; r[9] = m[6]; r[10] = m[10]; r[11] = m[14];
+        r[12] = m[3]; r[13] = m[7]; r[14] = m[11]; r[15] = m[15];
+
+        return r;
+    };
+
+
+    /*
+     * Function: M4x4.transformPoint
+     */
+    M4x4.transformPoint = function M4x4_transformPoint (m, v, r) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(v.length == 3, "v.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(3);
+
+        var v0 = v[0], v1 = v[1], v2 = v[2];
+
+        r[0] = m[0] * v0 + m[4] * v1 + m[8] * v2 + m[12];
+        r[1] = m[1] * v0 + m[5] * v1 + m[9] * v2 + m[13];
+        r[2] = m[2] * v0 + m[6] * v1 + m[10] * v2 + m[14];
+        var w = m[3] * v0 + m[7] * v1 + m[11] * v2 + m[15];
+
+        if (w != 1.0) {
+            r[0] /= w;
+            r[1] /= w;
+            r[2] /= w;
+        }
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.transformLine
+     */
+    M4x4.transformLine = function M4x4_transformLine(m, v, r) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(v.length == 3, "v.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(3);
+
+        var v0 = v[0], v1 = v[1], v2 = v[2];
+        r[0] = m[0] * v0 + m[4] * v1 + m[8] * v2;
+        r[1] = m[1] * v0 + m[5] * v1 + m[9] * v2;
+        r[2] = m[2] * v0 + m[6] * v1 + m[10] * v2;
+        var w = m[3] * v0 + m[7] * v1 + m[11] * v2;
+
+        if (w != 1.0) {
+            r[0] /= w;
+            r[1] /= w;
+            r[2] /= w;
+        }
+
+        return r;
+    };
+
+
+    /*
+     * Function: M4x4.transformPointAffine
+     */
+    M4x4.transformPointAffine = function M4x4_transformPointAffine (m, v, r) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(v.length == 3, "v.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(3);
+
+        var v0 = v[0], v1 = v[1], v2 = v[2];
+
+        r[0] = m[0] * v0 + m[4] * v1 + m[8] * v2 + m[12];
+        r[1] = m[1] * v0 + m[5] * v1 + m[9] * v2 + m[13];
+        r[2] = m[2] * v0 + m[6] * v1 + m[10] * v2 + m[14];
+
+        return r;
+    };
+
+    /*
+     * Function: M4x4.transformLineAffine
+     */
+    M4x4.transformLineAffine = function M4x4_transformLineAffine(m, v, r) {
+        //MathUtils_assert(m.length == 16, "m.length == 16");
+        //MathUtils_assert(v.length == 3, "v.length == 3");
+        //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
+        if (r == undefined)
+            r = new MJS_FLOAT_ARRAY_TYPE(3);
+
+        var v0 = v[0], v1 = v[1], v2 = v[2];
+        r[0] = m[0] * v0 + m[4] * v1 + m[8] * v2;
+        r[1] = m[1] * v0 + m[5] * v1 + m[9] * v2;
+        r[2] = m[2] * v0 + m[6] * v1 + m[10] * v2;
+
+        return r;
+    };
+
+    M4x4.makeBasis = function M4x4_makeBasis(vx,vy,vz) {
+
+        var r = new MJS_FLOAT_ARRAY_TYPE(16);
+
+        r[0] = vx[0];
+        r[1] = vx[1];
+        r[2] = vx[2];
+        r[3] = 0;
+        r[4] = vy[0];
+        r[5] = vy[1];
+        r[6] = vy[2];
+        r[7] = 0;
+        r[8] = vz[0];
+        r[9] = vz[1];
+        r[10] = vz[2];
+        r[11] = 0;
+        r[12] = 0;
+        r[13] = 0;
+        r[14] = 0;
+        r[15] = 1;
+
+        return r;
+
+    };
+
+    return {
+        vec3: F3(V3.$),
+        v3getX: V3.getX,
+        v3getY: V3.getY,
+        v3getZ: V3.getZ,
+        v3setX: F2(V3.setX),
+        v3setY: F2(V3.setY),
+        v3setZ: F2(V3.setZ),
+        toTuple3: V3.toTuple3,
+        toRecord3: V3.toRecord3,
+        fromTuple3: V3.fromTuple3,
+        fromRecord3: V3.fromRecord3,
+        v3add: F2(V3.add),
+        v3sub: F2(V3.sub),
+        v3neg: V3.neg,
+        v3direction: F2(V3.direction),
+        v3length: V3.length,
+        v3lengthSquared: V3.lengthSquared,
+        v3distance: F2(V3.distance),
+        v3distanceSquared: F2(V3.distanceSquared),
+        v3normalize: V3.normalize,
+        v3scale: F2(V3.scale),
+        v3dot: F2(V3.dot),
+        v3cross: F2(V3.cross),
+        v3mul4x4: F2(V3.mul4x4),
+        m4x4fromList: M4x4.fromList,
+        m4x4identity: M4x4.identity,
+        m4x4topLeft3x3: M4x4.topLeft3x3,
+        m4x4inverse: M4x4.inverse,
+        m4x4inverseOrthonormal: M4x4.inverseOrthonormal,
+        m4x4inverseTo3x3: M4x4.inverseTo3x3,
+        m4x4makeFrustum: F6(M4x4.makeFrustum),
+        m4x4makePerspective: F4(M4x4.makePerspective),
+        m4x4makeOrtho: F6(M4x4.makeOrtho),
+        m4x4makeOrtho2D: F4(M4x4.makeOrtho2D),
+        m4x4mul: F2(M4x4.mul),
+        m4x4Affine: F2(M4x4.mulAffine),
+        m4x4makeRotate: F2(M4x4.makeRotate),
+        m4x4rotate: F3(M4x4.rotate),
+        m4x4makeScale3: F3(M4x4.makeScale3),
+        m4x4makeScale1: M4x4.makeScale1,
+        m4x4makeScale: M4x4.makeScale,
+        m4x4scale3: F4(M4x4.scale3),
+        m4x4scale: F2(M4x4.scale),
+        m4x4makeTranslate3: F3(M4x4.makeTranslate3),
+        m4x4makeTranslate: M4x4.makeTranslate,
+        m4x4translate3: F4(M4x4.translate3),
+        m4x4translate: F2(M4x4.translate),
+        m4x4makeLookAt: F3(M4x4.makeLookAt),
+        m4x4transpose: M4x4.transpose,
+        m4x4transformPoint: F2(M4x4.transformPoint),
+        m4x4makeBasis: F3(M4x4.makeBasis)
+    };
+
+}();
+
+var _elm_community$linear_algebra$Math_Vector3$cross = _elm_community$linear_algebra$Native_MJS.v3cross;
+var _elm_community$linear_algebra$Math_Vector3$dot = _elm_community$linear_algebra$Native_MJS.v3dot;
+var _elm_community$linear_algebra$Math_Vector3$scale = _elm_community$linear_algebra$Native_MJS.v3scale;
+var _elm_community$linear_algebra$Math_Vector3$normalize = _elm_community$linear_algebra$Native_MJS.v3normalize;
+var _elm_community$linear_algebra$Math_Vector3$distanceSquared = _elm_community$linear_algebra$Native_MJS.v3distanceSquared;
+var _elm_community$linear_algebra$Math_Vector3$distance = _elm_community$linear_algebra$Native_MJS.v3distance;
+var _elm_community$linear_algebra$Math_Vector3$lengthSquared = _elm_community$linear_algebra$Native_MJS.v3lengthSquared;
+var _elm_community$linear_algebra$Math_Vector3$length = _elm_community$linear_algebra$Native_MJS.v3length;
+var _elm_community$linear_algebra$Math_Vector3$direction = _elm_community$linear_algebra$Native_MJS.v3direction;
+var _elm_community$linear_algebra$Math_Vector3$negate = _elm_community$linear_algebra$Native_MJS.v3neg;
+var _elm_community$linear_algebra$Math_Vector3$sub = _elm_community$linear_algebra$Native_MJS.v3sub;
+var _elm_community$linear_algebra$Math_Vector3$add = _elm_community$linear_algebra$Native_MJS.v3add;
+var _elm_community$linear_algebra$Math_Vector3$fromRecord = _elm_community$linear_algebra$Native_MJS.fromRecord3;
+var _elm_community$linear_algebra$Math_Vector3$fromTuple = _elm_community$linear_algebra$Native_MJS.fromTuple3;
+var _elm_community$linear_algebra$Math_Vector3$toRecord = _elm_community$linear_algebra$Native_MJS.toRecord3;
+var _elm_community$linear_algebra$Math_Vector3$toTuple = _elm_community$linear_algebra$Native_MJS.toTuple3;
+var _elm_community$linear_algebra$Math_Vector3$setZ = _elm_community$linear_algebra$Native_MJS.v3setZ;
+var _elm_community$linear_algebra$Math_Vector3$setY = _elm_community$linear_algebra$Native_MJS.v3setY;
+var _elm_community$linear_algebra$Math_Vector3$setX = _elm_community$linear_algebra$Native_MJS.v3setX;
+var _elm_community$linear_algebra$Math_Vector3$getZ = _elm_community$linear_algebra$Native_MJS.v3getZ;
+var _elm_community$linear_algebra$Math_Vector3$getY = _elm_community$linear_algebra$Native_MJS.v3getY;
+var _elm_community$linear_algebra$Math_Vector3$getX = _elm_community$linear_algebra$Native_MJS.v3getX;
+var _elm_community$linear_algebra$Math_Vector3$k = A3(_elm_community$linear_algebra$Native_MJS.vec3, 0, 0, 1);
+var _elm_community$linear_algebra$Math_Vector3$j = A3(_elm_community$linear_algebra$Native_MJS.vec3, 0, 1, 0);
+var _elm_community$linear_algebra$Math_Vector3$i = A3(_elm_community$linear_algebra$Native_MJS.vec3, 1, 0, 0);
+var _elm_community$linear_algebra$Math_Vector3$vec3 = _elm_community$linear_algebra$Native_MJS.vec3;
+var _elm_community$linear_algebra$Math_Vector3$Vec3 = {ctor: 'Vec3'};
+
+var _elm_community$linear_algebra$Math_Matrix4$makeFromList = _elm_community$linear_algebra$Native_MJS.m4x4fromList;
+var _elm_community$linear_algebra$Math_Matrix4$makeBasis = _elm_community$linear_algebra$Native_MJS.m4x4makeBasis;
+var _elm_community$linear_algebra$Math_Matrix4$transpose = _elm_community$linear_algebra$Native_MJS.m4x4transpose;
+var _elm_community$linear_algebra$Math_Matrix4$makeLookAt = _elm_community$linear_algebra$Native_MJS.m4x4makeLookAt;
+var _elm_community$linear_algebra$Math_Matrix4$translate = _elm_community$linear_algebra$Native_MJS.m4x4translate;
+var _elm_community$linear_algebra$Math_Matrix4$translate3 = _elm_community$linear_algebra$Native_MJS.m4x4translate3;
+var _elm_community$linear_algebra$Math_Matrix4$makeTranslate = _elm_community$linear_algebra$Native_MJS.m4x4makeTranslate;
+var _elm_community$linear_algebra$Math_Matrix4$makeTranslate3 = _elm_community$linear_algebra$Native_MJS.m4x4makeTranslate3;
+var _elm_community$linear_algebra$Math_Matrix4$scale = _elm_community$linear_algebra$Native_MJS.m4x4scale;
+var _elm_community$linear_algebra$Math_Matrix4$scale3 = _elm_community$linear_algebra$Native_MJS.m4x4scale3;
+var _elm_community$linear_algebra$Math_Matrix4$makeScale = _elm_community$linear_algebra$Native_MJS.m4x4makeScale;
+var _elm_community$linear_algebra$Math_Matrix4$makeScale3 = _elm_community$linear_algebra$Native_MJS.m4x4makeScale3;
+var _elm_community$linear_algebra$Math_Matrix4$rotate = _elm_community$linear_algebra$Native_MJS.m4x4rotate;
+var _elm_community$linear_algebra$Math_Matrix4$makeRotate = _elm_community$linear_algebra$Native_MJS.m4x4makeRotate;
+var _elm_community$linear_algebra$Math_Matrix4$mulAffine = _elm_community$linear_algebra$Native_MJS.m4x4mulAffine;
+var _elm_community$linear_algebra$Math_Matrix4$mul = _elm_community$linear_algebra$Native_MJS.m4x4mul;
+var _elm_community$linear_algebra$Math_Matrix4$makeOrtho2D = _elm_community$linear_algebra$Native_MJS.m4x4makeOrtho2D;
+var _elm_community$linear_algebra$Math_Matrix4$makeOrtho = _elm_community$linear_algebra$Native_MJS.m4x4makeOrtho;
+var _elm_community$linear_algebra$Math_Matrix4$makePerspective = _elm_community$linear_algebra$Native_MJS.m4x4makePerspective;
+var _elm_community$linear_algebra$Math_Matrix4$makeFrustum = _elm_community$linear_algebra$Native_MJS.m4x4makeFrustum;
+var _elm_community$linear_algebra$Math_Matrix4$inverseOrthonormal = _elm_community$linear_algebra$Native_MJS.m4x4inverseOrthonormal;
+var _elm_community$linear_algebra$Math_Matrix4$inverse = _elm_community$linear_algebra$Native_MJS.m4x4inverse;
+var _elm_community$linear_algebra$Math_Matrix4$identity = _elm_community$linear_algebra$Native_MJS.m4x4identity;
+var _elm_community$linear_algebra$Math_Matrix4$transform = _elm_community$linear_algebra$Native_MJS.v3mul4x4;
+var _elm_community$linear_algebra$Math_Matrix4$Mat4 = {ctor: 'Mat4'};
+
+
+/*
+ * Copyright (c) 2010 Mozilla Corporation
+ * Copyright (c) 2010 Vladimir Vukicevic
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/*
+ * File: mjs
+ *
+ * Vector and Matrix math utilities for JavaScript, optimized for WebGL.
+ * Edited to work with the Elm Programming Language
+ */
+
+var _elm_community$linear_algebra$Native_Math_Vector2 = function() {
+
+    var MJS_FLOAT_ARRAY_TYPE = Float32Array;
+
+    var V2 = { };
+
+    if (MJS_FLOAT_ARRAY_TYPE == Array) {
+        V2.$ = function V2_$(x, y) {
+            return [x, y];
+        };
+    } else {
+        V2.$ = function V2_$(x, y) {
+            return new MJS_FLOAT_ARRAY_TYPE([x, y]);
+        };
+    }
+
+    V2.getX = function V2_getX(a) {
+        return a[0];
+    }
+    V2.getY = function V2_getY(a) {
+        return a[1];
+    }
+    V2.setX = function V2_setX(x, a) {
+        return new MJS_FLOAT_ARRAY_TYPE([x, a[1]]);
+    }
+    V2.setY = function V2_setY(y, a) {
+        return new MJS_FLOAT_ARRAY_TYPE([a[0], y]);
+    }
+
+    V2.toTuple = function V2_toTuple(a) {
+        return {
+            ctor:"_Tuple2",
+            _0:a[0],
+            _1:a[1]
+        };
+    };
+    V2.fromTuple = function V2_fromTuple(t) {
+        return new MJS_FLOAT_ARRAY_TYPE([t._0, t._1]);
+    };
+
+    V2.toRecord = function V2_toRecord(a) {
+        return {
+            _:{},
+            x:a[0],
+            y:a[1]
+        };
+    };
+    V2.fromRecord = function V2_fromRecord(r) {
+        return new MJS_FLOAT_ARRAY_TYPE([r.x, r.y]);
+    };
+
+    V2.add = function V2_add(a, b) {
+        var r = new MJS_FLOAT_ARRAY_TYPE(2);
+        r[0] = a[0] + b[0];
+        r[1] = a[1] + b[1];
+        return r;
+    };
+
+    V2.sub = function V2_sub(a, b) {
+        var r = new MJS_FLOAT_ARRAY_TYPE(2);
+        r[0] = a[0] - b[0];
+        r[1] = a[1] - b[1];
+        return r;
+    };
+
+    V2.neg = function V2_neg(a) {
+        var r = new MJS_FLOAT_ARRAY_TYPE(2);
+        r[0] = - a[0];
+        r[1] = - a[1];
+        return r;
+    };
+
+    V2.direction = function V2_direction(a, b) {
+        var r = new MJS_FLOAT_ARRAY_TYPE(2);
+        r[0] = a[0] - b[0];
+        r[1] = a[1] - b[1];
+        var im = 1.0 / V2.length(r);
+        r[0] = r[0] * im;
+        r[1] = r[1] * im;
+        return r;
+    };
+
+    V2.length = function V2_length(a) {
+        return Math.sqrt(a[0]*a[0] + a[1]*a[1]);
+    };
+
+    V2.lengthSquared = function V2_lengthSquared(a) {
+        return a[0]*a[0] + a[1]*a[1];
+    };
+
+    V2.distance = function V2_distance(a, b) {
+        var dx = a[0] - b[0];
+        var dy = a[1] - b[1];
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    V2.distanceSquared = function V2_distanceSquared(a, b) {
+        var dx = a[0] - b[0];
+        var dy = a[1] - b[1];
+        return dx * dx + dy * dy;
+    };
+
+    V2.normalize = function V2_normalize(a) {
+        var r = new MJS_FLOAT_ARRAY_TYPE(2);
+        var im = 1.0 / V2.length(a);
+        r[0] = a[0] * im;
+        r[1] = a[1] * im;
+        return r;
+    };
+
+    V2.scale = function V2_scale(k, a) {
+        var r = new MJS_FLOAT_ARRAY_TYPE(2);
+        r[0] = a[0] * k;
+        r[1] = a[1] * k;
+        return r;
+    };
+
+    V2.dot = function V2_dot(a, b) {
+        return a[0] * b[0] + a[1] * b[1];
+    };
+
+    return {
+        vec2: F2(V2.$),
+        getX: V2.getX,
+        getY: V2.getY,
+        setX: F2(V2.setX),
+        setY: F2(V2.setY),
+        toTuple: V2.toTuple,
+        toRecord: V2.toRecord,
+        fromTuple: V2.fromTuple,
+        fromRecord: V2.fromRecord,
+        add: F2(V2.add),
+        sub: F2(V2.sub),
+        neg: V2.neg,
+        direction: F2(V2.direction),
+        length: V2.length,
+        lengthSquared: V2.lengthSquared,
+        distance: F2(V2.distance),
+        distanceSquared: F2(V2.distanceSquared),
+        normalize: V2.normalize,
+        scale: F2(V2.scale),
+        dot: F2(V2.dot)
+    };
+
+}();
+
+var _elm_community$linear_algebra$Math_Vector2$dot = _elm_community$linear_algebra$Native_Math_Vector2.dot;
+var _elm_community$linear_algebra$Math_Vector2$scale = _elm_community$linear_algebra$Native_Math_Vector2.scale;
+var _elm_community$linear_algebra$Math_Vector2$normalize = _elm_community$linear_algebra$Native_Math_Vector2.normalize;
+var _elm_community$linear_algebra$Math_Vector2$distanceSquared = _elm_community$linear_algebra$Native_Math_Vector2.distanceSquared;
+var _elm_community$linear_algebra$Math_Vector2$distance = _elm_community$linear_algebra$Native_Math_Vector2.distance;
+var _elm_community$linear_algebra$Math_Vector2$lengthSquared = _elm_community$linear_algebra$Native_Math_Vector2.lengthSquared;
+var _elm_community$linear_algebra$Math_Vector2$length = _elm_community$linear_algebra$Native_Math_Vector2.length;
+var _elm_community$linear_algebra$Math_Vector2$direction = _elm_community$linear_algebra$Native_Math_Vector2.direction;
+var _elm_community$linear_algebra$Math_Vector2$negate = _elm_community$linear_algebra$Native_Math_Vector2.neg;
+var _elm_community$linear_algebra$Math_Vector2$sub = _elm_community$linear_algebra$Native_Math_Vector2.sub;
+var _elm_community$linear_algebra$Math_Vector2$add = _elm_community$linear_algebra$Native_Math_Vector2.add;
+var _elm_community$linear_algebra$Math_Vector2$fromRecord = _elm_community$linear_algebra$Native_Math_Vector2.fromRecord;
+var _elm_community$linear_algebra$Math_Vector2$fromTuple = _elm_community$linear_algebra$Native_Math_Vector2.fromTuple;
+var _elm_community$linear_algebra$Math_Vector2$toRecord = _elm_community$linear_algebra$Native_Math_Vector2.toRecord;
+var _elm_community$linear_algebra$Math_Vector2$toTuple = _elm_community$linear_algebra$Native_Math_Vector2.toTuple;
+var _elm_community$linear_algebra$Math_Vector2$setY = _elm_community$linear_algebra$Native_Math_Vector2.setY;
+var _elm_community$linear_algebra$Math_Vector2$setX = _elm_community$linear_algebra$Native_Math_Vector2.setX;
+var _elm_community$linear_algebra$Math_Vector2$getY = _elm_community$linear_algebra$Native_Math_Vector2.getY;
+var _elm_community$linear_algebra$Math_Vector2$getX = _elm_community$linear_algebra$Native_Math_Vector2.getX;
+var _elm_community$linear_algebra$Math_Vector2$vec2 = _elm_community$linear_algebra$Native_Math_Vector2.vec2;
+var _elm_community$linear_algebra$Math_Vector2$Vec2 = {ctor: 'Vec2'};
+
+// eslint-disable-next-line no-unused-vars, camelcase
+var _elm_community$webgl$Native_Texture = function () {
+
+  var NEAREST = 9728;
+  var LINEAR = 9729;
+  var CLAMP_TO_EDGE = 33071;
+
+  function guid() {
+    // eslint-disable-next-line camelcase
+    return _elm_lang$core$Native_Utils.guid();
+  }
+
+  function load(magnify, mininify, horizontalWrap, verticalWrap, flipY, url) {
+    // eslint-disable-next-line camelcase
+    var Scheduler = _elm_lang$core$Native_Scheduler;
+    var isMipmap = mininify !== NEAREST && mininify !== LINEAR;
+    return Scheduler.nativeBinding(function (callback) {
+      var img = new Image();
+      function createTexture(gl) {
+        var tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flipY);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magnify);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, mininify);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, horizontalWrap);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, verticalWrap);
+        if (isMipmap) {
+          gl.generateMipmap(gl.TEXTURE_2D);
+        }
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        return tex;
+      }
+      img.onload = function () {
+        var width = img.width;
+        var height = img.height;
+        var widthPowerOfTwo = (width & (width - 1)) === 0;
+        var heightPowerOfTwo = (height & (height - 1)) === 0;
+        var isSizeValid = (widthPowerOfTwo && heightPowerOfTwo) || (
+          !isMipmap
+          && horizontalWrap === CLAMP_TO_EDGE
+          && verticalWrap === CLAMP_TO_EDGE
+        );
+        if (isSizeValid) {
+          callback(Scheduler.succeed({
+            ctor: 'Texture',
+            id: guid(),
+            createTexture: createTexture,
+            width: width,
+            height: height
+          }));
+        } else {
+          callback(Scheduler.fail({
+            ctor: 'SizeError',
+            _0: width,
+            _1: height
+          }));
+        }
+      };
+      img.onerror = function () {
+        callback(Scheduler.fail({ ctor: 'LoadError' }));
+      };
+      if (url.slice(0, 5) !== 'data:') {
+        img.crossOrigin = 'Anonymous';
+      }
+      img.src = url;
+    });
+  }
+
+  function size(texture) {
+    // eslint-disable-next-line camelcase
+    return _elm_lang$core$Native_Utils.Tuple2(texture.width, texture.height);
+  }
+
+  return {
+    size: size,
+    load: F6(load)
+  };
+
+}();
+
+// eslint-disable-next-line no-unused-vars, camelcase
+var _elm_community$webgl$Native_WebGL = function () {
+
+  // setup logging
+  // eslint-disable-next-line no-unused-vars
+  function LOG(msg) {
+    // console.log(msg);
+  }
+
+  function guid() {
+    // eslint-disable-next-line camelcase
+    return _elm_lang$core$Native_Utils.guid();
+  }
+  function listEach(fn, list) {
+    while (list.ctor !== '[]') {
+      fn(list._0);
+      list = list._1;
+    }
+  }
+  function listLength(list) {
+    var length = 0;
+    while (list.ctor !== '[]') {
+      length++;
+      list = list._1;
+    }
+    return length;
+  }
+
+  var rAF = typeof requestAnimationFrame !== 'undefined' ?
+    requestAnimationFrame :
+    function (cb) { setTimeout(cb, 1000 / 60); };
+
+  function unsafeCoerceGLSL(src) {
+    return { src: src };
+  }
+
+  function entity(settings, vert, frag, buffer, uniforms) {
+
+    if (!buffer.guid) {
+      buffer.guid = guid();
+    }
+
+    return {
+      ctor: 'Entity',
+      vert: vert,
+      frag: frag,
+      buffer: buffer,
+      uniforms: uniforms,
+      settings: settings
+    };
+
+  }
+
+ /**
+  *  Apply setting to the gl context
+  *
+  *  @param {WebGLRenderingContext} gl context
+  *  @param {Setting} setting coming in from Elm
+  */
+  function applySetting(gl, setting) {
+    switch (setting.ctor) {
+      case 'Blend':
+        gl.enable(gl.BLEND);
+        // eq1 f11 f12 eq2 f21 f22 r g b a
+        gl.blendEquationSeparate(setting._0, setting._3);
+        gl.blendFuncSeparate(setting._1, setting._2, setting._4, setting._5);
+        gl.blendColor(setting._6, setting._7, setting._8, setting._9);
+        break;
+      case 'DepthTest':
+        gl.enable(gl.DEPTH_TEST);
+        // func mask near far
+        gl.depthFunc(setting._0);
+        gl.depthMask(setting._1);
+        gl.depthRange(setting._2, setting._3);
+        break;
+      case 'StencilTest':
+        gl.enable(gl.STENCIL_TEST);
+        // ref mask writeMask test1 fail1 zfail1 zpass1 test2 fail2 zfail2 zpass2
+        gl.stencilFuncSeparate(gl.FRONT, setting._3, setting._0, setting._1);
+        gl.stencilOpSeparate(gl.FRONT, setting._4, setting._5, setting._6);
+        gl.stencilMaskSeparate(gl.FRONT, setting._2);
+        gl.stencilFuncSeparate(gl.BACK, setting._7, setting._0, setting._1);
+        gl.stencilOpSeparate(gl.BACK, setting._8, setting._9, setting._10);
+        gl.stencilMaskSeparate(gl.BACK, setting._2);
+        break;
+      case 'Scissor':
+        gl.enable(gl.SCISSOR_TEST);
+        gl.scissor(setting._0, setting._1, setting._2, setting._3);
+        break;
+      case 'ColorMask':
+        gl.colorMask(setting._0, setting._1, setting._2, setting._3);
+        break;
+      case 'CullFace':
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(setting._0);
+        break;
+      case 'PolygonOffset':
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.polygonOffset(setting._0, setting._1);
+        break;
+      case 'SampleCoverage':
+        gl.enable(gl.SAMPLE_COVERAGE);
+        gl.sampleCoverage(setting._0, setting._1);
+        break;
+      case 'SampleAlphaToCoverage':
+        gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+        break;
+    }
+  }
+
+ /**
+  *  Revert setting that was applied to the gl context
+  *
+  *  @param {WebGLRenderingContext} gl context
+  *  @param {Setting} setting coming in from Elm
+  */
+  function revertSetting(gl, setting) {
+    switch (setting.ctor) {
+      case 'Blend':
+        gl.disable(gl.BLEND);
+        break;
+      case 'DepthTest':
+        gl.disable(gl.DEPTH_TEST);
+        break;
+      case 'StencilTest':
+        gl.disable(gl.STENCIL_TEST);
+        break;
+      case 'Scissor':
+        gl.disable(gl.SCISSOR_TEST);
+        break;
+      case 'ColorMask':
+        gl.colorMask(true, true, true, true);
+        break;
+      case 'CullFace':
+        gl.disable(gl.CULL_FACE);
+        break;
+      case 'PolygonOffset':
+        gl.disable(gl.POLYGON_OFFSET_FILL);
+        break;
+      case 'SampleCoverage':
+        gl.disable(gl.SAMPLE_COVERAGE);
+        break;
+      case 'SampleAlphaToCoverage':
+        gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+        break;
+    }
+  }
+
+  function doCompile(gl, src, type) {
+
+    var shader = gl.createShader(type);
+    LOG('Created shader');
+
+    gl.shaderSource(shader, src);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      throw gl.getShaderInfoLog(shader);
+    }
+
+    return shader;
+
+  }
+
+  function doLink(gl, vshader, fshader) {
+
+    var program = gl.createProgram();
+    LOG('Created program');
+
+    gl.attachShader(program, vshader);
+    gl.attachShader(program, fshader);
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      throw gl.getProgramInfoLog(program);
+    }
+
+    return program;
+
+  }
+
+  function getRenderInfo(gl, renderType) {
+    switch (renderType) {
+      case 'Triangles':
+        return { mode: gl.TRIANGLES, elemSize: 3, indexSize: 0 };
+      case 'LineStrip':
+        return { mode: gl.LINE_STRIP, elemSize: 1, indexSize: 0 };
+      case 'LineLoop':
+        return { mode: gl.LINE_LOOP, elemSize: 1, indexSize: 0 };
+      case 'Points':
+        return { mode: gl.POINTS, elemSize: 1, indexSize: 0 };
+      case 'Lines':
+        return { mode: gl.LINES, elemSize: 2, indexSize: 0 };
+      case 'TriangleStrip':
+        return { mode: gl.TRIANGLE_STRIP, elemSize: 1, indexSize: 0 };
+      case 'TriangleFan':
+        return { mode: gl.TRIANGLE_FAN, elemSize: 1, indexSize: 0 };
+      case 'IndexedTriangles':
+        return { mode: gl.TRIANGLES, elemSize: 1, indexSize: 3 };
+    }
+  }
+
+  function getAttributeInfo(gl, type) {
+    switch (type) {
+      case gl.FLOAT:
+        return { size: 1, type: Float32Array, baseType: gl.FLOAT };
+      case gl.FLOAT_VEC2:
+        return { size: 2, type: Float32Array, baseType: gl.FLOAT };
+      case gl.FLOAT_VEC3:
+        return { size: 3, type: Float32Array, baseType: gl.FLOAT };
+      case gl.FLOAT_VEC4:
+        return { size: 4, type: Float32Array, baseType: gl.FLOAT };
+      case gl.INT:
+        return { size: 1, type: Int32Array, baseType: gl.INT };
+      case gl.INT_VEC2:
+        return { size: 2, type: Int32Array, baseType: gl.INT };
+      case gl.INT_VEC3:
+        return { size: 3, type: Int32Array, baseType: gl.INT };
+      case gl.INT_VEC4:
+        return { size: 4, type: Int32Array, baseType: gl.INT };
+    }
+  }
+
+ /**
+  *  Form the buffer for a given attribute.
+  *
+  *  @param {WebGLRenderingContext} gl context
+  *  @param {WebGLActiveInfo} attribute the attribute to bind to.
+  *         We use its name to grab the record by name and also to know
+  *         how many elements we need to grab.
+  *  @param {List} bufferElems The list coming in from Elm.
+  *  @param {Number} elemSize The length of the number of vertices that
+  *         complete one 'thing' based on the drawing mode.
+  *         ie, 2 for Lines, 3 for Triangles, etc.
+  *  @return {WebGLBuffer}
+  */
+  function doBindAttribute(gl, attribute, bufferElems, elemSize) {
+    var idxKeys = [];
+    for (var i = 0; i < elemSize; i++) {
+      idxKeys.push('_' + i);
+    }
+
+    function dataFill(data, cnt, fillOffset, elem, key) {
+      if (elemSize === 1) {
+        for (var i = 0; i < cnt; i++) {
+          data[fillOffset++] = cnt === 1 ? elem[key] : elem[key][i];
+        }
+      } else {
+        idxKeys.forEach(function (idx) {
+          for (var i = 0; i < cnt; i++) {
+            data[fillOffset++] = cnt === 1 ? elem[idx][key] : elem[idx][key][i];
+          }
+        });
+      }
+    }
+
+    var attributeInfo = getAttributeInfo(gl, attribute.type);
+
+    if (attributeInfo === undefined) {
+      throw new Error('No info available for: ' + attribute.type);
+    }
+
+    var dataIdx = 0;
+    var array = new attributeInfo.type(listLength(bufferElems) * attributeInfo.size * elemSize);
+
+    listEach(function (elem) {
+      dataFill(array, attributeInfo.size, dataIdx, elem, attribute.name);
+      dataIdx += attributeInfo.size * elemSize;
+    }, bufferElems);
+
+    var buffer = gl.createBuffer();
+    LOG('Created attribute buffer ' + attribute.name);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
+    return buffer;
+  }
+
+ /**
+  *  This sets up the binding caching buffers.
+  *
+  *  We don't actually bind any buffers now except for the indices buffer.
+  *  The problem with filling the buffers here is that it is possible to
+  *  have a buffer shared between two webgl shaders;
+  *  which could have different active attributes. If we bind it here against
+  *  a particular program, we might not bind them all. That final bind is now
+  *  done right before drawing.
+  *
+  *  @param {WebGLRenderingContext} gl context
+  *  @param {Object} renderType
+  *  @param {Number} renderType.indexSize size of the index
+  *  @param {Number} renderType.elemSize size of the element
+  *  @param {Drawable} drawable a drawable object from Elm
+  *         that contains elements and optionally indices
+  *  @return {Object} buffer - an object with the following properties
+  *  @return {Number} buffer.numIndices
+  *  @return {WebGLBuffer} buffer.indexBuffer
+  *  @return {Object} buffer.buffers - will be used to buffer attributes
+  */
+  function doBindSetup(gl, renderType, drawable) {
+    LOG('Created index buffer');
+    var indexBuffer = gl.createBuffer();
+    var indices = (renderType.indexSize === 0)
+      ? makeSequentialBuffer(renderType.elemSize * listLength(drawable._0))
+      : makeIndexedBuffer(drawable._1, renderType.indexSize);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+    return {
+      numIndices: indices.length,
+      indexBuffer: indexBuffer,
+      buffers: {}
+    };
+  }
+
+ /**
+  *  Create an indices array and fill it with 0..n
+  *
+  *  @param {Number} numIndices The number of indices
+  *  @return {Uint16Array} indices
+  */
+  function makeSequentialBuffer(numIndices) {
+    var indices = new Uint16Array(numIndices);
+    for (var i = 0; i < numIndices; i++) {
+      indices[i] = i;
+    }
+    return indices;
+  }
+
+ /**
+  *  Create an indices array and fill it from indices
+  *  based on the size of the index
+  *
+  *  @param {List} indicesList the list of indices
+  *  @param {Number} indexSize the size of the index
+  *  @return {Uint16Array} indices
+  */
+  function makeIndexedBuffer(indicesList, indexSize) {
+    var indices = new Uint16Array(listLength(indicesList) * indexSize);
+    var fillOffset = 0;
+    var i;
+    listEach(function (elem) {
+      if (indexSize === 1) {
+        indices[fillOffset++] = elem;
+      } else {
+        for (i = 0; i < indexSize; i++) {
+          indices[fillOffset++] = elem['_' + i.toString()];
+        }
+      }
+    }, indicesList);
+    return indices;
+  }
+
+  function getProgID(vertID, fragID) {
+    return vertID + '#' + fragID;
+  }
+
+  function drawGL(domNode, data) {
+
+    var model = data.model;
+    var gl = model.cache.gl;
+
+    if (!gl) {
+      return domNode;
+    }
+
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+    LOG('Drawing');
+
+    function drawEntity(entity) {
+      if (listLength(entity.buffer._0) === 0) {
+        return;
+      }
+
+      var progid;
+      var program;
+      if (entity.vert.id && entity.frag.id) {
+        progid = getProgID(entity.vert.id, entity.frag.id);
+        program = model.cache.programs[progid];
+      }
+
+      if (!program) {
+
+        var vshader;
+        if (entity.vert.id) {
+          vshader = model.cache.shaders[entity.vert.id];
+        } else {
+          entity.vert.id = guid();
+        }
+
+        if (!vshader) {
+          vshader = doCompile(gl, entity.vert.src, gl.VERTEX_SHADER);
+          model.cache.shaders[entity.vert.id] = vshader;
+        }
+
+        var fshader;
+        if (entity.frag.id) {
+          fshader = model.cache.shaders[entity.frag.id];
+        } else {
+          entity.frag.id = guid();
+        }
+
+        if (!fshader) {
+          fshader = doCompile(gl, entity.frag.src, gl.FRAGMENT_SHADER);
+          model.cache.shaders[entity.frag.id] = fshader;
+        }
+
+        program = doLink(gl, vshader, fshader);
+        progid = getProgID(entity.vert.id, entity.frag.id);
+        model.cache.programs[progid] = program;
+
+      }
+
+      gl.useProgram(program);
+
+      progid = progid || getProgID(entity.vert.id, entity.frag.id);
+      var setters = model.cache.uniformSetters[progid];
+      if (!setters) {
+        setters = createUniformSetters(gl, model, program);
+        model.cache.uniformSetters[progid] = setters;
+      }
+
+      setUniforms(setters, entity.uniforms);
+
+      var entityType = getRenderInfo(gl, entity.buffer.ctor);
+      var buffer = model.cache.buffers[entity.buffer.guid];
+
+      if (!buffer) {
+        buffer = doBindSetup(gl, entityType, entity.buffer);
+        model.cache.buffers[entity.buffer.guid] = buffer;
+      }
+
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer.indexBuffer);
+
+      var numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+
+      for (var i = 0; i < numAttributes; i++) {
+        var attribute = gl.getActiveAttrib(program, i);
+
+        var attribLocation = gl.getAttribLocation(program, attribute.name);
+        gl.enableVertexAttribArray(attribLocation);
+
+        if (buffer.buffers[attribute.name] === undefined) {
+          buffer.buffers[attribute.name] = doBindAttribute(gl, attribute, entity.buffer._0, entityType.elemSize);
+        }
+        var attributeBuffer = buffer.buffers[attribute.name];
+        var attributeInfo = getAttributeInfo(gl, attribute.type);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, attributeBuffer);
+        gl.vertexAttribPointer(attribLocation, attributeInfo.size, attributeInfo.baseType, false, 0, 0);
+      }
+
+      listEach(function (setting) {
+        applySetting(gl, setting);
+      }, entity.settings);
+
+      gl.drawElements(entityType.mode, buffer.numIndices, gl.UNSIGNED_SHORT, 0);
+
+      listEach(function (setting) {
+        revertSetting(gl, setting);
+      }, entity.settings);
+
+    }
+
+    listEach(drawEntity, model.entities);
+    return domNode;
+  }
+
+  function createUniformSetters(gl, model, program) {
+    var textureCounter = 0;
+    function createUniformSetter(program, uniform) {
+      var uniformLocation = gl.getUniformLocation(program, uniform.name);
+      switch (uniform.type) {
+        case gl.INT:
+          return function (value) {
+            gl.uniform1i(uniformLocation, value);
+          };
+        case gl.FLOAT:
+          return function (value) {
+            gl.uniform1f(uniformLocation, value);
+          };
+        case gl.FLOAT_VEC2:
+          return function (value) {
+            gl.uniform2fv(uniformLocation, new Float32Array(value));
+          };
+        case gl.FLOAT_VEC3:
+          return function (value) {
+            gl.uniform3fv(uniformLocation, new Float32Array(value));
+          };
+        case gl.FLOAT_VEC4:
+          return function (value) {
+            gl.uniform4fv(uniformLocation, new Float32Array(value));
+          };
+        case gl.FLOAT_MAT4:
+          return function (value) {
+            gl.uniformMatrix4fv(uniformLocation, false, new Float32Array(value));
+          };
+        case gl.SAMPLER_2D:
+          var currentTexture = textureCounter++;
+          return function (texture) {
+            gl.activeTexture(gl.TEXTURE0 + currentTexture);
+            var tex = model.cache.textures[texture.id];
+            if (!tex) {
+              LOG('Created texture');
+              tex = texture.createTexture(gl);
+              model.cache.textures[texture.id] = tex;
+            }
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.uniform1i(uniformLocation, currentTexture);
+          };
+        case gl.BOOL:
+          return function (value) {
+            gl.uniform1i(uniformLocation, value);
+          };
+        default:
+          LOG('Unsupported uniform type: ' + uniform.type);
+          return function () {};
+      }
+    }
+
+    var uniformSetters = {};
+    var numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+    for (var i = 0; i < numUniforms; i++) {
+      var uniform = gl.getActiveUniform(program, i);
+      uniformSetters[uniform.name] = createUniformSetter(program, uniform);
+    }
+
+    return uniformSetters;
+  }
+
+  function setUniforms(setters, values) {
+    Object.keys(values).forEach(function (name) {
+      var setter = setters[name];
+      if (setter) {
+        setter(values[name]);
+      }
+    });
+  }
+
+  // VIRTUAL-DOM WIDGET
+
+  function toHtml(options, factList, entities) {
+    var model = {
+      entities: entities,
+      cache: {},
+      options: options
+    };
+    // eslint-disable-next-line camelcase
+    return _elm_lang$virtual_dom$Native_VirtualDom.custom(factList, model, implementation);
+  }
+
+  var implementation = {
+    render: render,
+    diff: diff
+  };
+
+  /**
+   *  Creates canvas and schedules initial drawGL
+   *  @param {Object} model
+   *  @param {Object} model.cache that may contain the following properties:
+             gl, shaders, programs, uniformSetters, buffers, textures
+   *  @param {List<Option>} model.options list of options coming from Elm
+   *  @param {List<Entity>} model.entities list of entities coming from Elm
+   *  @return {HTMLElement} <canvas> if WebGL is supported, otherwise a <div>
+   */
+  function render(model) {
+
+    var contextAttributes = {
+      alpha: false,
+      depth: false,
+      stencil: false,
+      antialias: false,
+      premultipliedAlpha: false
+    };
+    var sceneSettings = [];
+
+    listEach(function (option) {
+      var s1 = option._0;
+      switch (option.ctor) {
+        case 'Alpha':
+          contextAttributes.alpha = true;
+          contextAttributes.premultipliedAlpha = s1;
+          break;
+        case 'Antialias':
+          contextAttributes.antialias = true;
+          break;
+        case 'Depth':
+          contextAttributes.depth = true;
+          sceneSettings.push(function (gl) {
+            gl.clearDepth(s1);
+          });
+          break;
+        case 'ClearColor':
+          sceneSettings.push(function (gl) {
+            gl.clearColor(option._0, option._1, option._2, option._3);
+          });
+          break;
+        case 'Stencil':
+          contextAttributes.stencil = true;
+          sceneSettings.push(function (gl) {
+            gl.clearStencil(s1);
+          });
+          break;
+      }
+    }, model.options);
+
+    LOG('Render canvas');
+    var canvas = document.createElement('canvas');
+    var gl = canvas.getContext && (
+      canvas.getContext('webgl', contextAttributes) ||
+      canvas.getContext('experimental-webgl', contextAttributes)
+    );
+
+    if (gl) {
+      sceneSettings.forEach(function (sceneSetting) {
+        sceneSetting(gl);
+      });
+    } else {
+      canvas = document.createElement('div');
+      canvas.innerHTML = '<a href="http://get.webgl.org/">Enable WebGL</a> to see this content!';
+    }
+
+    model.cache.gl = gl;
+    model.cache.shaders = [];
+    model.cache.programs = {};
+    model.cache.uniformSetters = {};
+    model.cache.buffers = [];
+    model.cache.textures = [];
+
+    // Render for the first time.
+    // This has to be done in animation frame,
+    // because the canvas is not in the DOM yet,
+    // when renderCanvas is called by virtual-dom
+    rAF(function () {
+      drawGL(canvas, {model: model});
+    });
+
+    return canvas;
+  }
+
+
+  function diff(oldModel, newModel) {
+    newModel.model.cache = oldModel.model.cache;
+    return {
+      applyPatch: drawGL,
+      data: newModel
+    };
+  }
+
+  return {
+    unsafeCoerceGLSL: unsafeCoerceGLSL,
+    entity: F5(entity),
+    toHtml: F3(toHtml)
+  };
+
+}();
+
 var _elm_community$webgl$WebGL_Settings_Internal$SampleAlphaToCoverage = {ctor: 'SampleAlphaToCoverage'};
 var _elm_community$webgl$WebGL_Settings_Internal$SampleCoverage = F2(
 	function (a, b) {
@@ -15458,356 +16072,6 @@ var _elm_lang$animation_frame$AnimationFrame$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['AnimationFrame'] = {pkg: 'elm-lang/animation-frame', init: _elm_lang$animation_frame$AnimationFrame$init, onEffects: _elm_lang$animation_frame$AnimationFrame$onEffects, onSelfMsg: _elm_lang$animation_frame$AnimationFrame$onSelfMsg, tag: 'sub', subMap: _elm_lang$animation_frame$AnimationFrame$subMap};
 
-var _elm_lang$html$Html_Attributes$map = _elm_lang$virtual_dom$VirtualDom$mapProperty;
-var _elm_lang$html$Html_Attributes$attribute = _elm_lang$virtual_dom$VirtualDom$attribute;
-var _elm_lang$html$Html_Attributes$contextmenu = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'contextmenu', value);
-};
-var _elm_lang$html$Html_Attributes$draggable = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'draggable', value);
-};
-var _elm_lang$html$Html_Attributes$itemprop = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'itemprop', value);
-};
-var _elm_lang$html$Html_Attributes$tabindex = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		'tabIndex',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$charset = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'charset', value);
-};
-var _elm_lang$html$Html_Attributes$height = function (value) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		'height',
-		_elm_lang$core$Basics$toString(value));
-};
-var _elm_lang$html$Html_Attributes$width = function (value) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		'width',
-		_elm_lang$core$Basics$toString(value));
-};
-var _elm_lang$html$Html_Attributes$formaction = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'formAction', value);
-};
-var _elm_lang$html$Html_Attributes$list = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'list', value);
-};
-var _elm_lang$html$Html_Attributes$minlength = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		'minLength',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$maxlength = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		'maxlength',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$size = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		'size',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$form = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'form', value);
-};
-var _elm_lang$html$Html_Attributes$cols = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		'cols',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$rows = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		'rows',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$challenge = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'challenge', value);
-};
-var _elm_lang$html$Html_Attributes$media = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'media', value);
-};
-var _elm_lang$html$Html_Attributes$rel = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'rel', value);
-};
-var _elm_lang$html$Html_Attributes$datetime = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'datetime', value);
-};
-var _elm_lang$html$Html_Attributes$pubdate = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'pubdate', value);
-};
-var _elm_lang$html$Html_Attributes$colspan = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		'colspan',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$rowspan = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		'rowspan',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$manifest = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'manifest', value);
-};
-var _elm_lang$html$Html_Attributes$property = _elm_lang$virtual_dom$VirtualDom$property;
-var _elm_lang$html$Html_Attributes$stringProperty = F2(
-	function (name, string) {
-		return A2(
-			_elm_lang$html$Html_Attributes$property,
-			name,
-			_elm_lang$core$Json_Encode$string(string));
-	});
-var _elm_lang$html$Html_Attributes$class = function (name) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'className', name);
-};
-var _elm_lang$html$Html_Attributes$id = function (name) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'id', name);
-};
-var _elm_lang$html$Html_Attributes$title = function (name) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'title', name);
-};
-var _elm_lang$html$Html_Attributes$accesskey = function ($char) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'accessKey',
-		_elm_lang$core$String$fromChar($char));
-};
-var _elm_lang$html$Html_Attributes$dir = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dir', value);
-};
-var _elm_lang$html$Html_Attributes$dropzone = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dropzone', value);
-};
-var _elm_lang$html$Html_Attributes$lang = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'lang', value);
-};
-var _elm_lang$html$Html_Attributes$content = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'content', value);
-};
-var _elm_lang$html$Html_Attributes$httpEquiv = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'httpEquiv', value);
-};
-var _elm_lang$html$Html_Attributes$language = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'language', value);
-};
-var _elm_lang$html$Html_Attributes$src = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'src', value);
-};
-var _elm_lang$html$Html_Attributes$alt = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'alt', value);
-};
-var _elm_lang$html$Html_Attributes$preload = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'preload', value);
-};
-var _elm_lang$html$Html_Attributes$poster = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'poster', value);
-};
-var _elm_lang$html$Html_Attributes$kind = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'kind', value);
-};
-var _elm_lang$html$Html_Attributes$srclang = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'srclang', value);
-};
-var _elm_lang$html$Html_Attributes$sandbox = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'sandbox', value);
-};
-var _elm_lang$html$Html_Attributes$srcdoc = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'srcdoc', value);
-};
-var _elm_lang$html$Html_Attributes$type_ = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'type', value);
-};
-var _elm_lang$html$Html_Attributes$value = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'value', value);
-};
-var _elm_lang$html$Html_Attributes$defaultValue = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'defaultValue', value);
-};
-var _elm_lang$html$Html_Attributes$placeholder = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'placeholder', value);
-};
-var _elm_lang$html$Html_Attributes$accept = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'accept', value);
-};
-var _elm_lang$html$Html_Attributes$acceptCharset = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'acceptCharset', value);
-};
-var _elm_lang$html$Html_Attributes$action = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'action', value);
-};
-var _elm_lang$html$Html_Attributes$autocomplete = function (bool) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'autocomplete',
-		bool ? 'on' : 'off');
-};
-var _elm_lang$html$Html_Attributes$enctype = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'enctype', value);
-};
-var _elm_lang$html$Html_Attributes$method = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'method', value);
-};
-var _elm_lang$html$Html_Attributes$name = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'name', value);
-};
-var _elm_lang$html$Html_Attributes$pattern = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'pattern', value);
-};
-var _elm_lang$html$Html_Attributes$for = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'htmlFor', value);
-};
-var _elm_lang$html$Html_Attributes$max = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'max', value);
-};
-var _elm_lang$html$Html_Attributes$min = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'min', value);
-};
-var _elm_lang$html$Html_Attributes$step = function (n) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'step', n);
-};
-var _elm_lang$html$Html_Attributes$wrap = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'wrap', value);
-};
-var _elm_lang$html$Html_Attributes$usemap = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'useMap', value);
-};
-var _elm_lang$html$Html_Attributes$shape = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'shape', value);
-};
-var _elm_lang$html$Html_Attributes$coords = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'coords', value);
-};
-var _elm_lang$html$Html_Attributes$keytype = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'keytype', value);
-};
-var _elm_lang$html$Html_Attributes$align = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'align', value);
-};
-var _elm_lang$html$Html_Attributes$cite = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'cite', value);
-};
-var _elm_lang$html$Html_Attributes$href = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'href', value);
-};
-var _elm_lang$html$Html_Attributes$target = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'target', value);
-};
-var _elm_lang$html$Html_Attributes$downloadAs = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'download', value);
-};
-var _elm_lang$html$Html_Attributes$hreflang = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'hreflang', value);
-};
-var _elm_lang$html$Html_Attributes$ping = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'ping', value);
-};
-var _elm_lang$html$Html_Attributes$start = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'start',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$headers = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'headers', value);
-};
-var _elm_lang$html$Html_Attributes$scope = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'scope', value);
-};
-var _elm_lang$html$Html_Attributes$boolProperty = F2(
-	function (name, bool) {
-		return A2(
-			_elm_lang$html$Html_Attributes$property,
-			name,
-			_elm_lang$core$Json_Encode$bool(bool));
-	});
-var _elm_lang$html$Html_Attributes$hidden = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'hidden', bool);
-};
-var _elm_lang$html$Html_Attributes$contenteditable = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'contentEditable', bool);
-};
-var _elm_lang$html$Html_Attributes$spellcheck = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'spellcheck', bool);
-};
-var _elm_lang$html$Html_Attributes$async = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'async', bool);
-};
-var _elm_lang$html$Html_Attributes$defer = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'defer', bool);
-};
-var _elm_lang$html$Html_Attributes$scoped = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'scoped', bool);
-};
-var _elm_lang$html$Html_Attributes$autoplay = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'autoplay', bool);
-};
-var _elm_lang$html$Html_Attributes$controls = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'controls', bool);
-};
-var _elm_lang$html$Html_Attributes$loop = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'loop', bool);
-};
-var _elm_lang$html$Html_Attributes$default = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'default', bool);
-};
-var _elm_lang$html$Html_Attributes$seamless = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'seamless', bool);
-};
-var _elm_lang$html$Html_Attributes$checked = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'checked', bool);
-};
-var _elm_lang$html$Html_Attributes$selected = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'selected', bool);
-};
-var _elm_lang$html$Html_Attributes$autofocus = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'autofocus', bool);
-};
-var _elm_lang$html$Html_Attributes$disabled = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'disabled', bool);
-};
-var _elm_lang$html$Html_Attributes$multiple = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'multiple', bool);
-};
-var _elm_lang$html$Html_Attributes$novalidate = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'noValidate', bool);
-};
-var _elm_lang$html$Html_Attributes$readonly = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'readOnly', bool);
-};
-var _elm_lang$html$Html_Attributes$required = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'required', bool);
-};
-var _elm_lang$html$Html_Attributes$ismap = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'isMap', value);
-};
-var _elm_lang$html$Html_Attributes$download = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'download', bool);
-};
-var _elm_lang$html$Html_Attributes$reversed = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'reversed', bool);
-};
-var _elm_lang$html$Html_Attributes$classList = function (list) {
-	return _elm_lang$html$Html_Attributes$class(
-		A2(
-			_elm_lang$core$String$join,
-			' ',
-			A2(
-				_elm_lang$core$List$map,
-				_elm_lang$core$Tuple$first,
-				A2(_elm_lang$core$List$filter, _elm_lang$core$Tuple$second, list))));
-};
-var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
-
 var _user$project$Animator$toRectangle = function (animator) {
 	return {
 		x: _elm_lang$core$Tuple$first(animator.currentLoc) * animator.frameWidth,
@@ -15861,7 +16125,7 @@ var _user$project$Animator$Animator = function (a) {
 								return function (i) {
 									return function (j) {
 										return function (k) {
-											return {maxWidth: a, maxHeight: b, frames: c, startLoc: d, frame: e, frameWidth: f, frameHeight: g, currentLoc: h, stepDirection: i, frameDelay: j, currentDelay: k};
+											return {maxWidth: a, maxHeight: b, frames: c, startLoc: d, frameWidth: e, frameHeight: f, frameDelay: g, stepDirection: h, frame: i, currentLoc: j, currentDelay: k};
 										};
 									};
 								};
@@ -16105,6 +16369,11 @@ var _user$project$View$view = function (state) {
 	}
 };
 
+
+var _user$project$World$World = function (a) {
+	return {tilemap: a};
+};
+
 var _user$project$Main$subscriptions = function (state) {
 	var _p0 = state;
 	if (_p0.ctor === 'Playing') {
@@ -16185,7 +16454,7 @@ var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"WebGL.Texture.Error":{"args":[],"tags":{"LoadError":[],"SizeError":["Int","Int"]}},"Types.TextureEncoding":{"args":[],"tags":{"PlayerTexture":["WebGL.Texture"],"TileMapTexture":["WebGL.Texture"]}},"Types.Msg":{"args":[],"tags":{"Tick":["Time.Time"],"TextureLoadedSuccessful":["Types.TextureEncoding"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"]}},"WebGL.Texture":{"args":[],"tags":{"Texture":[]}}},"aliases":{"Time.Time":{"args":[],"type":"Float"}},"message":"Types.Msg"},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"message":"Types.Msg","aliases":{"Time.Time":{"type":"Float","args":[]}},"unions":{"Types.Msg":{"tags":{"TextureLoadedSuccessful":["Types.TextureEncoding"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"],"Tick":["Time.Time"]},"args":[]},"WebGL.Texture":{"tags":{"Texture":[]},"args":[]},"WebGL.Texture.Error":{"tags":{"SizeError":["Int","Int"],"LoadError":[]},"args":[]},"Types.TextureEncoding":{"tags":{"PlayerTexture":["WebGL.Texture"],"TileMapTexture":["WebGL.Texture"]},"args":[]}}},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])

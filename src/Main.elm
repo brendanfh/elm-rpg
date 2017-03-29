@@ -8,6 +8,7 @@ import Update exposing (update)
 import View exposing (view)
 import Task
 import WebGL.Texture as Texture
+import World
 
 
 init : {} -> ( State, Cmd Msg )

@@ -9,12 +9,12 @@ type alias Animator =
     , maxHeight : Int
     , frames : Int
     , startLoc : ( Int, Int )
-    , frame : Int
     , frameWidth : Int
     , frameHeight : Int
-    , currentLoc : ( Int, Int )
-    , stepDirection : ( Int, Int )
     , frameDelay : Time
+    , stepDirection : ( Int, Int )
+    , frame : Int
+    , currentLoc : ( Int, Int )
     , currentDelay : Time
     }
 
