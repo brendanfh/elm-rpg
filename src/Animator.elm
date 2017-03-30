@@ -65,6 +65,16 @@ update time animator =
         }
 
 
+jumpToLoc : ( Int, Int ) -> Animator -> Animator
+jumpToLoc loc animator =
+    { animator
+        | startLoc = loc
+        , currentLoc = loc
+        , frame = 0
+        , currentDelay = animator.frameDelay
+    }
+
+
 toRectangle :
     Animator
     -> { x : Int

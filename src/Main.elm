@@ -1,7 +1,6 @@
 module Main exposing (..)
 
 import AnimationFrame
-import Animator exposing (defaultAnimator)
 import Html exposing (Html)
 import Keyboard.Extra as KE
 import Types exposing (..)
@@ -9,7 +8,7 @@ import Update exposing (update)
 import View exposing (view)
 import Task
 import WebGL.Texture as Texture
-import Player
+import Player exposing (defaultPlayer)
 
 
 init : {} -> ( State, Cmd Msg )
@@ -17,16 +16,7 @@ init _ =
     ( Playing
         { textureStore = blankTextureStore
         , keyboard = KE.initialState
-        , animation =
-            { defaultAnimator
-                | maxWidth = 32
-                , maxHeight = 32
-                , frameWidth = 16
-                , frameHeight = 16
-                , frames = 2
-                , startLoc = ( 0, 1 )
-                , frameDelay = 1000
-            }
+        , player = defaultPlayer 0 0
         }
     , Cmd.batch [ loadTextures ]
     )

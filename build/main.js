@@ -17184,6 +17184,12 @@ var _user$project$Animator$toRectangle = function (animator) {
 		maxHeight: animator.maxHeight
 	};
 };
+var _user$project$Animator$jumpToLoc = F2(
+	function (loc, animator) {
+		return _elm_lang$core$Native_Utils.update(
+			animator,
+			{startLoc: loc, currentLoc: loc, frame: 0, currentDelay: animator.frameDelay});
+	});
 var _user$project$Animator$update = F2(
 	function (time, animator) {
 		var currentDelay1 = animator.currentDelay - time;
@@ -17244,6 +17250,10 @@ var _user$project$Types$blankTextureStore = {playerTexture: _elm_lang$core$Maybe
 var _user$project$Types$TextureStore = function (a) {
 	return {playerTexture: a};
 };
+var _user$project$Types$Player = F5(
+	function (a, b, c, d, e) {
+		return {x: a, y: b, width: c, height: d, animator: e};
+	});
 var _user$project$Types$OptionsMenu = function (a) {
 	return {ctor: 'OptionsMenu', _0: a};
 };
@@ -17272,6 +17282,154 @@ var _user$project$Types$TileMapTexture = function (a) {
 var _user$project$Types$PlayerTexture = function (a) {
 	return {ctor: 'PlayerTexture', _0: a};
 };
+
+var _user$project$ViewUtil$textureFragmentShader = {'src': '\n        precision mediump float;\n\n        uniform vec3 color;\n        uniform sampler2D texture;\n        uniform mat4 textureMat;\n\n        varying vec2 vcoord;\n\n        void main() {\n            vec2 coord = (textureMat * vec4(vcoord, 0.0, 1.0)).xy;\n            gl_FragColor = texture2D(texture, coord) * vec4(color, 1.0);\n        }\n    '};
+var _user$project$ViewUtil$textureVertexShader = {'src': '\n        precision mediump float;\n\n        attribute vec3 position;\n\n        uniform mat4 perspective;\n        uniform mat4 object;\n\n        varying vec2 vcoord;\n\n        void main() {\n            gl_Position = perspective * object * vec4(position, 1.0);\n            vcoord = position.xy * vec2(1, -1);\n        }\n    '};
+var _user$project$ViewUtil$fragmentShader = {'src': '\n        precision mediump float;\n\n        uniform vec3 color;\n\n        void main() {\n            gl_FragColor = vec4(color, 1.0);\n        }\n    '};
+var _user$project$ViewUtil$vertexShader = {'src': '\n        precision mediump float;\n\n        attribute vec3 position;\n\n        uniform mat4 perspective;\n        uniform mat4 object;\n\n        void main() {\n            gl_Position = perspective * object * vec4(position, 1.0);\n        }\n    '};
+var _user$project$ViewUtil$perspective = A6(_elm_community$linear_algebra$Math_Matrix4$makeOrtho, -1, 800, 600, 0, -1, 1);
+var _user$project$ViewUtil$toTextureMatrix = function (rect) {
+	return A4(
+		_elm_community$linear_algebra$Math_Matrix4$scale3,
+		_elm_lang$core$Basics$toFloat(rect.width),
+		_elm_lang$core$Basics$toFloat(rect.height),
+		1,
+		A4(
+			_elm_community$linear_algebra$Math_Matrix4$translate3,
+			_elm_lang$core$Basics$toFloat(rect.x),
+			_elm_lang$core$Basics$toFloat(rect.y),
+			0,
+			A4(
+				_elm_community$linear_algebra$Math_Matrix4$scale3,
+				1.0 / _elm_lang$core$Basics$toFloat(rect.maxWidth),
+				1.0 / _elm_lang$core$Basics$toFloat(rect.maxHeight),
+				1,
+				_elm_community$linear_algebra$Math_Matrix4$identity)));
+};
+var _user$project$ViewUtil$rectToMatrix = function (rect) {
+	return A4(
+		_elm_community$linear_algebra$Math_Matrix4$scale3,
+		_elm_lang$core$Basics$toFloat(rect.width),
+		_elm_lang$core$Basics$toFloat(rect.height),
+		1,
+		A4(
+			_elm_community$linear_algebra$Math_Matrix4$translate3,
+			_elm_lang$core$Basics$toFloat(rect.x),
+			_elm_lang$core$Basics$toFloat(rect.y),
+			0,
+			_elm_community$linear_algebra$Math_Matrix4$identity));
+};
+var _user$project$ViewUtil$getTexture = F2(
+	function (_p0, texture) {
+		var _p1 = _p0;
+		var _p2 = texture;
+		if (_p2.ctor === 'PlayerTexture') {
+			return _p1.textureStore.playerTexture;
+		} else {
+			return _elm_lang$core$Maybe$Nothing;
+		}
+	});
+var _user$project$ViewUtil$Vertex = function (a) {
+	return {position: a};
+};
+var _user$project$ViewUtil$quadMesh = _elm_community$webgl$WebGL$triangles(
+	{
+		ctor: '::',
+		_0: {
+			ctor: '_Tuple3',
+			_0: _user$project$ViewUtil$Vertex(
+				A3(_elm_community$linear_algebra$Math_Vector3$vec3, 0, 0, 0)),
+			_1: _user$project$ViewUtil$Vertex(
+				A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 0, 0)),
+			_2: _user$project$ViewUtil$Vertex(
+				A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 1, 0))
+		},
+		_1: {
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple3',
+				_0: _user$project$ViewUtil$Vertex(
+					A3(_elm_community$linear_algebra$Math_Vector3$vec3, 0, 0, 0)),
+				_1: _user$project$ViewUtil$Vertex(
+					A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 1, 0)),
+				_2: _user$project$ViewUtil$Vertex(
+					A3(_elm_community$linear_algebra$Math_Vector3$vec3, 0, 1, 0))
+			},
+			_1: {ctor: '[]'}
+		}
+	});
+var _user$project$ViewUtil$quad = F3(
+	function (color, objMat, model) {
+		return _elm_lang$core$Maybe$Just(
+			A4(
+				_elm_community$webgl$WebGL$entity,
+				_user$project$ViewUtil$vertexShader,
+				_user$project$ViewUtil$fragmentShader,
+				_user$project$ViewUtil$quadMesh,
+				{perspective: _user$project$ViewUtil$perspective, object: objMat, color: color}));
+	});
+var _user$project$ViewUtil$texturedQuad = F5(
+	function (color, texture, subtexture, objMat, model) {
+		return A2(
+			_elm_lang$core$Maybe$map,
+			function (t) {
+				return A4(
+					_elm_community$webgl$WebGL$entity,
+					_user$project$ViewUtil$textureVertexShader,
+					_user$project$ViewUtil$textureFragmentShader,
+					_user$project$ViewUtil$quadMesh,
+					{
+						perspective: _user$project$ViewUtil$perspective,
+						object: objMat,
+						color: color,
+						texture: t,
+						textureMat: _user$project$ViewUtil$toTextureMatrix(subtexture)
+					});
+			},
+			A2(
+				_user$project$ViewUtil$getTexture,
+				model,
+				texture(
+					{ctor: '_Tuple0'})));
+	});
+var _user$project$ViewUtil$whiteTexturedQuad = _user$project$ViewUtil$texturedQuad(
+	A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 1, 1));
+
+var _user$project$Player$view = function (player) {
+	return A3(
+		_user$project$ViewUtil$whiteTexturedQuad,
+		_user$project$Types$PlayerTexture,
+		_user$project$Animator$toRectangle(player.animator),
+		_user$project$ViewUtil$rectToMatrix(player));
+};
+var _user$project$Player$update = F2(
+	function (time, player) {
+		return _elm_lang$core$Native_Utils.update(
+			player,
+			{
+				animator: A2(_user$project$Animator$update, time, player.animator)
+			});
+	});
+var _user$project$Player$defaultPlayer = F2(
+	function (x, y) {
+		return {
+			x: x,
+			y: y,
+			width: 64,
+			height: 96,
+			animator: _elm_lang$core$Native_Utils.update(
+				_user$project$Animator$defaultAnimator,
+				{
+					frames: 3,
+					frameWidth: 8,
+					frameHeight: 24,
+					startLoc: {ctor: '_Tuple2', _0: 0, _1: 0},
+					frameDelay: 100,
+					maxWidth: 24,
+					maxHeight: 24
+				})
+		};
+	});
 
 var _user$project$Update$processTexture = F2(
 	function (encoding, model) {
@@ -17324,7 +17482,7 @@ var _user$project$Update$updatePlaying = F2(
 				var nmodel = _elm_lang$core$Native_Utils.update(
 					model,
 					{
-						animation: A2(_user$project$Animator$update, _p1._0, model.animation)
+						player: A2(_user$project$Player$update, _p1._0, model.player)
 					});
 				return {
 					ctor: '_Tuple2',
@@ -17349,175 +17507,86 @@ var _user$project$Update$update = F2(
 		}
 	});
 
-var _user$project$View$textureFragmentShader = {'src': '\n        precision mediump float;\n\n        uniform vec3 color;\n        uniform sampler2D texture;\n        uniform mat4 textureMat;\n\n        varying vec2 vcoord;\n\n        void main() {\n            vec2 coord = (textureMat * vec4(vcoord, 0.0, 1.0)).xy;\n            gl_FragColor = texture2D(texture, coord) * vec4(color, 1.0);\n        }\n    '};
-var _user$project$View$textureVertexShader = {'src': '\n        precision mediump float;\n\n        attribute vec3 position;\n\n        uniform mat4 perspective;\n        uniform mat4 object;\n\n        varying vec2 vcoord;\n\n        void main() {\n            gl_Position = perspective * object * vec4(position, 1.0);\n            vcoord = position.xy * vec2(1, -1);\n        }\n    '};
-var _user$project$View$fragmentShader = {'src': '\n        precision mediump float;\n\n        uniform vec3 color;\n\n        void main() {\n            gl_FragColor = vec4(color, 1.0);\n        }\n    '};
-var _user$project$View$vertexShader = {'src': '\n        precision mediump float;\n\n        attribute vec3 position;\n\n        uniform mat4 perspective;\n        uniform mat4 object;\n\n        void main() {\n            gl_Position = perspective * object * vec4(position, 1.0);\n        }\n    '};
-var _user$project$View$perspective = A6(_elm_community$linear_algebra$Math_Matrix4$makeOrtho, -1, 800, 600, 0, -1, 1);
-var _user$project$View$toTextureMatrix = function (rect) {
-	return A4(
-		_elm_community$linear_algebra$Math_Matrix4$scale3,
-		_elm_lang$core$Basics$toFloat(rect.width),
-		_elm_lang$core$Basics$toFloat(rect.height),
-		1,
-		A4(
-			_elm_community$linear_algebra$Math_Matrix4$translate3,
-			_elm_lang$core$Basics$toFloat(rect.x),
-			_elm_lang$core$Basics$toFloat(rect.y),
-			0,
-			A4(
-				_elm_community$linear_algebra$Math_Matrix4$scale3,
-				1.0 / _elm_lang$core$Basics$toFloat(rect.maxWidth),
-				1.0 / _elm_lang$core$Basics$toFloat(rect.maxHeight),
-				1,
-				_elm_community$linear_algebra$Math_Matrix4$identity)));
-};
-var _user$project$View$rectToMatrix = function (rect) {
-	return A4(
-		_elm_community$linear_algebra$Math_Matrix4$scale3,
-		_elm_lang$core$Basics$toFloat(rect.width),
-		_elm_lang$core$Basics$toFloat(rect.height),
-		1,
-		A4(
-			_elm_community$linear_algebra$Math_Matrix4$translate3,
-			_elm_lang$core$Basics$toFloat(rect.x),
-			_elm_lang$core$Basics$toFloat(rect.y),
-			0,
-			_elm_community$linear_algebra$Math_Matrix4$identity));
-};
-var _user$project$View$getTexture = F2(
-	function (_p0, texture) {
-		var _p1 = _p0;
-		var _p2 = texture;
-		if (_p2.ctor === 'PlayerTexture') {
-			return _p1.textureStore.playerTexture;
-		} else {
-			return _elm_lang$core$Maybe$Nothing;
-		}
-	});
 var _user$project$View$render = F2(
 	function (model, renderer) {
 		return renderer(model);
 	});
-var _user$project$View$viewGL = function (model) {
-	return A3(
-		_elm_community$webgl$WebGL$toHtmlWith,
-		{
-			ctor: '::',
-			_0: A4(_elm_community$webgl$WebGL$clearColor, 0, 0, 0, 1),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$width(800),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$height(600),
-				_1: {ctor: '[]'}
+var _user$project$View$viewGL = F2(
+	function (model, renderers) {
+		var func = function (l) {
+			func:
+			while (true) {
+				var _p0 = l;
+				if (_p0.ctor === '::') {
+					var _p2 = _p0._1;
+					var _p1 = _p0._0;
+					if (_p1.ctor === 'Just') {
+						return {
+							ctor: '::',
+							_0: _p1._0,
+							_1: func(_p2)
+						};
+					} else {
+						var _v2 = _p2;
+						l = _v2;
+						continue func;
+					}
+				} else {
+					return {ctor: '[]'};
+				}
 			}
-		},
-		{ctor: '[]'});
-};
-var _user$project$View$view = function (state) {
-	var _p3 = state;
-	if (_p3.ctor === 'Playing') {
-		return A2(
-			_elm_lang$html$Html$div,
-			{ctor: '[]'},
+		};
+		var entities = func(
+			A2(
+				_elm_lang$core$List$map,
+				_user$project$View$render(model),
+				renderers));
+		return A3(
+			_elm_community$webgl$WebGL$toHtmlWith,
 			{
 				ctor: '::',
-				_0: _user$project$View$viewGL(_p3._0),
+				_0: A4(_elm_community$webgl$WebGL$clearColor, 0, 0, 0, 1),
 				_1: {ctor: '[]'}
-			});
-	} else {
-		return A2(
-			_elm_lang$html$Html$div,
-			{ctor: '[]'},
-			{ctor: '[]'});
-	}
-};
-var _user$project$View$Vertex = function (a) {
-	return {position: a};
-};
-var _user$project$View$quadMesh = _elm_community$webgl$WebGL$triangles(
-	{
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$width(800),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$height(600),
+					_1: {ctor: '[]'}
+				}
+			},
+			entities);
+	});
+var _user$project$View$viewPlaying = function (model) {
+	return {
 		ctor: '::',
-		_0: {
-			ctor: '_Tuple3',
-			_0: _user$project$View$Vertex(
-				A3(_elm_community$linear_algebra$Math_Vector3$vec3, 0, 0, 0)),
-			_1: _user$project$View$Vertex(
-				A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 0, 0)),
-			_2: _user$project$View$Vertex(
-				A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 1, 0))
-		},
-		_1: {
-			ctor: '::',
-			_0: {
-				ctor: '_Tuple3',
-				_0: _user$project$View$Vertex(
-					A3(_elm_community$linear_algebra$Math_Vector3$vec3, 0, 0, 0)),
-				_1: _user$project$View$Vertex(
-					A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 1, 0)),
-				_2: _user$project$View$Vertex(
-					A3(_elm_community$linear_algebra$Math_Vector3$vec3, 0, 1, 0))
-			},
-			_1: {ctor: '[]'}
-		}
-	});
-var _user$project$View$quad = F3(
-	function (color, objMat, model) {
-		return _elm_lang$core$Maybe$Just(
-			A4(
-				_elm_community$webgl$WebGL$entity,
-				_user$project$View$vertexShader,
-				_user$project$View$fragmentShader,
-				_user$project$View$quadMesh,
-				{perspective: _user$project$View$perspective, object: objMat, color: color}));
-	});
-var _user$project$View$texturedQuad = F5(
-	function (color, texture, subtexture, objMat, model) {
-		return A2(
-			_elm_lang$core$Maybe$map,
-			function (t) {
-				return A4(
-					_elm_community$webgl$WebGL$entity,
-					_user$project$View$textureVertexShader,
-					_user$project$View$textureFragmentShader,
-					_user$project$View$quadMesh,
-					{
-						perspective: _user$project$View$perspective,
-						object: objMat,
-						color: color,
-						texture: t,
-						textureMat: _user$project$View$toTextureMatrix(subtexture)
-					});
-			},
-			A2(
-				_user$project$View$getTexture,
-				model,
-				texture(
-					{ctor: '_Tuple0'})));
-	});
-var _user$project$View$whiteTexturedQuad = _user$project$View$texturedQuad(
-	A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 1, 1));
-
-var _user$project$Player$view = function (player) {
-	return A3(
-		_user$project$View$whiteTexturedQuad,
-		_user$project$Types$PlayerTexture,
-		{x: 0, y: 0, width: 16, height: 16, maxWidth: 16, maxHeight: 16},
-		_user$project$View$rectToMatrix(
-			{x: player.x, y: player.y, width: player.size, height: player.size}));
+		_0: _user$project$Player$view(model.player),
+		_1: {ctor: '[]'}
+	};
 };
-var _user$project$Player$update = F2(
-	function (time, player) {
-		return player;
-	});
-var _user$project$Player$Player = F3(
-	function (a, b, c) {
-		return {x: a, y: b, size: c};
-	});
+var _user$project$View$view = function (state) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		function () {
+			var _p3 = state;
+			if (_p3.ctor === 'Playing') {
+				var _p4 = _p3._0;
+				return {
+					ctor: '::',
+					_0: A2(
+						_user$project$View$viewGL,
+						_p4,
+						_user$project$View$viewPlaying(_p4)),
+					_1: {ctor: '[]'}
+				};
+			} else {
+				return {ctor: '[]'};
+			}
+		}());
+};
 
 var _user$project$Main$subscriptions = function (state) {
 	var constantInputs = A2(_elm_lang$core$Platform_Sub$map, _user$project$Types$KeyboardMsg, _ohanhi$keyboard_extra$Keyboard_Extra$subscriptions);
@@ -17585,17 +17654,7 @@ var _user$project$Main$init = function (_p4) {
 			{
 				textureStore: _user$project$Types$blankTextureStore,
 				keyboard: _ohanhi$keyboard_extra$Keyboard_Extra$initialState,
-				animation: _elm_lang$core$Native_Utils.update(
-					_user$project$Animator$defaultAnimator,
-					{
-						maxWidth: 32,
-						maxHeight: 32,
-						frameWidth: 16,
-						frameHeight: 16,
-						frames: 2,
-						startLoc: {ctor: '_Tuple2', _0: 0, _1: 1},
-						frameDelay: 1000
-					})
+				player: A2(_user$project$Player$defaultPlayer, 0, 0)
 			}),
 		_1: _elm_lang$core$Platform_Cmd$batch(
 			{
@@ -17613,7 +17672,7 @@ var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"message":"Types.Msg","aliases":{"Time.Time":{"type":"Float","args":[]},"Keyboard.KeyCode":{"type":"Int","args":[]}},"unions":{"Types.Msg":{"tags":{"TextureLoadedSuccessful":["Types.TextureEncoding WebGL.Texture"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"],"KeyboardMsg":["Keyboard.Extra.Msg"],"Tick":["Time.Time"]},"args":[]},"WebGL.Texture":{"tags":{"Texture":[]},"args":[]},"WebGL.Texture.Error":{"tags":{"SizeError":["Int","Int"],"LoadError":[]},"args":[]},"Keyboard.Extra.Msg":{"tags":{"Down":["Keyboard.KeyCode"],"Up":["Keyboard.KeyCode"]},"args":[]},"Types.TextureEncoding":{"tags":{"PlayerTexture":["a"],"TileMapTexture":["a"]},"args":["a"]}}},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"WebGL.Texture.Error":{"args":[],"tags":{"LoadError":[],"SizeError":["Int","Int"]}},"Keyboard.Extra.Msg":{"args":[],"tags":{"Down":["Keyboard.KeyCode"],"Up":["Keyboard.KeyCode"]}},"Types.TextureEncoding":{"args":["a"],"tags":{"PlayerTexture":["a"],"TileMapTexture":["a"]}},"Types.Msg":{"args":[],"tags":{"KeyboardMsg":["Keyboard.Extra.Msg"],"Tick":["Time.Time"],"TextureLoadedSuccessful":["Types.TextureEncoding WebGL.Texture"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"]}},"WebGL.Texture":{"args":[],"tags":{"Texture":[]}}},"aliases":{"Keyboard.KeyCode":{"args":[],"type":"Int"},"Time.Time":{"args":[],"type":"Float"}},"message":"Types.Msg"},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])

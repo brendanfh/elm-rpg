@@ -1,6 +1,6 @@
 module Update exposing (update)
 
-import Animator
+import Player
 import Keyboard.Extra as KE
 import Types exposing (..)
 import WebGL
@@ -33,7 +33,7 @@ updatePlaying msg model =
         Tick time ->
             let
                 nmodel =
-                    { model | animation = Animator.update time model.animation }
+                    { model | player = Player.update time model.player }
             in
                 ( Playing nmodel, Cmd.none )
 

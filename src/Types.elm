@@ -9,6 +9,7 @@ import WebGL.Texture
 
 {-
    Its easier to put both the model and the msg type in one file rather than have them be separate
+   Because of recursive dependencies, almost all models have to be stored in this file
 -}
 
 
@@ -27,7 +28,7 @@ type alias BaseModel a =
 
 type alias PlayingModel =
     BaseModel
-        { animation : Animator
+        { player : Player
         }
 
 
@@ -60,4 +61,17 @@ type alias TextureStore =
 blankTextureStore : TextureStore
 blankTextureStore =
     { playerTexture = Nothing
+    }
+
+
+
+{- PLAYING MODELS -}
+
+
+type alias Player =
+    { x : Int
+    , y : Int
+    , width : Int
+    , height : Int
+    , animator : Animator
     }
