@@ -17416,24 +17416,17 @@ var _user$project$View$viewGL = function (model) {
 				_1: {ctor: '[]'}
 			}
 		},
-		function () {
-			var _p3 = model.textureStore.playerTexture;
-			if (_p3.ctor === 'Nothing') {
-				return {ctor: '[]'};
-			} else {
-				return {ctor: '[]'};
-			}
-		}());
+		{ctor: '[]'});
 };
 var _user$project$View$view = function (state) {
-	var _p4 = state;
-	if (_p4.ctor === 'Playing') {
+	var _p3 = state;
+	if (_p3.ctor === 'Playing') {
 		return A2(
 			_elm_lang$html$Html$div,
 			{ctor: '[]'},
 			{
 				ctor: '::',
-				_0: _user$project$View$viewGL(_p4._0),
+				_0: _user$project$View$viewGL(_p3._0),
 				_1: {ctor: '[]'}
 			});
 	} else {
@@ -17620,7 +17613,7 @@ var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"WebGL.Texture.Error":{"args":[],"tags":{"LoadError":[],"SizeError":["Int","Int"]}},"Keyboard.Extra.Msg":{"args":[],"tags":{"Down":["Keyboard.KeyCode"],"Up":["Keyboard.KeyCode"]}},"Types.TextureEncoding":{"args":["a"],"tags":{"PlayerTexture":["a"],"TileMapTexture":["a"]}},"Types.Msg":{"args":[],"tags":{"KeyboardMsg":["Keyboard.Extra.Msg"],"Tick":["Time.Time"],"TextureLoadedSuccessful":["Types.TextureEncoding WebGL.Texture"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"]}},"WebGL.Texture":{"args":[],"tags":{"Texture":[]}}},"aliases":{"Keyboard.KeyCode":{"args":[],"type":"Int"},"Time.Time":{"args":[],"type":"Float"}},"message":"Types.Msg"},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"message":"Types.Msg","aliases":{"Time.Time":{"type":"Float","args":[]},"Keyboard.KeyCode":{"type":"Int","args":[]}},"unions":{"Types.Msg":{"tags":{"TextureLoadedSuccessful":["Types.TextureEncoding WebGL.Texture"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"],"KeyboardMsg":["Keyboard.Extra.Msg"],"Tick":["Time.Time"]},"args":[]},"WebGL.Texture":{"tags":{"Texture":[]},"args":[]},"WebGL.Texture.Error":{"tags":{"SizeError":["Int","Int"],"LoadError":[]},"args":[]},"Keyboard.Extra.Msg":{"tags":{"Down":["Keyboard.KeyCode"],"Up":["Keyboard.KeyCode"]},"args":[]},"Types.TextureEncoding":{"tags":{"PlayerTexture":["a"],"TileMapTexture":["a"]},"args":["a"]}}},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])

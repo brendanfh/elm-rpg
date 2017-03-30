@@ -32,13 +32,7 @@ view state =
 -}
 viewGL : PlayingModel -> Html Msg
 viewGL model =
-    (case model.textureStore.playerTexture of
-        Nothing ->
-            []
-
-        Just texture ->
-            []
-    )
+    []
         |> WebGL.toHtmlWith
             [ WebGL.clearColor 0 0 0 1
             ]
