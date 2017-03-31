@@ -32,24 +32,19 @@ viewPlaying model =
 viewGL : BaseModel a -> List (Renderer a) -> Html Msg
 viewGL model renderers =
     let
-        func : List (Maybe Entity) -> List Entity
-        func l =
-            case l of
-                x :: xs ->
-                    case x of
-                        Just v ->
-                            v :: (func xs)
+        func : Maybe Entity -> List Entity
+        func mEntity =
+            case mEntity of
+                Just e ->
+                    [ e ]
 
-                        Nothing ->
-                            func xs
-
-                [] ->
+                Nothing ->
                     []
 
         entities =
             renderers
                 |> List.map (render model)
-                |> func
+                |> List.concatMap func
     in
         WebGL.toHtmlWith
             [ WebGL.clearColor 0 0 0 1

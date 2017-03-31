@@ -18,7 +18,7 @@ defaultPlayer x y =
             , frameWidth = 8
             , frameHeight = 24
             , startLoc = ( 0, 0 )
-            , frameDelay = 100
+            , frameDelay = 1000
             , maxWidth = 24
             , maxHeight = 24
         }
