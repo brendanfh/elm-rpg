@@ -25,14 +25,14 @@ defaultPlayer x y =
     }
 
 
-update : Time -> Player -> Player
-update time player =
+update : Time -> BaseModel { a | player : Player } -> Player
+update time { player } =
     { player | animator = Animator.update time player.animator }
 
 
 view : Player -> Renderer a
 view player =
     ViewUtil.whiteTexturedQuad
-        PlayerTexture
+        "player"
         (Animator.toRectangle player.animator)
         (ViewUtil.rectToMatrix player)

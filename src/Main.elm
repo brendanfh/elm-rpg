@@ -28,18 +28,18 @@ loadTextures =
         options =
             Texture.defaultOptions
     in
-        [ ( "res/player.png", PlayerTexture )
-        , ( "bar", TileMapTexture )
+        [ ( "res/player.png", "player" )
+        , ( "bar", "tilemap" )
         ]
             |> List.map
-                (\( path, encoder ) ->
+                (\( path, name ) ->
                     Texture.loadWith
                         { options
                             | magnify = Texture.nearest
                             , minify = Texture.nearest
                         }
                         path
-                        |> Task.map encoder
+                        |> Task.map (\t -> ( t, name ))
                 )
             |> List.map
                 (Task.attempt

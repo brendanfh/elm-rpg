@@ -8,6 +8,7 @@ module ViewUtil
         , toTextureMatrix
         )
 
+import Dict
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (vec3, Vec3)
 import Math.Vector2 as Vec2 exposing (vec2, Vec2)
@@ -41,7 +42,7 @@ quad color objMat model =
 -}
 texturedQuad :
     Vec3
-    -> (() -> TextureEncoding ())
+    -> String
     -> { a
         | x : Int
         , y : Int
@@ -53,7 +54,7 @@ texturedQuad :
     -> Mat4
     -> Renderer b
 texturedQuad color texture subtexture objMat model =
-    getTexture model (texture ())
+    getTexture model texture
         |> Maybe.map
             (\t ->
                 WebGL.entity
@@ -72,7 +73,7 @@ texturedQuad color texture subtexture objMat model =
 {-| Useful so that Vector3 is not imported when not necessary
 -}
 whiteTexturedQuad :
-    (() -> TextureEncoding ())
+    String
     -> { a
         | height : Int
         , maxHeight : Int
@@ -89,14 +90,9 @@ whiteTexturedQuad =
 
 {-| Used to get a texture out the model
 -}
-getTexture : BaseModel a -> TextureEncoding () -> Maybe Texture
+getTexture : BaseModel a -> String -> Maybe Texture
 getTexture { textureStore } texture =
-    case texture of
-        PlayerTexture _ ->
-            textureStore.playerTexture
-
-        _ ->
-            Nothing
+    Dict.get texture textureStore
 
 
 {-| Converts a rectangle to a matrix representing the transformations in the rectangle

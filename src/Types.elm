@@ -1,6 +1,7 @@
 module Types exposing (..)
 
 import Animator exposing (Animator)
+import Dict exposing (Dict)
 import Keyboard.Extra as KE
 import Time exposing (Time)
 import WebGL exposing (Texture)
@@ -44,24 +45,21 @@ type Msg
     = NoOp
     | KeyboardMsg KE.Msg
     | TextureLoadingError WebGL.Texture.Error
-    | TextureLoadedSuccessful (TextureEncoding Texture)
+    | TextureLoadedSuccessful TextureEncoding
     | Tick Time
 
 
-type TextureEncoding a
-    = PlayerTexture a
-    | TileMapTexture a
+type alias TextureEncoding =
+    ( Texture, String )
 
 
 type alias TextureStore =
-    { playerTexture : Maybe Texture
-    }
+    Dict String Texture
 
 
 blankTextureStore : TextureStore
 blankTextureStore =
-    { playerTexture = Nothing
-    }
+    Dict.empty
 
 
 

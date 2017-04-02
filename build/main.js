@@ -17246,10 +17246,7 @@ var _user$project$Animator$Animator = function (a) {
 	};
 };
 
-var _user$project$Types$blankTextureStore = {playerTexture: _elm_lang$core$Maybe$Nothing};
-var _user$project$Types$TextureStore = function (a) {
-	return {playerTexture: a};
-};
+var _user$project$Types$blankTextureStore = _elm_lang$core$Dict$empty;
 var _user$project$Types$Player = F5(
 	function (a, b, c, d, e) {
 		return {x: a, y: b, width: c, height: d, animator: e};
@@ -17276,12 +17273,6 @@ var _user$project$Types$KeyboardMsg = function (a) {
 	return {ctor: 'KeyboardMsg', _0: a};
 };
 var _user$project$Types$NoOp = {ctor: 'NoOp'};
-var _user$project$Types$TileMapTexture = function (a) {
-	return {ctor: 'TileMapTexture', _0: a};
-};
-var _user$project$Types$PlayerTexture = function (a) {
-	return {ctor: 'PlayerTexture', _0: a};
-};
 
 var _user$project$ViewUtil$textureFragmentShader = {'src': '\n        precision mediump float;\n\n        uniform vec3 color;\n        uniform sampler2D texture;\n        uniform mat4 textureMat;\n\n        varying vec2 vcoord;\n\n        void main() {\n            vec2 coord = (textureMat * vec4(vcoord, 0.0, 1.0)).xy;\n            gl_FragColor = texture2D(texture, coord) * vec4(color, 1.0);\n        }\n    '};
 var _user$project$ViewUtil$textureVertexShader = {'src': '\n        precision mediump float;\n\n        attribute vec3 position;\n\n        uniform mat4 perspective;\n        uniform mat4 object;\n\n        varying vec2 vcoord;\n\n        void main() {\n            gl_Position = perspective * object * vec4(position, 1.0);\n            vcoord = position.xy * vec2(1, -1);\n        }\n    '};
@@ -17322,12 +17313,7 @@ var _user$project$ViewUtil$rectToMatrix = function (rect) {
 var _user$project$ViewUtil$getTexture = F2(
 	function (_p0, texture) {
 		var _p1 = _p0;
-		var _p2 = texture;
-		if (_p2.ctor === 'PlayerTexture') {
-			return _p1.textureStore.playerTexture;
-		} else {
-			return _elm_lang$core$Maybe$Nothing;
-		}
+		return A2(_elm_lang$core$Dict$get, texture, _p1.textureStore);
 	});
 var _user$project$ViewUtil$Vertex = function (a) {
 	return {position: a};
@@ -17386,11 +17372,7 @@ var _user$project$ViewUtil$texturedQuad = F5(
 						textureMat: _user$project$ViewUtil$toTextureMatrix(subtexture)
 					});
 			},
-			A2(
-				_user$project$ViewUtil$getTexture,
-				model,
-				texture(
-					{ctor: '_Tuple0'})));
+			A2(_user$project$ViewUtil$getTexture, model, texture));
 	});
 var _user$project$ViewUtil$whiteTexturedQuad = _user$project$ViewUtil$texturedQuad(
 	A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 1, 1));
@@ -17398,16 +17380,18 @@ var _user$project$ViewUtil$whiteTexturedQuad = _user$project$ViewUtil$texturedQu
 var _user$project$Player$view = function (player) {
 	return A3(
 		_user$project$ViewUtil$whiteTexturedQuad,
-		_user$project$Types$PlayerTexture,
+		'player',
 		_user$project$Animator$toRectangle(player.animator),
 		_user$project$ViewUtil$rectToMatrix(player));
 };
 var _user$project$Player$update = F2(
-	function (time, player) {
+	function (time, _p0) {
+		var _p1 = _p0;
+		var _p2 = _p1.player;
 		return _elm_lang$core$Native_Utils.update(
-			player,
+			_p2,
 			{
-				animator: A2(_user$project$Animator$update, time, player.animator)
+				animator: A2(_user$project$Animator$update, time, _p2.animator)
 			});
 	});
 var _user$project$Player$defaultPlayer = F2(
@@ -17432,28 +17416,18 @@ var _user$project$Player$defaultPlayer = F2(
 	});
 
 var _user$project$Update$processTexture = F2(
-	function (encoding, model) {
-		var tstore = model.textureStore;
-		var tstore_ = function () {
-			var _p0 = encoding;
-			if (_p0.ctor === 'PlayerTexture') {
-				return _elm_lang$core$Native_Utils.update(
-					tstore,
-					{
-						playerTexture: _elm_lang$core$Maybe$Just(_p0._0)
-					});
-			} else {
-				return tstore;
-			}
-		}();
+	function (_p0, model) {
+		var _p1 = _p0;
+		var _p2 = _p1._1;
+		var tstore = A2(_elm_lang$core$Dict$member, _p2, model.textureStore) ? model.textureStore : A3(_elm_lang$core$Dict$insert, _p2, _p1._0, model.textureStore);
 		return _elm_lang$core$Native_Utils.update(
 			model,
-			{textureStore: tstore_});
+			{textureStore: tstore});
 	});
 var _user$project$Update$updatePlaying = F2(
 	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1.ctor) {
+		var _p3 = msg;
+		switch (_p3.ctor) {
 			case 'TextureLoadingError':
 				return {
 					ctor: '_Tuple2',
@@ -17464,7 +17438,7 @@ var _user$project$Update$updatePlaying = F2(
 				return {
 					ctor: '_Tuple2',
 					_0: _user$project$Types$Playing(
-						A2(_user$project$Update$processTexture, _p1._0, model)),
+						A2(_user$project$Update$processTexture, _p3._0, model)),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'KeyboardMsg':
@@ -17474,7 +17448,7 @@ var _user$project$Update$updatePlaying = F2(
 						_elm_lang$core$Native_Utils.update(
 							model,
 							{
-								keyboard: A2(_ohanhi$keyboard_extra$Keyboard_Extra$update, _p1._0, model.keyboard)
+								keyboard: A2(_ohanhi$keyboard_extra$Keyboard_Extra$update, _p3._0, model.keyboard)
 							})),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -17482,7 +17456,7 @@ var _user$project$Update$updatePlaying = F2(
 				var nmodel = _elm_lang$core$Native_Utils.update(
 					model,
 					{
-						player: A2(_user$project$Player$update, _p1._0, model.player)
+						player: A2(_user$project$Player$update, _p3._0, model)
 					});
 				return {
 					ctor: '_Tuple2',
@@ -17499,9 +17473,9 @@ var _user$project$Update$updatePlaying = F2(
 	});
 var _user$project$Update$update = F2(
 	function (msg, state) {
-		var _p2 = state;
-		if (_p2.ctor === 'Playing') {
-			return A2(_user$project$Update$updatePlaying, msg, _p2._0);
+		var _p4 = state;
+		if (_p4.ctor === 'Playing') {
+			return A2(_user$project$Update$updatePlaying, msg, _p4._0);
 		} else {
 			return {ctor: '_Tuple2', _0: state, _1: _elm_lang$core$Platform_Cmd$none};
 		}
@@ -17620,7 +17594,9 @@ var _user$project$Main$loadTextures = function () {
 					var _p3 = _p2;
 					return A2(
 						_elm_lang$core$Task$map,
-						_p3._1,
+						function (t) {
+							return {ctor: '_Tuple2', _0: t, _1: _p3._1};
+						},
 						A2(
 							_elm_community$webgl$WebGL_Texture$loadWith,
 							_elm_lang$core$Native_Utils.update(
@@ -17630,10 +17606,10 @@ var _user$project$Main$loadTextures = function () {
 				},
 				{
 					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 'res/player.png', _1: _user$project$Types$PlayerTexture},
+					_0: {ctor: '_Tuple2', _0: 'res/player.png', _1: 'player'},
 					_1: {
 						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 'bar', _1: _user$project$Types$TileMapTexture},
+						_0: {ctor: '_Tuple2', _0: 'bar', _1: 'tilemap'},
 						_1: {ctor: '[]'}
 					}
 				})));
@@ -17663,7 +17639,7 @@ var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"message":"Types.Msg","aliases":{"Time.Time":{"type":"Float","args":[]},"Keyboard.KeyCode":{"type":"Int","args":[]}},"unions":{"Types.Msg":{"tags":{"TextureLoadedSuccessful":["Types.TextureEncoding WebGL.Texture"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"],"KeyboardMsg":["Keyboard.Extra.Msg"],"Tick":["Time.Time"]},"args":[]},"WebGL.Texture":{"tags":{"Texture":[]},"args":[]},"WebGL.Texture.Error":{"tags":{"SizeError":["Int","Int"],"LoadError":[]},"args":[]},"Keyboard.Extra.Msg":{"tags":{"Down":["Keyboard.KeyCode"],"Up":["Keyboard.KeyCode"]},"args":[]},"Types.TextureEncoding":{"tags":{"PlayerTexture":["a"],"TileMapTexture":["a"]},"args":["a"]}}},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"WebGL.Texture.Error":{"args":[],"tags":{"LoadError":[],"SizeError":["Int","Int"]}},"Keyboard.Extra.Msg":{"args":[],"tags":{"Down":["Keyboard.KeyCode"],"Up":["Keyboard.KeyCode"]}},"Types.Msg":{"args":[],"tags":{"KeyboardMsg":["Keyboard.Extra.Msg"],"Tick":["Time.Time"],"TextureLoadedSuccessful":["Types.TextureEncoding"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"]}},"WebGL.Texture":{"args":[],"tags":{"Texture":[]}}},"aliases":{"Types.TextureEncoding":{"args":[],"type":"( WebGL.Texture, String )"},"Keyboard.KeyCode":{"args":[],"type":"Int"},"Time.Time":{"args":[],"type":"Float"}},"message":"Types.Msg"},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])

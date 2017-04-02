@@ -1,9 +1,9 @@
 module Update exposing (update)
 
-import Player
+import Dict
 import Keyboard.Extra as KE
+import Player
 import Types exposing (..)
-import WebGL
 
 
 update : Msg -> State -> ( State, Cmd Msg )
@@ -33,7 +33,7 @@ updatePlaying msg model =
         Tick time ->
             let
                 nmodel =
-                    { model | player = Player.update time model.player }
+                    { model | player = Player.update time model }
             in
                 ( Playing nmodel, Cmd.none )
 
@@ -41,18 +41,13 @@ updatePlaying msg model =
             ( Playing model, Cmd.none )
 
 
-processTexture : TextureEncoding WebGL.Texture -> BaseModel a -> BaseModel a
-processTexture encoding model =
+processTexture : TextureEncoding -> BaseModel a -> BaseModel a
+processTexture ( texture, name ) model =
     let
         tstore =
-            model.textureStore
-
-        tstore_ =
-            case encoding of
-                PlayerTexture texture ->
-                    { tstore | playerTexture = Just texture }
-
-                _ ->
-                    tstore
+            if Dict.member name model.textureStore then
+                model.textureStore
+            else
+                Dict.insert name texture model.textureStore
     in
-        { model | textureStore = tstore_ }
+        { model | textureStore = tstore }
