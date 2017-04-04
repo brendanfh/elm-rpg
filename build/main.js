@@ -4190,6 +4190,270 @@ var _elm_lang$core$Platform$Task = {ctor: 'Task'};
 var _elm_lang$core$Platform$ProcessId = {ctor: 'ProcessId'};
 var _elm_lang$core$Platform$Router = {ctor: 'Router'};
 
+var _eeue56$elm_flat_matrix$Matrix$filter = F2(
+	function (f, matrix) {
+		return A2(_elm_lang$core$Array$filter, f, matrix.data);
+	});
+var _eeue56$elm_flat_matrix$Matrix$map2 = F3(
+	function (f, a, b) {
+		return _elm_lang$core$Native_Utils.eq(a.size, b.size) ? _elm_lang$core$Maybe$Just(
+			_elm_lang$core$Native_Utils.update(
+				a,
+				{
+					data: _elm_lang$core$Array$fromList(
+						A3(
+							_elm_lang$core$List$map2,
+							f,
+							_elm_lang$core$Array$toList(a.data),
+							_elm_lang$core$Array$toList(b.data)))
+				})) : _elm_lang$core$Maybe$Nothing;
+	});
+var _eeue56$elm_flat_matrix$Matrix$map = F2(
+	function (f, matrix) {
+		return _elm_lang$core$Native_Utils.update(
+			matrix,
+			{
+				data: A2(_elm_lang$core$Array$map, f, matrix.data)
+			});
+	});
+var _eeue56$elm_flat_matrix$Matrix$concatVertical = F2(
+	function (a, b) {
+		return (!_elm_lang$core$Native_Utils.eq(
+			_elm_lang$core$Tuple$first(a.size),
+			_elm_lang$core$Tuple$first(b.size))) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+			_elm_lang$core$Native_Utils.update(
+				a,
+				{
+					size: {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Tuple$first(a.size),
+						_1: _elm_lang$core$Tuple$second(a.size) + _elm_lang$core$Tuple$second(b.size)
+					},
+					data: A2(_elm_lang$core$Array$append, a.data, b.data)
+				}));
+	});
+var _eeue56$elm_flat_matrix$Matrix$getColumn = F2(
+	function (i, matrix) {
+		var height = _elm_lang$core$Tuple$second(matrix.size);
+		var width = _elm_lang$core$Tuple$first(matrix.size);
+		var indices = A2(
+			_elm_lang$core$List$map,
+			function (x) {
+				return (x * width) + i;
+			},
+			A2(_elm_lang$core$List$range, 0, height - 1));
+		return (_elm_lang$core$Native_Utils.cmp(i, width) > -1) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+			_elm_lang$core$Array$fromList(
+				A3(
+					_elm_lang$core$List$foldl,
+					F2(
+						function (index, ls) {
+							var _p0 = A2(_elm_lang$core$Array$get, index, matrix.data);
+							if (_p0.ctor === 'Just') {
+								return A2(
+									_elm_lang$core$Basics_ops['++'],
+									ls,
+									{
+										ctor: '::',
+										_0: _p0._0,
+										_1: {ctor: '[]'}
+									});
+							} else {
+								return ls;
+							}
+						}),
+					{ctor: '[]'},
+					indices)));
+	});
+var _eeue56$elm_flat_matrix$Matrix$fromList = function (list) {
+	var width = _elm_lang$core$List$length(
+		function () {
+			var _p1 = _elm_lang$core$List$head(list);
+			if (_p1.ctor === 'Just') {
+				return _p1._0;
+			} else {
+				return {ctor: '[]'};
+			}
+		}());
+	var allSame = _elm_lang$core$List$isEmpty(
+		A2(
+			_elm_lang$core$List$filter,
+			function (x) {
+				return !_elm_lang$core$Native_Utils.eq(
+					_elm_lang$core$List$length(x),
+					width);
+			},
+			list));
+	var height = _elm_lang$core$List$length(list);
+	return (!allSame) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+		{
+			size: {ctor: '_Tuple2', _0: width, _1: height},
+			data: _elm_lang$core$Array$fromList(
+				_elm_lang$core$List$concat(list))
+		});
+};
+var _eeue56$elm_flat_matrix$Matrix$repeat = F3(
+	function (x, y, v) {
+		return {
+			size: {ctor: '_Tuple2', _0: x, _1: y},
+			data: A2(_elm_lang$core$Array$repeat, x * y, v)
+		};
+	});
+var _eeue56$elm_flat_matrix$Matrix$height = function (matrix) {
+	return _elm_lang$core$Tuple$second(matrix.size);
+};
+var _eeue56$elm_flat_matrix$Matrix$width = function (matrix) {
+	return _elm_lang$core$Tuple$first(matrix.size);
+};
+var _eeue56$elm_flat_matrix$Matrix$get = F3(
+	function (i, j, matrix) {
+		var pos = (j * _eeue56$elm_flat_matrix$Matrix$width(matrix)) + i;
+		return (((_elm_lang$core$Native_Utils.cmp(
+			i,
+			_eeue56$elm_flat_matrix$Matrix$width(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(i, -1) > 0)) && ((_elm_lang$core$Native_Utils.cmp(
+			j,
+			_eeue56$elm_flat_matrix$Matrix$height(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(j, -1) > 0))) ? A2(_elm_lang$core$Array$get, pos, matrix.data) : _elm_lang$core$Maybe$Nothing;
+	});
+var _eeue56$elm_flat_matrix$Matrix$getRow = F2(
+	function (j, matrix) {
+		var start = j * _eeue56$elm_flat_matrix$Matrix$width(matrix);
+		var end = start + _eeue56$elm_flat_matrix$Matrix$width(matrix);
+		return (_elm_lang$core$Native_Utils.cmp(
+			end,
+			_eeue56$elm_flat_matrix$Matrix$width(matrix) * _eeue56$elm_flat_matrix$Matrix$height(matrix)) > 0) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+			A3(_elm_lang$core$Array$slice, start, end, matrix.data));
+	});
+var _eeue56$elm_flat_matrix$Matrix$concatHorizontal = F2(
+	function (a, b) {
+		var insert = F3(
+			function (i, xs, array) {
+				return A2(
+					_elm_lang$core$Array$append,
+					A2(
+						_elm_lang$core$Array$append,
+						A3(_elm_lang$core$Array$slice, 0, i, array),
+						xs),
+					A3(
+						_elm_lang$core$Array$slice,
+						i,
+						_elm_lang$core$Array$length(array),
+						array));
+			});
+		var finalWidth = _elm_lang$core$Tuple$first(a.size) + _elm_lang$core$Tuple$first(b.size);
+		return (!_elm_lang$core$Native_Utils.eq(
+			_elm_lang$core$Tuple$second(a.size),
+			_elm_lang$core$Tuple$second(b.size))) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+			_elm_lang$core$Native_Utils.update(
+				a,
+				{
+					size: {
+						ctor: '_Tuple2',
+						_0: finalWidth,
+						_1: _elm_lang$core$Tuple$second(a.size)
+					},
+					data: A3(
+						_elm_lang$core$List$foldl,
+						F2(
+							function (_p2, acc) {
+								var _p3 = _p2;
+								return A3(insert, _p3._0 * finalWidth, _p3._1, acc);
+							}),
+						b.data,
+						A3(
+							_elm_lang$core$List$foldl,
+							F2(
+								function (i, ls) {
+									var _p4 = A2(_eeue56$elm_flat_matrix$Matrix$getRow, i, a);
+									if (_p4.ctor === 'Just') {
+										return A2(
+											_elm_lang$core$Basics_ops['++'],
+											ls,
+											{
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: i, _1: _p4._0},
+												_1: {ctor: '[]'}
+											});
+									} else {
+										return ls;
+									}
+								}),
+							{ctor: '[]'},
+							A2(
+								_elm_lang$core$List$range,
+								0,
+								_elm_lang$core$Tuple$second(a.size) - 1)))
+				}));
+	});
+var _eeue56$elm_flat_matrix$Matrix$set = F4(
+	function (i, j, v, matrix) {
+		var pos = (j * _elm_lang$core$Tuple$first(matrix.size)) + i;
+		return (((_elm_lang$core$Native_Utils.cmp(
+			i,
+			_eeue56$elm_flat_matrix$Matrix$width(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(i, -1) > 0)) && ((_elm_lang$core$Native_Utils.cmp(
+			j,
+			_eeue56$elm_flat_matrix$Matrix$height(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(j, -1) > 0))) ? _elm_lang$core$Native_Utils.update(
+			matrix,
+			{
+				data: A3(_elm_lang$core$Array$set, pos, v, matrix.data)
+			}) : matrix;
+	});
+var _eeue56$elm_flat_matrix$Matrix$update = F4(
+	function (x, y, f, matrix) {
+		var _p5 = A3(_eeue56$elm_flat_matrix$Matrix$get, x, y, matrix);
+		if (_p5.ctor === 'Nothing') {
+			return matrix;
+		} else {
+			return A4(
+				_eeue56$elm_flat_matrix$Matrix$set,
+				x,
+				y,
+				f(_p5._0),
+				matrix);
+		}
+	});
+var _eeue56$elm_flat_matrix$Matrix$indexedMap = F2(
+	function (f, matrix) {
+		var f_ = F2(
+			function (i, v) {
+				var y = (i / _eeue56$elm_flat_matrix$Matrix$width(matrix)) | 0;
+				var x = A2(
+					_elm_lang$core$Basics_ops['%'],
+					i,
+					_eeue56$elm_flat_matrix$Matrix$width(matrix));
+				return A3(f, x, y, v);
+			});
+		return _elm_lang$core$Native_Utils.update(
+			matrix,
+			{
+				data: _elm_lang$core$Array$fromList(
+					A2(
+						_elm_lang$core$List$indexedMap,
+						f_,
+						_elm_lang$core$Array$toList(matrix.data)))
+			});
+	});
+var _eeue56$elm_flat_matrix$Matrix$toIndexedArray = function (matrix) {
+	return A2(
+		_eeue56$elm_flat_matrix$Matrix$indexedMap,
+		F3(
+			function (x, y, v) {
+				return {
+					ctor: '_Tuple2',
+					_0: {ctor: '_Tuple2', _0: x, _1: y},
+					_1: v
+				};
+			}),
+		matrix).data;
+};
+var _eeue56$elm_flat_matrix$Matrix$empty = {
+	size: {ctor: '_Tuple2', _0: 0, _1: 0},
+	data: _elm_lang$core$Array$empty
+};
+var _eeue56$elm_flat_matrix$Matrix$Matrix = F2(
+	function (a, b) {
+		return {size: a, data: b};
+	});
+
 var _elm_lang$core$Dict$foldr = F3(
 	function (f, acc, t) {
 		foldr:
@@ -17278,7 +17542,7 @@ var _user$project$ViewUtil$textureFragmentShader = {'src': '\n        precision 
 var _user$project$ViewUtil$textureVertexShader = {'src': '\n        precision mediump float;\n\n        attribute vec3 position;\n\n        uniform mat4 perspective;\n        uniform mat4 object;\n\n        varying vec2 vcoord;\n\n        void main() {\n            gl_Position = perspective * object * vec4(position, 1.0);\n            vcoord = position.xy * vec2(1, -1);\n        }\n    '};
 var _user$project$ViewUtil$fragmentShader = {'src': '\n        precision mediump float;\n\n        uniform vec3 color;\n\n        void main() {\n            gl_FragColor = vec4(color, 1.0);\n        }\n    '};
 var _user$project$ViewUtil$vertexShader = {'src': '\n        precision mediump float;\n\n        attribute vec3 position;\n\n        uniform mat4 perspective;\n        uniform mat4 object;\n\n        void main() {\n            gl_Position = perspective * object * vec4(position, 1.0);\n        }\n    '};
-var _user$project$ViewUtil$perspective = A6(_elm_community$linear_algebra$Math_Matrix4$makeOrtho, -1, 800, 600, 0, -1, 1);
+var _user$project$ViewUtil$perspective = A6(_elm_community$linear_algebra$Math_Matrix4$makeOrtho, -1, 320, 240, 0, -1, 1);
 var _user$project$ViewUtil$toTextureMatrix = function (rect) {
 	return A4(
 		_elm_community$linear_algebra$Math_Matrix4$scale3,
@@ -17344,45 +17608,106 @@ var _user$project$ViewUtil$quadMesh = _elm_community$webgl$WebGL$triangles(
 			_1: {ctor: '[]'}
 		}
 	});
-var _user$project$ViewUtil$quad = F3(
-	function (color, objMat, model) {
-		return _elm_lang$core$Maybe$Just(
-			A4(
-				_elm_community$webgl$WebGL$entity,
-				_user$project$ViewUtil$vertexShader,
-				_user$project$ViewUtil$fragmentShader,
-				_user$project$ViewUtil$quadMesh,
-				{perspective: _user$project$ViewUtil$perspective, object: objMat, color: color}));
+var _user$project$ViewUtil$GroupRenderer = F2(
+	function (a, b) {
+		return {ctor: 'GroupRenderer', _0: a, _1: b};
 	});
-var _user$project$ViewUtil$texturedQuad = F5(
-	function (color, texture, subtexture, objMat, model) {
-		return A2(
-			_elm_lang$core$Maybe$map,
-			function (t) {
-				return A4(
-					_elm_community$webgl$WebGL$entity,
-					_user$project$ViewUtil$textureVertexShader,
-					_user$project$ViewUtil$textureFragmentShader,
-					_user$project$ViewUtil$quadMesh,
-					{
-						perspective: _user$project$ViewUtil$perspective,
-						object: objMat,
-						color: color,
-						texture: t,
-						textureMat: _user$project$ViewUtil$toTextureMatrix(subtexture)
-					});
-			},
-			A2(_user$project$ViewUtil$getTexture, model, texture));
+var _user$project$ViewUtil$SingleRenderer = function (a) {
+	return {ctor: 'SingleRenderer', _0: a};
+};
+var _user$project$ViewUtil$quad = F2(
+	function (color, objMat) {
+		return _user$project$ViewUtil$SingleRenderer(
+			function (model) {
+				return _elm_lang$core$Maybe$Just(
+					A4(
+						_elm_community$webgl$WebGL$entity,
+						_user$project$ViewUtil$vertexShader,
+						_user$project$ViewUtil$fragmentShader,
+						_user$project$ViewUtil$quadMesh,
+						{perspective: _user$project$ViewUtil$perspective, object: objMat, color: color}));
+			});
+	});
+var _user$project$ViewUtil$texturedQuad = F4(
+	function (color, texture, subtexture, objMat) {
+		return _user$project$ViewUtil$SingleRenderer(
+			function (model) {
+				return A2(
+					_elm_lang$core$Maybe$map,
+					function (t) {
+						return A4(
+							_elm_community$webgl$WebGL$entity,
+							_user$project$ViewUtil$textureVertexShader,
+							_user$project$ViewUtil$textureFragmentShader,
+							_user$project$ViewUtil$quadMesh,
+							{
+								perspective: _user$project$ViewUtil$perspective,
+								object: objMat,
+								color: color,
+								texture: t,
+								textureMat: _user$project$ViewUtil$toTextureMatrix(subtexture)
+							});
+					},
+					A2(_user$project$ViewUtil$getTexture, model, texture));
+			});
 	});
 var _user$project$ViewUtil$whiteTexturedQuad = _user$project$ViewUtil$texturedQuad(
 	A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 1, 1));
+var _user$project$ViewUtil$group = function (renderers) {
+	var _p2 = renderers;
+	if (_p2.ctor === '::') {
+		return A2(
+			_user$project$ViewUtil$GroupRenderer,
+			_p2._0,
+			_user$project$ViewUtil$group(_p2._1));
+	} else {
+		return _user$project$ViewUtil$SingleRenderer(
+			function (_p3) {
+				return _elm_lang$core$Maybe$Nothing;
+			});
+	}
+};
 
 var _user$project$Player$view = function (player) {
-	return A3(
-		_user$project$ViewUtil$whiteTexturedQuad,
-		'player',
-		_user$project$Animator$toRectangle(player.animator),
-		_user$project$ViewUtil$rectToMatrix(player));
+	return _user$project$ViewUtil$group(
+		{
+			ctor: '::',
+			_0: A3(
+				_user$project$ViewUtil$whiteTexturedQuad,
+				'player',
+				_user$project$Animator$toRectangle(player.animator),
+				_user$project$ViewUtil$rectToMatrix(player)),
+			_1: {
+				ctor: '::',
+				_0: _user$project$ViewUtil$group(
+					{
+						ctor: '::',
+						_0: A2(
+							_user$project$ViewUtil$quad,
+							A3(_elm_community$linear_algebra$Math_Vector3$vec3, 0, 0, 1),
+							A4(
+								_elm_community$linear_algebra$Math_Matrix4$scale3,
+								50,
+								50,
+								1,
+								A4(_elm_community$linear_algebra$Math_Matrix4$translate3, 125, 100, 0, _elm_community$linear_algebra$Math_Matrix4$identity))),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_user$project$ViewUtil$quad,
+								A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 0, 0),
+								A4(
+									_elm_community$linear_algebra$Math_Matrix4$scale3,
+									50,
+									50,
+									1,
+									A4(_elm_community$linear_algebra$Math_Matrix4$translate3, 100, 100, 0, _elm_community$linear_algebra$Math_Matrix4$identity))),
+							_1: {ctor: '[]'}
+						}
+					}),
+				_1: {ctor: '[]'}
+			}
+		});
 };
 var _user$project$Player$update = F2(
 	function (time, _p0) {
@@ -17481,18 +17806,66 @@ var _user$project$Update$update = F2(
 		}
 	});
 
+var _user$project$Tilemap$render = _user$project$ViewUtil$group(
+	A2(
+		_elm_lang$core$List$map,
+		function (_p0) {
+			var _p1 = _p0;
+			return A2(
+				_user$project$ViewUtil$quad,
+				A3(_elm_community$linear_algebra$Math_Vector3$vec3, 0, 1, 0),
+				A4(
+					_elm_community$linear_algebra$Math_Matrix4$scale3,
+					32,
+					32,
+					1,
+					A4(
+						_elm_community$linear_algebra$Math_Matrix4$translate3,
+						_elm_lang$core$Basics$toFloat(_p1._0) * 33.0,
+						_elm_lang$core$Basics$toFloat(_p1._1) * 33.0,
+						0.0,
+						_elm_community$linear_algebra$Math_Matrix4$identity)));
+		},
+		A2(
+			_elm_lang$core$List$concatMap,
+			function (y) {
+				return A2(
+					_elm_lang$core$List$concatMap,
+					function (x) {
+						return {
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: x, _1: y},
+							_1: {ctor: '[]'}
+						};
+					},
+					A2(_elm_lang$core$List$range, 0, 10));
+			},
+			A2(_elm_lang$core$List$range, 0, 8))));
+
 var _user$project$View$render = F2(
 	function (model, renderer) {
-		return renderer(model);
+		var _p0 = renderer;
+		if (_p0.ctor === 'SingleRenderer') {
+			return {
+				ctor: '::',
+				_0: _p0._0(model),
+				_1: {ctor: '[]'}
+			};
+		} else {
+			return A2(
+				_elm_lang$core$List$append,
+				A2(_user$project$View$render, model, _p0._0),
+				A2(_user$project$View$render, model, _p0._1));
+		}
 	});
 var _user$project$View$viewGL = F2(
 	function (model, renderers) {
 		var func = function (mEntity) {
-			var _p0 = mEntity;
-			if (_p0.ctor === 'Just') {
+			var _p1 = mEntity;
+			if (_p1.ctor === 'Just') {
 				return {
 					ctor: '::',
-					_0: _p0._0,
+					_0: _p1._0,
 					_1: {ctor: '[]'}
 				};
 			} else {
@@ -17503,7 +17876,7 @@ var _user$project$View$viewGL = F2(
 			_elm_lang$core$List$concatMap,
 			func,
 			A2(
-				_elm_lang$core$List$map,
+				_elm_lang$core$List$concatMap,
 				_user$project$View$render(model),
 				renderers));
 		return A3(
@@ -17515,10 +17888,10 @@ var _user$project$View$viewGL = F2(
 			},
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$width(800),
+				_0: _elm_lang$html$Html_Attributes$width(640),
 				_1: {
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$height(600),
+					_0: _elm_lang$html$Html_Attributes$height(480),
 					_1: {ctor: '[]'}
 				}
 			},
@@ -17527,8 +17900,12 @@ var _user$project$View$viewGL = F2(
 var _user$project$View$viewPlaying = function (model) {
 	return {
 		ctor: '::',
-		_0: _user$project$Player$view(model.player),
-		_1: {ctor: '[]'}
+		_0: _user$project$Tilemap$render,
+		_1: {
+			ctor: '::',
+			_0: _user$project$Player$view(model.player),
+			_1: {ctor: '[]'}
+		}
 	};
 };
 var _user$project$View$view = function (state) {
@@ -17536,15 +17913,15 @@ var _user$project$View$view = function (state) {
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
 		function () {
-			var _p1 = state;
-			if (_p1.ctor === 'Playing') {
-				var _p2 = _p1._0;
+			var _p2 = state;
+			if (_p2.ctor === 'Playing') {
+				var _p3 = _p2._0;
 				return {
 					ctor: '::',
 					_0: A2(
 						_user$project$View$viewGL,
-						_p2,
-						_user$project$View$viewPlaying(_p2)),
+						_p3,
+						_user$project$View$viewPlaying(_p3)),
 					_1: {ctor: '[]'}
 				};
 			} else {

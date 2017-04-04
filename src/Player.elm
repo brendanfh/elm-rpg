@@ -1,6 +1,8 @@
 module Player exposing (..)
 
 import Animator exposing (Animator, defaultAnimator)
+import Math.Matrix4 as Mat4 exposing (Mat4)
+import Math.Vector3 as Vec3 exposing (vec3, Vec3)
 import Time exposing (Time)
 import Types exposing (..)
 import ViewUtil exposing (Renderer)
@@ -32,7 +34,23 @@ update time { player } =
 
 view : Player -> Renderer a
 view player =
-    ViewUtil.whiteTexturedQuad
-        "player"
-        (Animator.toRectangle player.animator)
-        (ViewUtil.rectToMatrix player)
+    ViewUtil.group
+        [ ViewUtil.whiteTexturedQuad
+            "player"
+            (Animator.toRectangle player.animator)
+            (ViewUtil.rectToMatrix player)
+        , ViewUtil.group
+            [ ViewUtil.quad
+                (vec3 0 0 1)
+                (Mat4.identity
+                    |> Mat4.translate3 125 100 0
+                    |> Mat4.scale3 50 50 1
+                )
+            , ViewUtil.quad
+                (vec3 1 0 0)
+                (Mat4.identity
+                    |> Mat4.translate3 100 100 0
+                    |> Mat4.scale3 50 50 1
+                )
+            ]
+        ]

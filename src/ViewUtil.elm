@@ -1,9 +1,10 @@
 module ViewUtil
     exposing
-        ( Renderer
+        ( Renderer(..)
         , quad
         , texturedQuad
         , whiteTexturedQuad
+        , group
         , rectToMatrix
         , toTextureMatrix
         )
@@ -18,23 +19,27 @@ import WebGL exposing (Shader, Mesh, Entity, Texture)
 
 {-| A type used encapsulate a rendering operation
 -}
-type alias Renderer a =
-    BaseModel a -> Maybe Entity
+type Renderer a
+    = SingleRenderer (BaseModel a -> Maybe Entity)
+    | GroupRenderer (Renderer a) (Renderer a)
 
 
 {-| Renders a basic quad with the specified color and transformations
 -}
 quad : Vec3 -> Mat4 -> Renderer a
-quad color objMat model =
-    Just <|
-        WebGL.entity
-            vertexShader
-            fragmentShader
-            quadMesh
-            { perspective = perspective
-            , object = objMat
-            , color = color
-            }
+quad color objMat =
+    SingleRenderer <|
+        (\model ->
+            Just <|
+                WebGL.entity
+                    vertexShader
+                    fragmentShader
+                    quadMesh
+                    { perspective = perspective
+                    , object = objMat
+                    , color = color
+                    }
+        )
 
 
 {-| Renders a quad with a texture, color and given transformations
@@ -53,21 +58,24 @@ texturedQuad :
        }
     -> Mat4
     -> Renderer b
-texturedQuad color texture subtexture objMat model =
-    getTexture model texture
-        |> Maybe.map
-            (\t ->
-                WebGL.entity
-                    textureVertexShader
-                    textureFragmentShader
-                    quadMesh
-                    { perspective = perspective
-                    , object = objMat
-                    , color = color
-                    , texture = t
-                    , textureMat = toTextureMatrix subtexture
-                    }
-            )
+texturedQuad color texture subtexture objMat =
+    SingleRenderer <|
+        (\model ->
+            getTexture model texture
+                |> Maybe.map
+                    (\t ->
+                        WebGL.entity
+                            textureVertexShader
+                            textureFragmentShader
+                            quadMesh
+                            { perspective = perspective
+                            , object = objMat
+                            , color = color
+                            , texture = t
+                            , textureMat = toTextureMatrix subtexture
+                            }
+                    )
+        )
 
 
 {-| Useful so that Vector3 is not imported when not necessary
@@ -86,6 +94,18 @@ whiteTexturedQuad :
     -> Renderer b
 whiteTexturedQuad =
     texturedQuad (vec3 1 1 1)
+
+
+{-| Used to group several rendering operations together
+-}
+group : List (Renderer a) -> Renderer a
+group renderers =
+    case renderers of
+        r :: rs ->
+            GroupRenderer r (group rs)
+
+        [] ->
+            SingleRenderer (\_ -> Nothing)
 
 
 {-| Used to get a texture out the model
@@ -142,7 +162,7 @@ toTextureMatrix rect =
 
 perspective : Mat4
 perspective =
-    Mat4.makeOrtho -1 800 600 0 -1 1
+    Mat4.makeOrtho -1 320 240 0 -1 1
 
 
 type alias Vertex =

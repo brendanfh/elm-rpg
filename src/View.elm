@@ -5,7 +5,8 @@ import Html.Attributes as HA
 import Types exposing (..)
 import WebGL exposing (Entity)
 import Player
-import ViewUtil exposing (Renderer)
+import Tilemap
+import ViewUtil exposing (Renderer(..))
 
 
 {-| The main view function
@@ -24,7 +25,7 @@ view state =
 
 viewPlaying : PlayingModel -> List (Renderer a)
 viewPlaying model =
-    [ Player.view model.player ]
+    [ Tilemap.render, Player.view model.player ]
 
 
 {-| Renders everything having to do with the game
@@ -43,20 +44,25 @@ viewGL model renderers =
 
         entities =
             renderers
-                |> List.map (render model)
+                |> List.concatMap (render model)
                 |> List.concatMap func
     in
         WebGL.toHtmlWith
             [ WebGL.clearColor 0 0 0 1
             ]
-            [ HA.width 800
-            , HA.height 600
+            [ HA.width 640
+            , HA.height 480
             ]
             entities
 
 
 {-| A function used to run an encapsulated rendering action
 -}
-render : BaseModel a -> Renderer a -> Maybe Entity
+render : BaseModel a -> Renderer a -> List (Maybe Entity)
 render model renderer =
-    renderer model
+    case renderer of
+        SingleRenderer r ->
+            [ r model ]
+
+        GroupRenderer r1 r2 ->
+            List.append (render model r1) (render model r2)
