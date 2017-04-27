@@ -18049,7 +18049,7 @@ var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"WebGL.Texture.Error":{"args":[],"tags":{"LoadError":[],"SizeError":["Int","Int"]}},"Keyboard.Extra.Msg":{"args":[],"tags":{"Down":["Keyboard.KeyCode"],"Up":["Keyboard.KeyCode"]}},"Types.Msg":{"args":[],"tags":{"KeyboardMsg":["Keyboard.Extra.Msg"],"Tick":["Time.Time"],"TextureLoadedSuccessful":["Types.TextureEncoding"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"]}},"WebGL.Texture":{"args":[],"tags":{"Texture":[]}}},"aliases":{"Types.TextureEncoding":{"args":[],"type":"( WebGL.Texture, String )"},"Keyboard.KeyCode":{"args":[],"type":"Int"},"Time.Time":{"args":[],"type":"Float"}},"message":"Types.Msg"},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"message":"Types.Msg","aliases":{"Time.Time":{"type":"Float","args":[]},"Keyboard.KeyCode":{"type":"Int","args":[]},"Types.TextureEncoding":{"type":"( WebGL.Texture, String )","args":[]}},"unions":{"Types.Msg":{"tags":{"TextureLoadedSuccessful":["Types.TextureEncoding"],"NoOp":[],"TextureLoadingError":["WebGL.Texture.Error"],"KeyboardMsg":["Keyboard.Extra.Msg"],"Tick":["Time.Time"]},"args":[]},"WebGL.Texture":{"tags":{"Texture":[]},"args":[]},"WebGL.Texture.Error":{"tags":{"SizeError":["Int","Int"],"LoadError":[]},"args":[]},"Keyboard.Extra.Msg":{"tags":{"Down":["Keyboard.KeyCode"],"Up":["Keyboard.KeyCode"]},"args":[]}}},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])
