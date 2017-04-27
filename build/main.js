@@ -17510,16 +17510,34 @@ var _user$project$Animator$Animator = function (a) {
 	};
 };
 
-var _user$project$Types$blankTextureStore = _elm_lang$core$Dict$empty;
-var _user$project$Types$Player = F5(
-	function (a, b, c, d, e) {
-		return {x: a, y: b, width: c, height: d, animator: e};
+var _user$project$Util_AbstractPhysicsObj$applyForce = F2(
+	function (_p0, obj) {
+		var _p1 = _p0;
+		return _elm_lang$core$Native_Utils.update(
+			obj,
+			{ax: obj.ax + _p1.x, ay: obj.ay + _p1.y});
 	});
+var _user$project$Util_AbstractPhysicsObj$step = F2(
+	function (time, obj) {
+		var t = time / 1000;
+		var vx1 = obj.vx + (obj.ax * t);
+		var vy1 = obj.vy + (obj.ay * t);
+		var x1 = obj.x + (vx1 * t);
+		var y1 = obj.y + (vy1 * t);
+		return _elm_lang$core$Native_Utils.update(
+			obj,
+			{x: x1, y: y1, vx: vx1, vy: vy1});
+	});
+
+var _user$project$Types$blankTextureStore = _elm_lang$core$Dict$empty;
 var _user$project$Types$OptionsMenu = function (a) {
 	return {ctor: 'OptionsMenu', _0: a};
 };
 var _user$project$Types$MainMenu = function (a) {
 	return {ctor: 'MainMenu', _0: a};
+};
+var _user$project$Types$Paused = function (a) {
+	return {ctor: 'Paused', _0: a};
 };
 var _user$project$Types$Playing = function (a) {
 	return {ctor: 'Playing', _0: a};
@@ -17564,15 +17582,10 @@ var _user$project$ViewUtil$toTextureMatrix = function (rect) {
 var _user$project$ViewUtil$rectToMatrix = function (rect) {
 	return A4(
 		_elm_community$linear_algebra$Math_Matrix4$scale3,
-		_elm_lang$core$Basics$toFloat(rect.width),
-		_elm_lang$core$Basics$toFloat(rect.height),
+		rect.width,
+		rect.height,
 		1,
-		A4(
-			_elm_community$linear_algebra$Math_Matrix4$translate3,
-			_elm_lang$core$Basics$toFloat(rect.x),
-			_elm_lang$core$Basics$toFloat(rect.y),
-			0,
-			_elm_community$linear_algebra$Math_Matrix4$identity));
+		A4(_elm_community$linear_algebra$Math_Matrix4$translate3, rect.x, rect.y, 0, _elm_community$linear_algebra$Math_Matrix4$identity));
 };
 var _user$project$ViewUtil$getTexture = F2(
 	function (_p0, texture) {
@@ -17677,46 +17690,30 @@ var _user$project$Player$view = function (player) {
 				'player',
 				_user$project$Animator$toRectangle(player.animator),
 				_user$project$ViewUtil$rectToMatrix(player)),
-			_1: {
-				ctor: '::',
-				_0: _user$project$ViewUtil$group(
-					{
-						ctor: '::',
-						_0: A2(
-							_user$project$ViewUtil$quad,
-							A3(_elm_community$linear_algebra$Math_Vector3$vec3, 0, 0, 1),
-							A4(
-								_elm_community$linear_algebra$Math_Matrix4$scale3,
-								50,
-								50,
-								1,
-								A4(_elm_community$linear_algebra$Math_Matrix4$translate3, 125, 100, 0, _elm_community$linear_algebra$Math_Matrix4$identity))),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_user$project$ViewUtil$quad,
-								A3(_elm_community$linear_algebra$Math_Vector3$vec3, 1, 0, 0),
-								A4(
-									_elm_community$linear_algebra$Math_Matrix4$scale3,
-									50,
-									50,
-									1,
-									A4(_elm_community$linear_algebra$Math_Matrix4$translate3, 100, 100, 0, _elm_community$linear_algebra$Math_Matrix4$identity))),
-							_1: {ctor: '[]'}
-						}
-					}),
-				_1: {ctor: '[]'}
-			}
+			_1: {ctor: '[]'}
 		});
 };
+var _user$project$Player$applyArrows = F2(
+	function (arrows, player) {
+		return _elm_lang$core$Native_Utils.update(
+			player,
+			{
+				vx: _elm_lang$core$Basics$toFloat(arrows.x) * 100.0,
+				vy: _elm_lang$core$Basics$toFloat(arrows.y) * -100.0
+			});
+	});
 var _user$project$Player$update = F2(
 	function (time, _p0) {
 		var _p1 = _p0;
-		var _p2 = _p1.player;
+		var arrows = _ohanhi$keyboard_extra$Keyboard_Extra$arrows(_p1.keyboard);
+		var player0 = A2(
+			_user$project$Util_AbstractPhysicsObj$step,
+			time,
+			A2(_user$project$Player$applyArrows, arrows, _p1.player));
 		return _elm_lang$core$Native_Utils.update(
-			_p2,
+			player0,
 			{
-				animator: A2(_user$project$Animator$update, time, _p2.animator)
+				animator: A2(_user$project$Animator$update, time, player0.animator)
 			});
 	});
 var _user$project$Player$defaultPlayer = F2(
@@ -17724,6 +17721,10 @@ var _user$project$Player$defaultPlayer = F2(
 		return {
 			x: x,
 			y: y,
+			vx: 0,
+			vy: 0,
+			ax: 0,
+			ay: 0,
 			width: 64,
 			height: 96,
 			animator: _elm_lang$core$Native_Utils.update(
@@ -17767,14 +17768,19 @@ var _user$project$Update$updatePlaying = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'KeyboardMsg':
+				var _p4 = A2(_ohanhi$keyboard_extra$Keyboard_Extra$updateWithKeyChange, _p3._0, model.keyboard);
+				var keyState = _p4._0;
+				var keyChange = _p4._1;
+				var state = _elm_lang$core$Native_Utils.eq(
+					keyChange,
+					_elm_lang$core$Maybe$Just(
+						_ohanhi$keyboard_extra$Keyboard_Extra$KeyDown(_ohanhi$keyboard_extra$Keyboard_Extra$CharP))) ? _user$project$Types$Paused : _user$project$Types$Playing;
 				return {
 					ctor: '_Tuple2',
-					_0: _user$project$Types$Playing(
+					_0: state(
 						_elm_lang$core$Native_Utils.update(
 							model,
-							{
-								keyboard: A2(_ohanhi$keyboard_extra$Keyboard_Extra$update, _p3._0, model.keyboard)
-							})),
+							{keyboard: keyState})),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Tick':
@@ -17798,11 +17804,38 @@ var _user$project$Update$updatePlaying = F2(
 	});
 var _user$project$Update$update = F2(
 	function (msg, state) {
-		var _p4 = state;
-		if (_p4.ctor === 'Playing') {
-			return A2(_user$project$Update$updatePlaying, msg, _p4._0);
-		} else {
-			return {ctor: '_Tuple2', _0: state, _1: _elm_lang$core$Platform_Cmd$none};
+		var _p5 = state;
+		switch (_p5.ctor) {
+			case 'Playing':
+				return A2(_user$project$Update$updatePlaying, msg, _p5._0);
+			case 'Paused':
+				var _p8 = _p5._0;
+				var _p6 = msg;
+				if (_p6.ctor === 'KeyboardMsg') {
+					var _p7 = A2(_ohanhi$keyboard_extra$Keyboard_Extra$updateWithKeyChange, _p6._0, _p8.keyboard);
+					var keyState = _p7._0;
+					var keyChange = _p7._1;
+					var state = _elm_lang$core$Native_Utils.eq(
+						keyChange,
+						_elm_lang$core$Maybe$Just(
+							_ohanhi$keyboard_extra$Keyboard_Extra$KeyDown(_ohanhi$keyboard_extra$Keyboard_Extra$CharP))) ? _user$project$Types$Playing : _user$project$Types$Paused;
+					return {
+						ctor: '_Tuple2',
+						_0: state(
+							_elm_lang$core$Native_Utils.update(
+								_p8,
+								{keyboard: keyState})),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _user$project$Types$Paused(_p8),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				}
+			default:
+				return {ctor: '_Tuple2', _0: state, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
 
@@ -17816,13 +17849,13 @@ var _user$project$Tilemap$render = _user$project$ViewUtil$group(
 				A3(_elm_community$linear_algebra$Math_Vector3$vec3, 0, 1, 0),
 				A4(
 					_elm_community$linear_algebra$Math_Matrix4$scale3,
-					32,
-					32,
+					16,
+					16,
 					1,
 					A4(
 						_elm_community$linear_algebra$Math_Matrix4$translate3,
-						_elm_lang$core$Basics$toFloat(_p1._0) * 33.0,
-						_elm_lang$core$Basics$toFloat(_p1._1) * 33.0,
+						_elm_lang$core$Basics$toFloat(_p1._0) * 17.0,
+						_elm_lang$core$Basics$toFloat(_p1._1) * 17.0,
 						0.0,
 						_elm_community$linear_algebra$Math_Matrix4$identity)));
 		},
@@ -17838,9 +17871,9 @@ var _user$project$Tilemap$render = _user$project$ViewUtil$group(
 							_1: {ctor: '[]'}
 						};
 					},
-					A2(_elm_lang$core$List$range, 0, 10));
+					A2(_elm_lang$core$List$range, 0, 20));
 			},
-			A2(_elm_lang$core$List$range, 0, 8))));
+			A2(_elm_lang$core$List$range, 0, 16))));
 
 var _user$project$View$render = F2(
 	function (model, renderer) {

@@ -12,15 +12,10 @@ type alias Tilemap =
 
 render : Renderer a
 render =
-    {-
-       y <- [0..10]
-       x <- [0..10]
-       pure (x, y)
-    -}
-    (List.range 0 8)
+    (List.range 0 16)
         |> List.concatMap
             (\y ->
-                (List.range 0 10
+                (List.range 0 20
                     |> List.concatMap
                         (\x ->
                             [ ( x, y ) ]
@@ -32,8 +27,8 @@ render =
                 ViewUtil.quad
                     (vec3 0 1 0)
                     (Mat4.identity
-                        |> Mat4.translate3 ((toFloat x) * 33.0) ((toFloat y) * 33.0) 0.0
-                        |> Mat4.scale3 32 32 1
+                        |> Mat4.translate3 ((toFloat x) * 17.0) ((toFloat y) * 17.0) 0.0
+                        |> Mat4.scale3 16 16 1
                     )
             )
         |> ViewUtil.group

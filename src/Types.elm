@@ -1,5 +1,6 @@
 module Types exposing (..)
 
+import Util.AbstractPhysicsObj exposing (PhysicsObj)
 import Animator exposing (Animator)
 import Dict exposing (Dict)
 import Keyboard.Extra as KE
@@ -16,6 +17,7 @@ import WebGL.Texture
 
 type State
     = Playing PlayingModel
+    | Paused PlayingModel
     | MainMenu MainMenuModel
     | OptionsMenu OptionsModel
 
@@ -67,9 +69,8 @@ blankTextureStore =
 
 
 type alias Player =
-    { x : Int
-    , y : Int
-    , width : Int
-    , height : Int
-    , animator : Animator
-    }
+    PhysicsObj
+        { width : Float
+        , height : Float
+        , animator : Animator
+        }

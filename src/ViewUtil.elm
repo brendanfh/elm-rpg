@@ -119,16 +119,16 @@ getTexture { textureStore } texture =
 -}
 rectToMatrix :
     { a
-        | x : Int
-        , y : Int
-        , width : Int
-        , height : Int
+        | x : Float
+        , y : Float
+        , width : Float
+        , height : Float
     }
     -> Mat4
 rectToMatrix rect =
     Mat4.identity
-        |> Mat4.translate3 (toFloat rect.x) (toFloat rect.y) 0
-        |> Mat4.scale3 (toFloat rect.width) (toFloat rect.height) 1
+        |> Mat4.translate3 rect.x rect.y 0
+        |> Mat4.scale3 rect.width rect.height 1
 
 
 toTextureMatrix :

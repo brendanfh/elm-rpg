@@ -12,6 +12,26 @@ update msg state =
         Playing model ->
             updatePlaying msg model
 
+        Paused model ->
+            case msg of
+                KeyboardMsg keyMsg ->
+                    let
+                        ( keyState, keyChange ) =
+                            KE.updateWithKeyChange keyMsg model.keyboard
+
+                        state =
+                            if keyChange == Just (KE.KeyDown KE.CharP) then
+                                Playing
+                            else
+                                Paused
+                    in
+                        ( state <| { model | keyboard = keyState }
+                        , Cmd.none
+                        )
+
+                _ ->
+                    ( Paused model, Cmd.none )
+
         _ ->
             ( state, Cmd.none )
 
@@ -26,9 +46,19 @@ updatePlaying msg model =
             ( Playing <| processTexture encoding model, Cmd.none )
 
         KeyboardMsg keyMsg ->
-            ( Playing <| { model | keyboard = KE.update keyMsg model.keyboard }
-            , Cmd.none
-            )
+            let
+                ( keyState, keyChange ) =
+                    KE.updateWithKeyChange keyMsg model.keyboard
+
+                state =
+                    if keyChange == Just (KE.KeyDown KE.CharP) then
+                        Paused
+                    else
+                        Playing
+            in
+                ( state <| { model | keyboard = keyState }
+                , Cmd.none
+                )
 
         Tick time ->
             let
